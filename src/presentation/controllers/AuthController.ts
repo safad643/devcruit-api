@@ -1,6 +1,5 @@
 import { injectable, inject } from 'inversify';
 import { FastifyRequest, FastifyReply } from 'fastify';
-import '@fastify/cookie';
 import { TYPES } from '../../di/types';
 import { 
   RegisterUserUseCase,

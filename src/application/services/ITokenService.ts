@@ -1,6 +1,9 @@
+import { UserRole } from "../../domain/types";
+
 export interface TokenPayload {
   userId: string;
-  role: string;
+  role: UserRole;
+  email: string;
 }
 
 export interface ITokenService {
