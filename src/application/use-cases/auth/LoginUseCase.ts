@@ -1,0 +1,65 @@
+import { IUserRepository, IRefreshTokenRepository } from '../../../domain/repositories';
+import { IHashService, ITokenService } from '../../services';
+import { injectable, inject } from 'inversify';
+import { TYPES } from '../../../di/types';
+import { LoginInput, AuthTokensOutput } from '../../dtos/auth.dto';
+import { UnauthorizedError, ForbiddenError } from '../../../domain/errors';
+import { config } from '../../../config';
+
+@injectable()
+export class LoginUseCase {
+  constructor(
+    @inject(TYPES.UserRepository) private userRepository: IUserRepository,
+    @inject(TYPES.RefreshTokenRepository) private refreshTokenRepository: IRefreshTokenRepository,
+    @inject(TYPES.HashService) private hashService: IHashService,
+    @inject(TYPES.TokenService) private tokenService: ITokenService
+  ) {}
+
+  async execute(input: LoginInput): Promise<AuthTokensOutput> {
+    // 1. Find user by email
+    const user = await this.userRepository.findByEmail(input.email);
+    if (!user) {
+      throw new UnauthorizedError('Invalid email or password');
+    }
+
+    // 2. Check if user is blocked
+    if (user.isBlocked) {
+      throw new ForbiddenError('Your account has been blocked. Please contact support.');
+    }
+
+    // 3. Verify password
+    const isPasswordValid = await this.hashService.compare(input.password, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedError('Invalid email or password');
+    }
+
+    // 4. Generate tokens
+    const accessToken = this.tokenService.generateAccessToken({
+      userId: user.id,
+      role: user.role,
+    });
+
+    const { token: refreshToken, tokenId } = this.tokenService.generateRefreshToken({
+      userId: user.id,
+      role: user.role,
+    });
+
+    // 5. Save refresh token to Redis
+    await this.refreshTokenRepository.save(
+      tokenId,
+      user.id,
+      config.jwt.refreshTokenExpiry
+    );
+
+    // 6. Return tokens and user data
+    return {
+      accessToken,
+      refreshToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      },
+    };
+  }
+}

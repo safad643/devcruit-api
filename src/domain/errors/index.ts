@@ -1,0 +1,45 @@
+import { AppError } from './AppError';
+
+export class ValidationError extends AppError {
+  constructor(message: string, fields?: Record<string, string>) {
+    super(message, 'VALIDATION_ERROR', true, fields);
+  }
+}
+
+export class UnauthorizedError extends AppError {
+  constructor(message = 'Unauthorized') {
+    super(message, 'UNAUTHORIZED', true);
+  }
+}
+
+export class ForbiddenError extends AppError {
+  constructor(message = 'Forbidden') {
+    super(message, 'FORBIDDEN', true);
+  }
+}
+
+export class NotFoundError extends AppError {
+  constructor(message: string) {
+    super(message, 'NOT_FOUND', true);
+  }
+}
+
+export class ConflictError extends AppError {
+  constructor(message: string) {
+    super(message, 'CONFLICT', true);
+  }
+}
+
+export class InternalError extends AppError {
+  constructor(message = 'Internal server error', originalError?: Error) {
+    super(message, 'INTERNAL_ERROR', false, undefined, originalError);
+  }
+}
+
+export class TooManyRequestsError extends AppError {
+  constructor(message = 'Too many requests') {
+    super(message, 'TOO_MANY_REQUESTS', true);
+  }
+}
+
+export { AppError };

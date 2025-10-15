@@ -1,0 +1,39 @@
+import { IUserRepository, IOTPRepository } from '../../../domain/repositories';
+import { IEmailService } from '../../services';
+import { injectable, inject } from 'inversify';
+import { TYPES } from '../../../di/types';
+import { ForgotPasswordInput, ForgotPasswordOutput } from '../../dtos/auth.dto';
+import { NotFoundError } from '../../../domain/errors';
+import { config } from '../../../config';
+
+@injectable()
+export class ForgotPasswordUseCase {
+  constructor(
+    @inject(TYPES.UserRepository) private userRepository: IUserRepository,
+    @inject(TYPES.OTPRepository) private otpRepository: IOTPRepository,
+    @inject(TYPES.EmailService) private emailService: IEmailService
+  ) {}
+
+  async execute(input: ForgotPasswordInput): Promise<ForgotPasswordOutput> {
+    // 1. Check if user exists
+    const user = await this.userRepository.findByEmail(input.email);
+    if (!user) {
+      throw new NotFoundError('Account not found with this email.');
+    }
+
+    // 2. Generate OTP
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // 3. Save OTP to Redis
+    await this.otpRepository.save(input.email, otpCode, 'reset', config.otp.ttl);
+
+    // 4. Send OTP via email
+    await this.emailService.sendOTP(input.email, otpCode, 'reset');
+
+    // 5. Return success response
+    return {
+      message: 'Password reset code sent to your email',
+      email: input.email,
+    };
+  }
+}
