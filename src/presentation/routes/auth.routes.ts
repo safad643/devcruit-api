@@ -9,8 +9,7 @@ import {
   ResendOTPSchema,
   ForgotPasswordSchema,
   ResetPasswordSchema,
-  RefreshTokenSchema,
-  LogoutSchema
+  RefreshTokenSchema
 } from '../schemas/auth.schema';
 
 export async function authRoutes(fastify: FastifyInstance): Promise<void> {
@@ -23,5 +22,5 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.post('/forgot-password', { schema: { body: ForgotPasswordSchema } }, authController.forgotPassword);
   fastify.post('/reset-password', { schema: { body: ResetPasswordSchema } }, authController.resetPassword);
   fastify.post('/refresh-token', { schema: { body: RefreshTokenSchema } }, authController.refreshToken);
-  fastify.post('/logout', { schema: { body: LogoutSchema } }, authController.logout);
+  fastify.post('/logout', authController.logout);
 }

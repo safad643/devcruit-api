@@ -61,4 +61,7 @@ export const config = {
   otp: {
     ttl: 60,
   },
+  pendingUser:{
+    ttl:120
+  }
 };

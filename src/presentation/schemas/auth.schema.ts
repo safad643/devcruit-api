@@ -57,10 +57,6 @@ export const RefreshTokenSchema = Type.Object({
   refreshToken: Type.String({ minLength: 10 })
 });
 
-// Logout
-export const LogoutSchema = Type.Object({
-  refreshToken: Type.String({ minLength: 10 })
-});
 
 // Export TypeScript types
 export type RegisterUserInput = Static<typeof RegisterUserSchema>;
@@ -70,4 +66,3 @@ export type ResendOTPInput = Static<typeof ResendOTPSchema>;
 export type ForgotPasswordInput = Static<typeof ForgotPasswordSchema>;
 export type ResetPasswordInput = Static<typeof ResetPasswordSchema>;
 export type RefreshTokenInput = Static<typeof RefreshTokenSchema>;
-export type LogoutInput = Static<typeof LogoutSchema>;

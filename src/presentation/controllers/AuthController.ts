@@ -1,6 +1,7 @@
 import { injectable, inject } from 'inversify';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { TYPES } from '../../di/types';
+import { ValidationError } from '../../domain/errors';
 import { 
   RegisterUserUseCase,
   VerifyEmailUseCase,
@@ -18,8 +19,7 @@ import {
   ResendOTPInput,
   ForgotPasswordInput,
   ResetPasswordInput,
-  RefreshTokenInput,
-  LogoutInput
+  RefreshTokenInput
 } from '../schemas/auth.schema';
 import { config } from '../../config';
 
@@ -93,8 +93,16 @@ export class AuthController {
     reply.status(200).send(result);
   };
 
-  logout = async (request: FastifyRequest<{ Body: LogoutInput }>, reply: FastifyReply): Promise<void> => {
-    const result = await this.logoutUseCase.execute(request.body);
+  logout = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+    // Get refresh token from cookies
+    const refreshToken = request.cookies.refreshToken;
+    
+    // Check if refresh token exists in cookies
+    if (!refreshToken) {
+      throw new ValidationError('Refresh token not found in cookies');
+    }
+
+    const result = await this.logoutUseCase.execute({ refreshToken });
     reply.clearCookie('refreshToken', { path: '/' });
     reply.status(200).send(result);
   };

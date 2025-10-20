@@ -38,7 +38,7 @@ export class RegisterUserUseCase {
         password: hashedPassword,
         role: input.role,
       },
-      config.otp.ttl
+      config.pendingUser.ttl
     );
 
     // 5. Generate OTP

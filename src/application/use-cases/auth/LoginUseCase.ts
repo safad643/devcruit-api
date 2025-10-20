@@ -37,11 +37,13 @@ export class LoginUseCase {
     const accessToken = this.tokenService.generateAccessToken({
       userId: user.id,
       role: user.role,
+      email:user.email
     });
 
     const { token: refreshToken, tokenId } = this.tokenService.generateRefreshToken({
       userId: user.id,
       role: user.role,
+      email:user.email
     });
 
     // 5. Save refresh token to Redis
