@@ -53,11 +53,13 @@ export class VerifyEmailUseCase {
     const accessToken = this.tokenService.generateAccessToken({
       userId: user.id,
       role: user.role,
+      email:user.email
     });
 
     const { token: refreshToken, tokenId } = this.tokenService.generateRefreshToken({
       userId: user.id,
       role: user.role,
+      email:user.email
     });
 
     // 6. Save refresh token to Redis

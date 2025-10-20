@@ -51,7 +51,9 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/'
     });
-    reply.status(200).send(result);
+    // Exclude refresh token from response body
+    const { refreshToken, ...responseData } = result;
+    reply.status(200).send(responseData);
   };
 
   login = async (request: FastifyRequest<{ Body: LoginInput }>, reply: FastifyReply): Promise<void> => {
@@ -63,7 +65,9 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/'
     });
-    reply.status(200).send(result);
+    // Exclude refresh token from response body
+    const { refreshToken, ...responseData } = result;
+    reply.status(200).send(responseData);
   };
 
   resendOTP = async (request: FastifyRequest<{ Body: ResendOTPInput }>, reply: FastifyReply): Promise<void> => {
@@ -90,7 +94,9 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/'
     });
-    reply.status(200).send(result);
+    // Exclude refresh token from response body
+    const { refreshToken, ...responseData } = result;
+    reply.status(200).send(responseData);
   };
 
   logout = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {

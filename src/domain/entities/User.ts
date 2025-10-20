@@ -1,4 +1,4 @@
-import { UserRole } from '../types.ts';
+import { UserRole } from '../types.js';
 
 export interface UserProps {
   id: string;
