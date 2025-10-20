@@ -63,13 +63,12 @@ export async function buildServer() {
 
   // Health check route
   server.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }));
+  server.setErrorHandler(globalErrorHandler);
 
   // Register routes
   await server.register(authRoutes, { prefix: '/api/auth' });
 
-  // Error handler (must be last)
-  server.setErrorHandler(globalErrorHandler);
-
+ 
   return server;
 }
 

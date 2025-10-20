@@ -11,6 +11,8 @@ import {
 
 // Map domain errors to HTTP status codes
 function getStatusCode(error: AppError): number {
+  
+  
   if (error instanceof ValidationError) return 400;
   if (error instanceof UnauthorizedError) return 401;
   if (error instanceof ForbiddenError) return 403;
@@ -25,6 +27,7 @@ export function globalErrorHandler(
   request: FastifyRequest,
   reply: FastifyReply
 ) {
+ 
   
   if (error instanceof AppError) {
     const statusCode = getStatusCode(error);
