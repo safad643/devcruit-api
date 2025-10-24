@@ -57,6 +57,20 @@ export const RefreshTokenSchema = Type.Object({
   refreshToken: Type.String({ minLength: 10 })
 });
 
+// Google Login
+export const GoogleLoginSchema = Type.Object({
+  code: Type.String({ minLength: 1 })
+});
+
+// Google Register
+export const GoogleRegisterSchema = Type.Object({
+  code: Type.String({ minLength: 1 }),
+  role: Type.Union([
+    Type.Literal('developer'),
+    Type.Literal('company')
+  ])
+});
+
 
 // Export TypeScript types
 export type RegisterUserInput = Static<typeof RegisterUserSchema>;
@@ -66,3 +80,5 @@ export type ResendOTPInput = Static<typeof ResendOTPSchema>;
 export type ForgotPasswordInput = Static<typeof ForgotPasswordSchema>;
 export type ResetPasswordInput = Static<typeof ResetPasswordSchema>;
 export type RefreshTokenInput = Static<typeof RefreshTokenSchema>;
+export type GoogleLoginInput = Static<typeof GoogleLoginSchema>;
+export type GoogleRegisterInput = Static<typeof GoogleRegisterSchema>;  

@@ -42,4 +42,11 @@ export class TooManyRequestsError extends AppError {
   }
 }
 
+export class BadRequestError extends AppError {
+  constructor(message: string) {
+    super(message, 'BAD_REQUEST', true);
+  }
+}
+
+
 export { AppError };

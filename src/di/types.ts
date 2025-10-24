@@ -6,6 +6,8 @@ export const TYPES = {
     RefreshTokenRepository: Symbol.for('RefreshTokenRepository'),
     HashService: Symbol.for('HashService'),
     TokenService: Symbol.for('TokenService'),
+    GoogleAuthService: Symbol.for('GoogleAuthService'),
+
     EmailService: Symbol.for('EmailService'),
   
     // Auth module
@@ -18,5 +20,7 @@ export const TYPES = {
     RefreshTokenUseCase: Symbol.for('RefreshTokenUseCase'),
     LogoutUseCase: Symbol.for('LogoutUseCase'),
     AuthController: Symbol.for('AuthController'),
+    GoogleLoginUseCase: Symbol.for('GoogleLoginUseCase'),
+    GoogleRegisterUseCase: Symbol.for('GoogleRegisterUseCase'),
   };
   

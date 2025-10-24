@@ -8,7 +8,7 @@ import {
   IRefreshTokenRepository 
 } from '../../domain/repositories';
 
-import { IHashService, ITokenService, IEmailService } from '../../application/services';
+import { IHashService, ITokenService, IEmailService,IGoogleAuthService } from '../../application/services';
 
 import { UserRepository } from '../../infrastructure/database/mongodb/UserRepository';
 import { PendingUserRepository } from '../../infrastructure/database/redis/PendingUserRepository';
@@ -17,6 +17,8 @@ import { RefreshTokenRepository } from '../../infrastructure/database/redis/Refr
 import { HashService } from '../../infrastructure/security/HashService';
 import { TokenService } from '../../infrastructure/security/TokenService';
 import { EmailService } from '../../infrastructure/email/EmailService';
+import { GoogleAuthService } from '../../infrastructure/security/GoogleAuthService';
+
 
 export const infrastructureModule = new ContainerModule((bind) => {
   // Repositories
@@ -26,6 +28,7 @@ export const infrastructureModule = new ContainerModule((bind) => {
   bind<IRefreshTokenRepository>(TYPES.RefreshTokenRepository).to(RefreshTokenRepository).inSingletonScope();
 
   // Services
+  bind<IGoogleAuthService>(TYPES.GoogleAuthService).to(GoogleAuthService).inSingletonScope();
   bind<IHashService>(TYPES.HashService).to(HashService).inSingletonScope();
   bind<ITokenService>(TYPES.TokenService).to(TokenService).inSingletonScope();
   bind<IEmailService>(TYPES.EmailService).to(EmailService).inSingletonScope();

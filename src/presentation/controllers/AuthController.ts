@@ -10,7 +10,9 @@ import {
   ForgotPasswordUseCase,
   ResetPasswordUseCase,
   RefreshTokenUseCase,
-  LogoutUseCase
+  LogoutUseCase,
+  GoogleLoginUseCase,      
+  GoogleRegisterUseCase
 } from '../../application/use-cases/auth';
 import {
   RegisterUserInput,
@@ -33,7 +35,9 @@ export class AuthController {
     @inject(TYPES.ForgotPasswordUseCase) private forgotPasswordUseCase: ForgotPasswordUseCase,
     @inject(TYPES.ResetPasswordUseCase) private resetPasswordUseCase: ResetPasswordUseCase,
     @inject(TYPES.RefreshTokenUseCase) private refreshTokenUseCase: RefreshTokenUseCase,
-    @inject(TYPES.LogoutUseCase) private logoutUseCase: LogoutUseCase
+    @inject(TYPES.LogoutUseCase) private logoutUseCase: LogoutUseCase,
+    @inject(TYPES.GoogleLoginUseCase) private googleLoginUseCase: GoogleLoginUseCase,           
+    @inject(TYPES.GoogleRegisterUseCase) private googleRegisterUseCase: GoogleRegisterUseCase
   ) {}
 
   // Arrow functions auto-bind 'this'
@@ -98,6 +102,45 @@ export class AuthController {
     const { refreshToken, ...responseData } = result;
     reply.status(200).send(responseData);
   };
+
+  googleLogin = async (
+    request: FastifyRequest<{ Body: { code: string } }>, 
+    reply: FastifyReply
+  ): Promise<void> => {
+    const result = await this.googleLoginUseCase.execute(request.body);
+    
+    reply.setCookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: config.env.isProduction,
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/'
+    });
+  
+    // Exclude refresh token from response body
+    const { refreshToken, ...responseData } = result;
+    reply.status(200).send(responseData);
+  };
+  
+  googleRegister = async (
+    request: FastifyRequest<{ Body: { code: string; role: string } }>, 
+    reply: FastifyReply
+  ): Promise<void> => {
+    const result = await this.googleRegisterUseCase.execute(request.body);
+    
+    reply.setCookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: config.env.isProduction,
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/'
+    });
+  
+    // Exclude refresh token from response body
+    const { refreshToken, ...responseData } = result;
+    reply.status(200).send(responseData);
+  };
+  
 
   logout = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     // Get refresh token from cookies

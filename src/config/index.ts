@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+
 function getRequiredEnv(key: string): string {
   const value = process.env[key];
   if (!value) {
@@ -9,12 +10,14 @@ function getRequiredEnv(key: string): string {
   return value;
 }
 
+
 function getOptionalEnv(key: string, defaultValue: string): string {
   return process.env[key] || defaultValue;
 }
 
+
 function validateConfig() {
-  const required = ['JWT_SECRET', 'EMAIL_USER', 'EMAIL_PASS', 'EMAIL_FROM', 'COOKIE_SECRET'];
+  const required = ['JWT_SECRET', 'EMAIL_USER', 'EMAIL_PASS', 'EMAIL_FROM', 'COOKIE_SECRET', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_REDIRECT_URI'];
   const missing = required.filter(key => !process.env[key]);
   
   if (missing.length > 0) {
@@ -24,7 +27,9 @@ function validateConfig() {
   }
 }
 
+
 validateConfig();
+
 
 export const config = {
   nodeEnv: process.env.NODE_ENV || 'development',
@@ -57,6 +62,11 @@ export const config = {
     user: getRequiredEnv('EMAIL_USER'),
     pass: getRequiredEnv('EMAIL_PASS'),
     from: getRequiredEnv('EMAIL_FROM'),
+  },
+  google: {
+    clientId: getRequiredEnv('GOOGLE_CLIENT_ID'),
+    clientSecret: getRequiredEnv('GOOGLE_CLIENT_SECRET'),
+    redirectUri: getRequiredEnv('GOOGLE_REDIRECT_URI'),
   },
   otp: {
     ttl: 60,

@@ -9,7 +9,9 @@ import {
   ResendOTPSchema,
   ForgotPasswordSchema,
   ResetPasswordSchema,
-  RefreshTokenSchema
+  RefreshTokenSchema,
+  GoogleLoginSchema,
+  GoogleRegisterSchema
 } from '../schemas/auth.schema';
 
 export async function authRoutes(fastify: FastifyInstance): Promise<void> {
@@ -22,5 +24,8 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.post('/forgot-password', { schema: { body: ForgotPasswordSchema } }, authController.forgotPassword);
   fastify.post('/reset-password', { schema: { body: ResetPasswordSchema } }, authController.resetPassword);
   fastify.post('/refresh-token', { schema: { body: RefreshTokenSchema } }, authController.refreshToken);
+  fastify.post('/google-login', { schema: { body: GoogleLoginSchema } }, authController.googleLogin);
+fastify.post('/google-register', { schema: { body: GoogleRegisterSchema } }, authController.googleRegister);
+
   fastify.post('/logout', authController.logout);
 }
