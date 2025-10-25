@@ -55,7 +55,7 @@ export const config = {
     secret: getRequiredEnv('JWT_SECRET'),
     accessTokenExpiry: '2m',
     refreshTokenExpiry: 7 * 24 * 60 * 60,
-  },
+  }as const,
   email: {
     host: getOptionalEnv('EMAIL_HOST', 'smtp.gmail.com'),
     port: parseInt(getOptionalEnv('EMAIL_PORT', '587')),
