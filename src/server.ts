@@ -6,8 +6,11 @@ import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
 import cookie from '@fastify/cookie';
 import { authRoutes } from './presentation/routes/auth.routes';
+import { profileRoutes } from './presentation/routes/profile.routes';
+import { fileRoutes } from './presentation/routes/file.routes';
 import { globalErrorHandler } from './presentation/middleware/errorHandler';
 import { config } from './config';
+import { authenticate } from './presentation/middleware/authenticate';
 
 const server = Fastify({
   logger: {
@@ -67,6 +70,8 @@ export async function buildServer() {
 
   // Register routes
   await server.register(authRoutes, { prefix: '/api/auth' });
+  await server.register(profileRoutes, { prefix: '/api/profile', preHandler: authenticate });
+  await server.register(fileRoutes, { prefix: '/api/file', preHandler: authenticate });
 
  
   return server;

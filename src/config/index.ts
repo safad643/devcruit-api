@@ -17,7 +17,7 @@ function getOptionalEnv(key: string, defaultValue: string): string {
 
 
 function validateConfig() {
-  const required = ['JWT_SECRET', 'EMAIL_USER', 'EMAIL_PASS', 'EMAIL_FROM', 'COOKIE_SECRET', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_REDIRECT_URI'];
+  const required = ['JWT_SECRET', 'EMAIL_USER', 'EMAIL_PASS', 'EMAIL_FROM', 'COOKIE_SECRET', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_REDIRECT_URI', 'CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'];
   const missing = required.filter(key => !process.env[key]);
   
   if (missing.length > 0) {
@@ -73,5 +73,10 @@ export const config = {
   },
   pendingUser:{
     ttl:120
+  },
+  cloudinary: {
+    cloudName: getRequiredEnv('CLOUDINARY_CLOUD_NAME'),
+    apiKey: getRequiredEnv('CLOUDINARY_API_KEY'),
+    apiSecret: getRequiredEnv('CLOUDINARY_API_SECRET'),
   }
 };

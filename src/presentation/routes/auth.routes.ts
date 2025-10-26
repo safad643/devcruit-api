@@ -18,7 +18,7 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
   const authController = container.get<AuthController>(TYPES.AuthController);
 
   fastify.post('/register', { schema: { body: RegisterUserSchema } }, authController.register);
-  fastify.post('/verify-email', { schema: { body: VerifyEmailSchema } }, authController.verifyEmail);
+  fastify.post('/verify-email', { schema: {  body: VerifyEmailSchema } }, authController.verifyEmail);
   fastify.post('/login', { schema: { body: LoginSchema } }, authController.login);
   fastify.post('/resend-otp', { schema: { body: ResendOTPSchema } }, authController.resendOTP);
   fastify.post('/forgot-password', { schema: { body: ForgotPasswordSchema } }, authController.forgotPassword);

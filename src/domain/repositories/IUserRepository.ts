@@ -10,4 +10,5 @@ export interface IUserRepository {
   unblockUser(userId: string): Promise<void>;
   linkGoogleAccount(userId: string, googleId: string): Promise<void>;
   addAuthProvider(userId: string, provider: AuthProvider): Promise<void>;
+  updateProfileCompletedStatus(userId: string, status: boolean): Promise<void>;
 }

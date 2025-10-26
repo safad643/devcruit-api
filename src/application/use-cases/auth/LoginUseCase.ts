@@ -28,6 +28,10 @@ export class LoginUseCase {
     }
 
     // 3. Verify password
+    if (!user.password) {
+      throw new UnauthorizedError('Invalid email or password');
+    }
+    
     const isPasswordValid = await this.hashService.compare(input.password, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedError('Invalid email or password');
@@ -61,6 +65,7 @@ export class LoginUseCase {
         id: user.id,
         email: user.email,
         role: user.role,
+        isProfileCompleted: user.isProfileCompleted,
       },
     };
   }

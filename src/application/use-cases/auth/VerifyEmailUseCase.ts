@@ -39,6 +39,7 @@ export class VerifyEmailUseCase {
       email: pendingUser.email,
       password: pendingUser.password,
       role: pendingUser.role,
+      authProviders: ['local'], // Default to local auth provider for email signup
     });
     
     const user = await this.userRepository.create(userProps);
@@ -77,6 +78,7 @@ export class VerifyEmailUseCase {
         id: user.id,
         email: user.email,
         role: user.role,
+        isProfileCompleted: user.isProfileCompleted,
       },
     };
   }

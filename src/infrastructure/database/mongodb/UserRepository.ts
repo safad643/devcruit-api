@@ -41,6 +41,7 @@ export class UserRepository implements IUserRepository {
         password: user.password,
         role: user.role,
         isBlocked: user.isBlocked,
+        isProfileCompleted: user.isProfileCompleted,
         authProviders: user.authProviders,
         googleId: user.googleId,
         createdAt: user.createdAt,
@@ -161,6 +162,26 @@ export class UserRepository implements IUserRepository {
       throw new InternalError('Failed to add auth provider', error as Error);
     }
   }
+
+  async updateProfileCompletedStatus(userId: string, status: boolean): Promise<void> {
+    try {
+      if (!ObjectId.isValid(userId)) {
+        throw new InternalError('Invalid user ID format');
+      }
+  
+      const result = await this.collection.updateOne(
+        { _id: new ObjectId(userId) },
+        { $set: { isProfileCompleted: status } }
+      );
+  
+      if (result.matchedCount === 0) {
+        throw new InternalError('User not found for profile status update');
+      }
+    } catch (error) {
+      if (error instanceof InternalError) throw error;
+      throw new InternalError('Failed to update profile status', error as Error);
+    }
+  }
   
 
   private mapToEntity(doc: any): User {
@@ -170,6 +191,7 @@ export class UserRepository implements IUserRepository {
       password: doc.password,
       role: doc.role,
       isBlocked: doc.isBlocked,
+      isProfileCompleted: doc.isProfileCompleted || false,  // Default to false for old records
       authProviders: doc.authProviders || ['local'],  // Default for old records
       googleId: doc.googleId,
       createdAt: doc.createdAt,

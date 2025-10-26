@@ -23,6 +23,7 @@ export interface AuthTokensOutput {
     id: string;
     email: string;
     role: UserRole;
+    isProfileCompleted: boolean;
   };
 }
 
