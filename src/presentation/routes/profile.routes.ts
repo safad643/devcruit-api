@@ -2,11 +2,12 @@ import { FastifyInstance } from 'fastify';
 import { container } from '../../di/container';
 import { TYPES } from '../../di/types';
 import { ProfileController } from '../controllers/ProfileController';
-import { CreateDeveloperProfileSchema } from '../schemas/profile.schema';
+import { CreateDeveloperProfileSchema, CreateCompanyProfileSchema } from '../schemas/profile.schema';
 import { authenticate } from '../middleware/authenticate';
 
 export async function profileRoutes(fastify: FastifyInstance): Promise<void> {
   const profileController = container.get<ProfileController>(TYPES.ProfileController);
+  fastify.addHook('preHandler', authenticate);
 
   fastify.post(
     '/create', 
@@ -16,9 +17,17 @@ export async function profileRoutes(fastify: FastifyInstance): Promise<void> {
     profileController.createProfile
   );
 
+  fastify.post(
+    '/company/create',
+    {
+      schema: { body: CreateCompanyProfileSchema }
+    },
+    profileController.createCompanyProfile
+  );
+
   fastify.get(
     '/me',
-    { preHandler: authenticate },
+  
     profileController.getProfile
   );
 }

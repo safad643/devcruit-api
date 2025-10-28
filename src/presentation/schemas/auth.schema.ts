@@ -52,10 +52,6 @@ export const ResetPasswordSchema = Type.Object({
   })
 });
 
-// Refresh Token
-export const RefreshTokenSchema = Type.Object({
-  refreshToken: Type.String({ minLength: 10 })
-});
 
 // Google Login
 export const GoogleLoginSchema = Type.Object({
@@ -79,6 +75,6 @@ export type LoginInput = Static<typeof LoginSchema>;
 export type ResendOTPInput = Static<typeof ResendOTPSchema>;
 export type ForgotPasswordInput = Static<typeof ForgotPasswordSchema>;
 export type ResetPasswordInput = Static<typeof ResetPasswordSchema>;
-export type RefreshTokenInput = Static<typeof RefreshTokenSchema>;
+
 export type GoogleLoginInput = Static<typeof GoogleLoginSchema>;
 export type GoogleRegisterInput = Static<typeof GoogleRegisterSchema>;  

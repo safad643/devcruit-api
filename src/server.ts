@@ -11,7 +11,7 @@ import { fileRoutes } from './presentation/routes/file.routes';
 import { globalErrorHandler } from './presentation/middleware/errorHandler';
 import { config } from './config';
 import { authenticate } from './presentation/middleware/authenticate';
-
+import ajvErrors from 'ajv-errors';  
 const server = Fastify({
   logger: {
     level: config.nodeEnv === 'production' ? 'info' : 'debug',
@@ -31,8 +31,10 @@ const server = Fastify({
     customOptions: {
       removeAdditional: 'all',
       coerceTypes: false,
-      useDefaults: true
-    }
+      useDefaults: true,
+      allErrors: true
+    },
+    plugins: [ajvErrors]
   }
 }).withTypeProvider<TypeBoxTypeProvider>();
 
@@ -70,8 +72,8 @@ export async function buildServer() {
 
   // Register routes
   await server.register(authRoutes, { prefix: '/api/auth' });
-  await server.register(profileRoutes, { prefix: '/api/profile', preHandler: authenticate });
-  await server.register(fileRoutes, { prefix: '/api/file', preHandler: authenticate });
+  await server.register(profileRoutes, { prefix: '/api/profile' });
+  await server.register(fileRoutes, { prefix: '/api/file' });
 
  
   return server;

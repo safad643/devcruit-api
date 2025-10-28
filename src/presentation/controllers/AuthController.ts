@@ -89,8 +89,14 @@ export class AuthController {
     reply.status(200).send(result);
   };
 
-  refreshToken = async (request: FastifyRequest<{ Body: RefreshTokenInput }>, reply: FastifyReply): Promise<void> => {
-    const result = await this.refreshTokenUseCase.execute(request.body);
+  refreshToken = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => { 
+    const oldrefreshToken = request.cookies.refreshToken;
+  
+  if (!oldrefreshToken) {
+    throw new ValidationError('Refresh token not found');
+  }const result = await this.refreshTokenUseCase.execute({ refreshToken:oldrefreshToken});
+
+
     reply.setCookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: config.env.isProduction,

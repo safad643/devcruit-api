@@ -9,6 +9,8 @@ export async function authenticate(
   reply: FastifyReply
 ): Promise<void> {
   try {
+    
+    
     // Extract token from Authorization header
     const authHeader = request.headers.authorization;
     

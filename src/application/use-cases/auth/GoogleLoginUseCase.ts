@@ -16,6 +16,7 @@ export interface GoogleLoginOutput {
     id: string;
     email: string;
     role: string;
+    isProfileCompleted: boolean;
   };
 }
 
@@ -87,6 +88,7 @@ export class GoogleLoginUseCase {
         id: user.id,
         email: user.email,
         role: user.role,
+        isProfileCompleted: user.isProfileCompleted,
       },
     };
   }

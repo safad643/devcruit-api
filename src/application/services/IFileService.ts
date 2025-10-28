@@ -1,13 +1,22 @@
 import { FileCategory } from '../../domain/types';
 
+export interface GenerateSignatureParams {
+  timestamp: number;
+  category: FileCategory;
+  userId: string;
+  folder?: string;
+}
+
+export interface SignatureResult {
+  signature: string;
+  apiKey: string;
+  timestamp: number;
+  folder: string;
+  uploadPreset?: string;
+}
+
 export interface IFileService {
-  uploadFile(
-    fileBuffer: Buffer,
-    filename: string,
-    mimetype: string,
-    category: FileCategory,
-    userId: string
-  ): Promise<{ url: string; publicId: string }>;
+  generateSignature(params: GenerateSignatureParams): Promise<SignatureResult>;
   
   deleteFile(publicId: string): Promise<void>;
 }

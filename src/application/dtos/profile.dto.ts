@@ -64,6 +64,26 @@ export interface UpdateDeveloperProfileOutput {
   message: string;
 }
 
+// Company Profile DTOs
+export interface CreateCompanyProfileInput {
+  userId: string;
+  fullName: string;
+  phoneNumber: string;
+  companyName: string;
+  companyWebsite: string;
+  companySize: '1-10' | '11-50' | '51-200' | '201-500' | '501-1000' | '1000+';
+  businessRegistrationNumber: string;
+  businessAddress: string;
+  businessRegistrationProofUrl: string;
+  employmentVerificationUrl: string;
+}
+
+export interface CreateCompanyProfileOutput {
+  id: string;
+  userId: string;
+  message: string;
+}
+
 export interface GetDeveloperProfileOutput {
   id: string;
   userId: string;

@@ -13,6 +13,8 @@ export class CreateDeveloperProfileUseCase {
   ) {}
 
   async execute(input: CreateDeveloperProfileInput): Promise<CreateDeveloperProfileOutput> {
+    console.log(input.userId);
+    
     // 1. Verify user exists
     const user = await this.userRepository.findById(input.userId);
     if (!user) {

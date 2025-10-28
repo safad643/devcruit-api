@@ -1,6 +1,7 @@
 import { injectable } from 'inversify';
+import crypto from 'crypto';
 import { v2 as cloudinary } from 'cloudinary';
-import { IFileService } from '../../application/services';
+import { IFileService, GenerateSignatureParams, SignatureResult } from '../../application/services';
 import { FileCategory } from '../../domain/types';
 import { ValidationError } from '../../domain/errors';
 import { config } from '../../config';
@@ -15,47 +16,36 @@ export class CloudinaryService implements IFileService {
     });
   }
 
-  async uploadFile(
-    fileBuffer: Buffer,
-    filename: string,
-    mimetype: string,
-    category: FileCategory,
-    userId: string
-  ): Promise<{ url: string; publicId: string }> {
-    // Validate file type based on category
-    this.validateFileType(mimetype, category);
+  async generateSignature(params: GenerateSignatureParams): Promise<SignatureResult> {
+    const { timestamp, category, userId } = params;
+    
+    // Get or create folder
+    const folder = params.folder || this.getFolderForCategory(category, userId);
+    
+    // Create parameters to sign (according to Cloudinary signed upload docs)
+    const paramsToSign: Record<string, any> = {
+      timestamp,
+      folder,
+    };
 
-    // Map category to Cloudinary folder with userId
-    const folder = this.getFolderForCategory(category, userId);
+    // Create signature string: "key=value&key=value"
+    const signatureString = Object.keys(paramsToSign)
+      .sort()
+      .map(key => `${key}=${paramsToSign[key]}`)
+      .join('&');
 
-    return new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          folder,
-          resource_type: 'auto', // auto-detect file type (image, video, raw)
-          use_filename: true,
-          unique_filename: true,
-        },
-        (error, result) => {
-          if (error) {
-            reject(new ValidationError(`Failed to upload file: ${error.message}`));
-            return;
-          }
+    // Generate signature using API secret
+    const signature = crypto
+      .createHash('sha1')
+      .update(signatureString + config.cloudinary.apiSecret)
+      .digest('hex');
 
-          if (!result) {
-            reject(new ValidationError('Upload failed: No result returned'));
-            return;
-          }
-
-          resolve({
-            url: result.secure_url,
-            publicId: result.public_id,
-          });
-        }
-      );
-
-      uploadStream.end(fileBuffer);
-    });
+    return {
+      signature,
+      apiKey: config.cloudinary.apiKey,
+      timestamp,
+      folder,
+    };
   }
 
   async deleteFile(publicId: string): Promise<void> {
@@ -74,21 +64,6 @@ export class CloudinaryService implements IFileService {
         resolve();
       });
     });
-  }
-
-  private validateFileType(mimetype: string, category: FileCategory): void {
-    const allowedTypes: Record<FileCategory, string[]> = {
-      PROFILE_PICTURE: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
-      DEGREE_CERTIFICATE: ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'],
-      CV: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-    };
-
-    const allowed = allowedTypes[category];
-    if (!allowed.includes(mimetype)) {
-      throw new ValidationError(
-        `Invalid file type for ${category}. Allowed types: ${allowed.join(', ')}`
-      );
-    }
   }
 
   private getFolderForCategory(category: FileCategory, userId: string): string {

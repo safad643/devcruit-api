@@ -1,24 +1,25 @@
 import { FastifyInstance } from 'fastify';
-import multipart from '@fastify/multipart';
 import { container } from '../../di/container';
 import { TYPES } from '../../di/types';
 import { FileController } from '../controllers/FileController';
-import { DeleteFileSchema } from '../schemas/file.schema';
+import { DeleteFileSchema, GenerateSignatureSchema } from '../schemas/file.schema';
+import { authenticate } from '../middleware/authenticate';
 
 export async function fileRoutes(fastify: FastifyInstance): Promise<void> {
-  
-  await fastify.register(multipart, {
-    limits: {
-      fileSize: 10 * 1024 * 1024, 
-    },
-  });
-
+  fastify.addHook('preHandler', authenticate);
   const fileController = container.get<FileController>(TYPES.FileController);
 
+  // Generate Cloudinary upload signature
   fastify.post(
-    '/upload',
-    fileController.upload
+    '/generate-signature',
+    { schema: { body: GenerateSignatureSchema } },
+    fileController.generateSignature
   );
 
-  fastify.post('/delete',{schema: { body: DeleteFileSchema }},fileController.delete);
+  // Delete file
+  fastify.post(
+    '/delete',
+    { schema: { body: DeleteFileSchema } },
+    fileController.delete
+  );
 }

@@ -11,6 +11,7 @@ export class DeveloperProfileRepository implements IDeveloperProfileRepository {
 
   constructor() {
     this.collection = getMongoDb().collection('developer_profiles');
+    
   }
 
   async findByUserId(userId: string): Promise<DeveloperProfile | null> {
@@ -62,6 +63,11 @@ export class DeveloperProfileRepository implements IDeveloperProfileRepository {
         createdAt: now,
         updatedAt: now,
       });
+
+      await getMongoDb().collection('users').updateOne(
+        { _id: new ObjectId(profile.userId) },
+        { $set: { isProfileCompleted: true } }
+      );
 
       return new DeveloperProfile({
         id: result.insertedId.toString(),

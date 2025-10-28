@@ -19,6 +19,7 @@ export interface GoogleRegisterOutput {
     id: string;
     email: string;
     role: string;
+    isProfileCompleted: boolean;
   };
 }
 
@@ -78,6 +79,7 @@ export class GoogleRegisterUseCase {
             id: updatedUser.id,
             email: updatedUser.email,
             role: updatedUser.role,
+            isProfileCompleted: updatedUser.isProfileCompleted,
           },
         };
       }
@@ -126,6 +128,7 @@ export class GoogleRegisterUseCase {
         id: newUser.id,
         email: newUser.email,
         role: newUser.role,
+        isProfileCompleted: newUser.isProfileCompleted,
       },
     };
   }

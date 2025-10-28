@@ -3,7 +3,7 @@ dotenv.config();
 
 
 function getRequiredEnv(key: string): string {
-  const value = process.env[key];
+  const value = process.env[key] ;
   if (!value) {
     throw new Error(`Missing required environment variable: ${key}`);
   }
@@ -28,7 +28,7 @@ function validateConfig() {
 }
 
 
-validateConfig();
+validateConfig()
 
 
 export const config = {

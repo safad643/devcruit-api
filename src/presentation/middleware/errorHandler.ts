@@ -28,6 +28,7 @@ export function globalErrorHandler(
   reply: FastifyReply
 ) {
  
+  console.log(error);
   
   if (error instanceof AppError) {
     const statusCode = getStatusCode(error);

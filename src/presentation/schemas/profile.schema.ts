@@ -38,12 +38,14 @@ const ProjectSchema = Type.Object({
 
 // Create Developer Profile Schema
 export const CreateDeveloperProfileSchema = Type.Object({
-  userId: Type.String(),
   profilePhotoUrl: Type.String({ format: 'uri' }),
   bio: Type.String({ minLength: 1, maxLength: 1000 }),
   skills: Type.Array(Type.String(), { minItems: 1 }),
   techs: Type.Array(Type.String(), { minItems: 1 }),
-  workHistory: Type.Array(WorkHistorySchema, { minItems: 0 }),
+  
+  // ✅ Make these optional - can be omitted OR empty arrays
+  workHistory: Type.Optional(Type.Array(WorkHistorySchema, { minItems: 0 })),
+  
   employmentStatus: Type.Union([
     Type.Literal('employed'),
     Type.Literal('unemployed'),
@@ -51,11 +53,17 @@ export const CreateDeveloperProfileSchema = Type.Object({
     Type.Literal('student'),
     Type.Literal('looking')
   ]),
-  education: Type.Array(EducationSchema, { minItems: 0 }),
+  
+  // ✅ Make these optional
+  education: Type.Optional(Type.Array(EducationSchema, { minItems: 0 })),
   certifications: Type.Array(CertificationSchema, { minItems: 0 }),
+  
   githubUrl: Type.String({ format: 'uri' }),
   portfolioUrl: Type.Optional(Type.String({ format: 'uri' })),
-  projects: Type.Array(ProjectSchema, { minItems: 0 }),
+  
+  // ✅ Make these optional
+  projects: Type.Optional(Type.Array(ProjectSchema, { minItems: 0 })),
+  
   linkedinUrl: Type.String({ format: 'uri' }),
   desiredSalary: Type.Optional(Type.Number({ minimum: 0 })),
   jobTypePreferences: Type.Array(Type.Union([
@@ -78,6 +86,30 @@ export const CreateDeveloperProfileSchema = Type.Object({
   ]),
   willingToRelocate: Type.Boolean(),
   resumeUrl: Type.String({ format: 'uri' })
+});
+
+
+// Company Size Schema
+const CompanySizeSchema = Type.Union([
+  Type.Literal('1-10'),
+  Type.Literal('11-50'),
+  Type.Literal('51-200'),
+  Type.Literal('201-500'),
+  Type.Literal('501-1000'),
+  Type.Literal('1000+')
+]);
+
+// Create Company Profile Schema
+export const CreateCompanyProfileSchema = Type.Object({
+  fullName: Type.String({ minLength: 1, maxLength: 200 }),
+  phoneNumber: Type.String({ minLength: 1, maxLength: 20 }),
+  companyName: Type.String({ minLength: 1, maxLength: 200 }),
+  companyWebsite: Type.String({ format: 'uri' }),
+  companySize: CompanySizeSchema,
+  businessRegistrationNumber: Type.String({ minLength: 1, maxLength: 100 }),
+  businessAddress: Type.String({ minLength: 1, maxLength: 500 }),
+  businessRegistrationProofUrl: Type.String({ format: 'uri' }),
+  employmentVerificationUrl: Type.String({ format: 'uri' })
 });
 
 // Update Developer Profile Schema (all fields optional except userId)
@@ -126,4 +158,5 @@ export const UpdateDeveloperProfileSchema = Type.Object({
 // Export TypeScript types
 export type CreateDeveloperProfileInput = Static<typeof CreateDeveloperProfileSchema>;
 export type UpdateDeveloperProfileInput = Static<typeof UpdateDeveloperProfileSchema>;
+export type CreateCompanyProfileInput = Static<typeof CreateCompanyProfileSchema>;
 
