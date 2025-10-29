@@ -1,6 +1,7 @@
 export const TYPES = {
     // Infrastructure
     UserRepository: Symbol.for('UserRepository'),
+    AdminRepository: Symbol.for('AdminRepository'),
     DeveloperProfileRepository: Symbol.for('DeveloperProfileRepository'),
     CompanyProfileRepository: Symbol.for('CompanyProfileRepository'),
     PendingUserRepository: Symbol.for('PendingUserRepository'),
@@ -16,6 +17,7 @@ export const TYPES = {
     RegisterUserUseCase: Symbol.for('RegisterUserUseCase'),
     VerifyEmailUseCase: Symbol.for('VerifyEmailUseCase'),
     LoginUseCase: Symbol.for('LoginUseCase'),
+    AdminLoginUseCase: Symbol.for('AdminLoginUseCase'),
     ResendOTPUseCase: Symbol.for('ResendOTPUseCase'),
     ForgotPasswordUseCase: Symbol.for('ForgotPasswordUseCase'),
     ResetPasswordUseCase: Symbol.for('ResetPasswordUseCase'),

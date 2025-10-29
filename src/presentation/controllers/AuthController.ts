@@ -6,6 +6,7 @@ import {
   RegisterUserUseCase,
   VerifyEmailUseCase,
   LoginUseCase,
+  AdminLoginUseCase,
   ResendOTPUseCase,
   ForgotPasswordUseCase,
   ResetPasswordUseCase,
@@ -21,7 +22,7 @@ import {
   ResendOTPInput,
   ForgotPasswordInput,
   ResetPasswordInput,
-  RefreshTokenInput
+  
 } from '../schemas/auth.schema';
 import { config } from '../../config';
 
@@ -31,6 +32,7 @@ export class AuthController {
     @inject(TYPES.RegisterUserUseCase) private registerUserUseCase: RegisterUserUseCase,
     @inject(TYPES.VerifyEmailUseCase) private verifyEmailUseCase: VerifyEmailUseCase,
     @inject(TYPES.LoginUseCase) private loginUseCase: LoginUseCase,
+    @inject(TYPES.AdminLoginUseCase) private adminLoginUseCase: AdminLoginUseCase,
     @inject(TYPES.ResendOTPUseCase) private resendOTPUseCase: ResendOTPUseCase,
     @inject(TYPES.ForgotPasswordUseCase) private forgotPasswordUseCase: ForgotPasswordUseCase,
     @inject(TYPES.ResetPasswordUseCase) private resetPasswordUseCase: ResetPasswordUseCase,
@@ -70,6 +72,19 @@ export class AuthController {
       path: '/'
     });
     // Exclude refresh token from response body
+    const { refreshToken, ...responseData } = result;
+    reply.status(200).send(responseData);
+  };
+
+  adminLogin = async (request: FastifyRequest<{ Body: LoginInput }>, reply: FastifyReply): Promise<void> => {
+    const result = await this.adminLoginUseCase.execute(request.body);
+    reply.setCookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: config.env.isProduction,
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/'
+    });
     const { refreshToken, ...responseData } = result;
     reply.status(200).send(responseData);
   };

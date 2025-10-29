@@ -5,6 +5,7 @@ import {
   RegisterUserUseCase,
   VerifyEmailUseCase,
   LoginUseCase,
+  AdminLoginUseCase,
   ResendOTPUseCase,
   ForgotPasswordUseCase,
   ResetPasswordUseCase,
@@ -19,6 +20,7 @@ export const authModule = new ContainerModule((bind) => {
   bind<RegisterUserUseCase>(TYPES.RegisterUserUseCase).to(RegisterUserUseCase);
   bind<VerifyEmailUseCase>(TYPES.VerifyEmailUseCase).to(VerifyEmailUseCase);
   bind<LoginUseCase>(TYPES.LoginUseCase).to(LoginUseCase);
+  bind<AdminLoginUseCase>(TYPES.AdminLoginUseCase).to(AdminLoginUseCase);
   bind<ResendOTPUseCase>(TYPES.ResendOTPUseCase).to(ResendOTPUseCase);
   bind<ForgotPasswordUseCase>(TYPES.ForgotPasswordUseCase).to(ForgotPasswordUseCase);
   bind<ResetPasswordUseCase>(TYPES.ResetPasswordUseCase).to(ResetPasswordUseCase);

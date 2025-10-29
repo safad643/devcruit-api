@@ -78,3 +78,13 @@ export interface LogoutInput {
 export interface LogoutOutput {
   message: string;
 }
+
+export interface AdminAuthTokensOutput {
+  accessToken: string;
+  refreshToken: string;
+  user: {
+    id: string;
+    email: string;
+    role: 'admin';
+  };
+}
