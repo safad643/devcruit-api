@@ -110,3 +110,44 @@ export interface GetDeveloperProfileOutput {
   updatedAt: Date;
 }
 
+// Admin Company List DTOs
+export interface AdminCompanyListItem {
+  id: string;
+  userId: string;
+  companyName: string;
+  fullName: string;
+  phoneNumber: string;
+  companyWebsite: string;
+  companySize: '1-10' | '11-50' | '51-200' | '201-500' | '501-1000' | '1000+';
+  businessRegistrationNumber: string;
+  businessAddress: string;
+  isVerified: boolean;
+  userEmail: string;
+  isBlocked: boolean;
+  lastDocumentSubmitted: Date | null;
+  documentReuploadRequestsCount: number;
+  planHistoryCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface GetAdminCompanyListInput {
+  page: number;
+  limit: number;
+  search?: string;
+  searchField?: 'companyName' | 'fullName' | 'phoneNumber' | 'businessRegistrationNumber' | 'companyWebsite';
+  status?: 'active' | 'blocked' | 'resubmitted';
+  companySize?: '1-10' | '11-50' | '51-200' | '201-500' | '501-1000' | '1000+';
+  isVerified?: boolean;
+  sortBy?: 'createdAt' | 'updatedAt' | 'companyName';
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface GetAdminCompanyListOutput {
+  data: AdminCompanyListItem[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+

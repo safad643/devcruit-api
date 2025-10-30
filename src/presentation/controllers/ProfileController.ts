@@ -4,20 +4,24 @@ import { TYPES } from '../../di/types';
 import { 
   CreateDeveloperProfileUseCase,
   GetDeveloperProfileUseCase,
-  CreateCompanyProfileUseCase
+  CreateCompanyProfileUseCase,
+  GetAdminCompanyListUseCase
 } from '../../application/use-cases/profile';
 import {
   CreateDeveloperProfileInput,
   UpdateDeveloperProfileInput,
   CreateCompanyProfileInput
 } from '../schemas/profile.schema';
+import { GetAdminCompanyListInput } from '../../application/dtos/profile.dto';
+import { GetAdminCompanyListQuery } from '../schemas/profile.schema';
 
 @injectable()
 export class ProfileController {
   constructor(
     @inject(TYPES.CreateDeveloperProfileUseCase) private createProfileUseCase: CreateDeveloperProfileUseCase,
     @inject(TYPES.GetDeveloperProfileUseCase) private getProfileUseCase: GetDeveloperProfileUseCase,
-    @inject(TYPES.CreateCompanyProfileUseCase) private createCompanyProfileUseCase: CreateCompanyProfileUseCase
+    @inject(TYPES.CreateCompanyProfileUseCase) private createCompanyProfileUseCase: CreateCompanyProfileUseCase,
+    @inject(TYPES.GetAdminCompanyListUseCase) private getAdminCompanyListUseCase: GetAdminCompanyListUseCase
   ) {}
 
   createProfile = async (
@@ -44,6 +48,26 @@ export class ProfileController {
     // Get userId from the authenticated user (from token)
     const userId = (request as any).user.id;
     const result = await this.getProfileUseCase.execute(userId);
+    reply.status(200).send(result);
+  };
+
+  getAdminCompanyList = async (
+    request: FastifyRequest<{ Querystring: GetAdminCompanyListQuery }>,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const { page = 1, limit = 10, search, searchField, status, companySize, isVerified, sortBy, sortOrder } = request.query;
+    const input: GetAdminCompanyListInput = {
+      page,
+      limit,
+      search,
+      searchField,
+      status,
+      companySize,
+      isVerified,
+      sortBy,
+      sortOrder,
+    };
+    const result = await this.getAdminCompanyListUseCase.execute(input);
     reply.status(200).send(result);
   };
 }

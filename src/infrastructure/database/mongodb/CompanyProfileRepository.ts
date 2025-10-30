@@ -1,5 +1,5 @@
 import { Collection, ObjectId } from 'mongodb';
-import { ICompanyProfileRepository } from '../../../domain/repositories/ICompanyProfileRepository';
+import { ICompanyProfileRepository, CompanyListFilters, CompanyListResult } from '../../../domain/repositories/ICompanyProfileRepository';
 import { CompanyProfile, CompanyProfileProps } from '../../../domain/entities/CompanyProfile';
 import { getMongoDb } from './client';
 import { InternalError } from '../../../domain/errors';
@@ -35,7 +35,9 @@ export class CompanyProfileRepository implements ICompanyProfileRepository {
     }
   }
 
-  async create(profile: Omit<CompanyProfileProps, 'id' | 'createdAt' | 'updatedAt'>): Promise<CompanyProfile> {
+  async create(
+    profile: Omit<CompanyProfileProps, 'id' | 'createdAt' | 'updatedAt' | 'isVerified' | 'planHistory' | 'documentReuploadRequests'>
+  ): Promise<CompanyProfile> {
     try {
       const now = new Date();
       const result = await this.collection.insertOne({
@@ -49,6 +51,10 @@ export class CompanyProfileRepository implements ICompanyProfileRepository {
         businessAddress: profile.businessAddress,
         businessRegistrationProofUrl: profile.businessRegistrationProofUrl,
         employmentVerificationUrl: profile.employmentVerificationUrl,
+        isVerified: false,
+        planHistory: [],
+        documentReuploadRequests: [],
+        lastDocumentSubmitted: null,
         createdAt: now,
         updatedAt: now,
       });
@@ -60,7 +66,20 @@ export class CompanyProfileRepository implements ICompanyProfileRepository {
 
       return new CompanyProfile({
         id: result.insertedId.toString(),
-        ...profile,
+        userId: profile.userId,
+        fullName: profile.fullName,
+        phoneNumber: profile.phoneNumber,
+        companyName: profile.companyName,
+        companyWebsite: profile.companyWebsite,
+        companySize: profile.companySize,
+        businessRegistrationNumber: profile.businessRegistrationNumber,
+        businessAddress: profile.businessAddress,
+        businessRegistrationProofUrl: profile.businessRegistrationProofUrl,
+        employmentVerificationUrl: profile.employmentVerificationUrl,
+        isVerified: false,
+        planHistory: [],
+        documentReuploadRequests: [],
+        lastDocumentSubmitted: null,
         createdAt: now,
         updatedAt: now,
       });
@@ -110,6 +129,167 @@ export class CompanyProfileRepository implements ICompanyProfileRepository {
     }
   }
 
+  async listWithFilters(filters: CompanyListFilters): Promise<CompanyListResult> {
+    try {
+      // Build aggregation pipeline
+      const pipeline: any[] = [];
+
+      // Add initial filters that don't require user join
+      const initialMatch: any = {};
+
+      // Company size filter
+      if (filters.companySize) {
+        initialMatch.companySize = filters.companySize;
+      }
+
+      // IsVerified filter
+      if (filters.isVerified !== undefined) {
+        initialMatch.isVerified = filters.isVerified;
+      }
+
+      // Status filter - active can be applied early
+      if (filters.status === 'active') {
+        initialMatch.isVerified = true;
+      }
+
+      // Resubmitted filter - check if there's a reupload request after lastDocumentSubmitted
+      if (filters.status === 'resubmitted') {
+        initialMatch.lastDocumentSubmitted = { $ne: null };
+        initialMatch.documentReuploadRequests = {
+          $elemMatch: {
+            $expr: {
+              $gt: ['$requestedAt', '$lastDocumentSubmitted']
+            }
+          }
+        };
+      }
+
+      if (Object.keys(initialMatch).length > 0) {
+        pipeline.push({ $match: initialMatch });
+      }
+
+      // Lookup users to get email and isBlocked
+      // Convert userId string to ObjectId for lookup
+      pipeline.push({
+        $addFields: {
+          userIdObjectId: {
+            $cond: {
+              if: { $eq: [{ $type: '$userId' }, 'string'] },
+              then: { $toObjectId: '$userId' },
+              else: '$userId'
+            }
+          }
+        }
+      });
+
+      pipeline.push({
+        $lookup: {
+          from: 'users',
+          localField: 'userIdObjectId',
+          foreignField: '_id',
+          as: 'user'
+        }
+      });
+
+      pipeline.push({
+        $unwind: {
+          path: '$user',
+          preserveNullAndEmptyArrays: false
+        }
+      });
+
+      // Ensure we only get company role users
+      pipeline.push({
+        $match: {
+          'user.role': 'company'
+        }
+      });
+
+      // Status filters that require user data
+      if (filters.status === 'active') {
+        pipeline.push({
+          $match: {
+            isVerified: true,
+            'user.isBlocked': false
+          }
+        });
+      } else if (filters.status === 'blocked') {
+        pipeline.push({
+          $match: {
+            'user.isBlocked': true
+          }
+        });
+      }
+
+      // Search filter (apply after join in case we need to search user fields)
+      if (filters.search && filters.searchField) {
+        const searchRegex = { $regex: filters.search, $options: 'i' };
+        pipeline.push({
+          $match: {
+            [filters.searchField]: searchRegex
+          }
+        });
+      }
+
+      // Sorting (default: createdAt desc)
+      const sortField = filters.sortBy ?? 'createdAt';
+      const sortOrder = filters.sortOrder === 'asc' ? 1 : -1;
+
+      // Get total count before pagination
+      const countPipeline = [...pipeline, { $count: 'total' }];
+      const countResult = await this.collection.aggregate(countPipeline).toArray();
+      const total = countResult.length > 0 ? countResult[0].total : 0;
+
+      // Add pagination
+      const skip = (filters.page - 1) * filters.limit;
+      pipeline.push(
+        { $sort: { [sortField]: sortOrder } },
+        { $skip: skip },
+        { $limit: filters.limit }
+      );
+
+      // Project final fields
+      pipeline.push({
+        $project: {
+          _id: 1,
+          userId: 1,
+          fullName: 1,
+          phoneNumber: 1,
+          companyName: 1,
+          companyWebsite: 1,
+          companySize: 1,
+          businessRegistrationNumber: 1,
+          businessAddress: 1,
+          businessRegistrationProofUrl: 1,
+          employmentVerificationUrl: 1,
+          isVerified: 1,
+          planHistory: 1,
+          documentReuploadRequests: 1,
+          lastDocumentSubmitted: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          userEmail: '$user.email',
+          isBlocked: '$user.isBlocked'
+        }
+      });
+
+      const docs = await this.collection.aggregate(pipeline).toArray();
+
+      const companies = docs.map(doc => ({
+        companyProfile: this.mapToEntity(doc),
+        userEmail: doc.userEmail,
+        isBlocked: doc.isBlocked
+      }));
+
+      return {
+        companies,
+        total
+      };
+    } catch (error) {
+      throw new InternalError('Failed to list companies with filters', error as Error);
+    }
+  }
+
   private mapToEntity(doc: any): CompanyProfile {
     return new CompanyProfile({
       id: doc._id.toString(),
@@ -123,6 +303,10 @@ export class CompanyProfileRepository implements ICompanyProfileRepository {
       businessAddress: doc.businessAddress,
       businessRegistrationProofUrl: doc.businessRegistrationProofUrl,
       employmentVerificationUrl: doc.employmentVerificationUrl,
+      isVerified: doc.isVerified ?? false,
+      planHistory: doc.planHistory ?? [],
+      documentReuploadRequests: doc.documentReuploadRequests ?? [],
+      lastDocumentSubmitted: doc.lastDocumentSubmitted ?? null,
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
     });

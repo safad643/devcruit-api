@@ -31,6 +31,7 @@ export const TYPES = {
     CreateDeveloperProfileUseCase: Symbol.for('CreateDeveloperProfileUseCase'),
     GetDeveloperProfileUseCase: Symbol.for('GetDeveloperProfileUseCase'),
     CreateCompanyProfileUseCase: Symbol.for('CreateCompanyProfileUseCase'),
+    GetAdminCompanyListUseCase: Symbol.for('GetAdminCompanyListUseCase'),
     ProfileController: Symbol.for('ProfileController'),
     
     // File module

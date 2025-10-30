@@ -8,6 +8,7 @@ import cookie from '@fastify/cookie';
 import { authRoutes } from './presentation/routes/auth.routes';
 import { profileRoutes } from './presentation/routes/profile.routes';
 import { fileRoutes } from './presentation/routes/file.routes';
+import { adminRoutes } from './presentation/routes/admin.routes';
 import { globalErrorHandler } from './presentation/middleware/errorHandler';
 import { config } from './config';
 import { authenticate } from './presentation/middleware/authenticate';
@@ -74,6 +75,7 @@ export async function buildServer() {
   await server.register(authRoutes, { prefix: '/api/auth' });
   await server.register(profileRoutes, { prefix: '/api/profile' });
   await server.register(fileRoutes, { prefix: '/api/file' });
+  await server.register(adminRoutes, { prefix: '/api' });
 
  
   return server;

@@ -155,8 +155,39 @@ export const UpdateDeveloperProfileSchema = Type.Object({
   resumeUrl: Type.Optional(Type.String({ format: 'uri' }))
 });
 
+// Admin Company List Query Schema
+export const GetAdminCompanyListQuerySchema = Type.Object({
+  page: Type.Optional(Type.Number({ minimum: 1, default: 1 })),
+  limit: Type.Optional(Type.Number({ minimum: 1, maximum: 100, default: 10 })),
+  search: Type.Optional(Type.String({ minLength: 1 })),
+  searchField: Type.Optional(Type.Union([
+    Type.Literal('companyName'),
+    Type.Literal('fullName'),
+    Type.Literal('phoneNumber'),
+    Type.Literal('businessRegistrationNumber'),
+    Type.Literal('companyWebsite')
+  ])),
+  status: Type.Optional(Type.Union([
+    Type.Literal('active'),
+    Type.Literal('blocked'),
+    Type.Literal('resubmitted')
+  ])),
+  companySize: Type.Optional(CompanySizeSchema),
+  isVerified: Type.Optional(Type.Boolean()),
+  sortBy: Type.Optional(Type.Union([
+    Type.Literal('createdAt'),
+    Type.Literal('updatedAt'),
+    Type.Literal('companyName')
+  ])),
+  sortOrder: Type.Optional(Type.Union([
+    Type.Literal('asc'),
+    Type.Literal('desc')
+  ]))
+});
+
 // Export TypeScript types
 export type CreateDeveloperProfileInput = Static<typeof CreateDeveloperProfileSchema>;
 export type UpdateDeveloperProfileInput = Static<typeof UpdateDeveloperProfileSchema>;
 export type CreateCompanyProfileInput = Static<typeof CreateCompanyProfileSchema>;
+export type GetAdminCompanyListQuery = Static<typeof GetAdminCompanyListQuerySchema>;
 
