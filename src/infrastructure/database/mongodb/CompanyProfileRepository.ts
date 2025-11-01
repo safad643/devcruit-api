@@ -36,7 +36,7 @@ export class CompanyProfileRepository implements ICompanyProfileRepository {
   }
 
   async create(
-    profile: Omit<CompanyProfileProps, 'id' | 'createdAt' | 'updatedAt' | 'isVerified' | 'planHistory' | 'documentReuploadRequests'>
+    profile: Omit<CompanyProfileProps, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'planHistory' | 'documentReuploadRequests'>
   ): Promise<CompanyProfile> {
     try {
       const now = new Date();
@@ -51,10 +51,9 @@ export class CompanyProfileRepository implements ICompanyProfileRepository {
         businessAddress: profile.businessAddress,
         businessRegistrationProofUrl: profile.businessRegistrationProofUrl,
         employmentVerificationUrl: profile.employmentVerificationUrl,
-        isVerified: false,
+        status: 'pending',
         planHistory: [],
         documentReuploadRequests: [],
-        lastDocumentSubmitted: null,
         createdAt: now,
         updatedAt: now,
       });
@@ -76,10 +75,9 @@ export class CompanyProfileRepository implements ICompanyProfileRepository {
         businessAddress: profile.businessAddress,
         businessRegistrationProofUrl: profile.businessRegistrationProofUrl,
         employmentVerificationUrl: profile.employmentVerificationUrl,
-        isVerified: false,
+        status: 'pending',
         planHistory: [],
         documentReuploadRequests: [],
-        lastDocumentSubmitted: null,
         createdAt: now,
         updatedAt: now,
       });
@@ -142,26 +140,9 @@ export class CompanyProfileRepository implements ICompanyProfileRepository {
         initialMatch.companySize = filters.companySize;
       }
 
-      // IsVerified filter
-      if (filters.isVerified !== undefined) {
-        initialMatch.isVerified = filters.isVerified;
-      }
-
-      // Status filter - active can be applied early
-      if (filters.status === 'active') {
-        initialMatch.isVerified = true;
-      }
-
-      // Resubmitted filter - check if there's a reupload request after lastDocumentSubmitted
-      if (filters.status === 'resubmitted') {
-        initialMatch.lastDocumentSubmitted = { $ne: null };
-        initialMatch.documentReuploadRequests = {
-          $elemMatch: {
-            $expr: {
-              $gt: ['$requestedAt', '$lastDocumentSubmitted']
-            }
-          }
-        };
+      // Status filter
+      if (filters.status) {
+        initialMatch.status = filters.status;
       }
 
       if (Object.keys(initialMatch).length > 0) {
@@ -205,18 +186,11 @@ export class CompanyProfileRepository implements ICompanyProfileRepository {
         }
       });
 
-      // Status filters that require user data
-      if (filters.status === 'active') {
+      // Blocked filter requires user data
+      if (filters.isBlocked !== undefined) {
         pipeline.push({
           $match: {
-            isVerified: true,
-            'user.isBlocked': false
-          }
-        });
-      } else if (filters.status === 'blocked') {
-        pipeline.push({
-          $match: {
-            'user.isBlocked': true
+            'user.isBlocked': filters.isBlocked
           }
         });
       }
@@ -262,10 +236,9 @@ export class CompanyProfileRepository implements ICompanyProfileRepository {
           businessAddress: 1,
           businessRegistrationProofUrl: 1,
           employmentVerificationUrl: 1,
-          isVerified: 1,
+          status: 1,
           planHistory: 1,
           documentReuploadRequests: 1,
-          lastDocumentSubmitted: 1,
           createdAt: 1,
           updatedAt: 1,
           userEmail: '$user.email',
@@ -303,10 +276,9 @@ export class CompanyProfileRepository implements ICompanyProfileRepository {
       businessAddress: doc.businessAddress,
       businessRegistrationProofUrl: doc.businessRegistrationProofUrl,
       employmentVerificationUrl: doc.employmentVerificationUrl,
-      isVerified: doc.isVerified ?? false,
+      status: doc.status ?? 'pending',
       planHistory: doc.planHistory ?? [],
       documentReuploadRequests: doc.documentReuploadRequests ?? [],
-      lastDocumentSubmitted: doc.lastDocumentSubmitted ?? null,
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
     });

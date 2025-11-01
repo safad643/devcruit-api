@@ -18,6 +18,8 @@ export interface DocumentReuploadRequest {
   requestedAt: Date;
 }
 
+export type CompanyProfileStatus = 'pending' | 'approved' | 'rejected' | 'resubmitted';
+
 export interface CompanyProfileProps {
   id: string;
   userId: string; // Reference to the User
@@ -30,14 +32,12 @@ export interface CompanyProfileProps {
   businessAddress: string;
   businessRegistrationProofUrl: string;
   employmentVerificationUrl: string;
-  // Verification status managed by admins
-  isVerified: boolean;
+  // Profile verification status
+  status: CompanyProfileStatus;
   // Historical subscription plan records
   planHistory: PlanHistoryItem[];
   // Admin re-upload requests for specific documents
   documentReuploadRequests: DocumentReuploadRequest[];
-  // Tracks the last time the company submitted documents
-  lastDocumentSubmitted: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -54,10 +54,9 @@ export class CompanyProfile {
   public readonly businessAddress: string;
   public readonly businessRegistrationProofUrl: string;
   public readonly employmentVerificationUrl: string;
-  public readonly isVerified: boolean;
+  public readonly status: CompanyProfileStatus;
   public readonly planHistory: PlanHistoryItem[];
   public readonly documentReuploadRequests: DocumentReuploadRequest[];
-  public readonly lastDocumentSubmitted: Date | null;
   public readonly createdAt: Date;
   public readonly updatedAt: Date;
 
@@ -73,24 +72,22 @@ export class CompanyProfile {
     this.businessAddress = props.businessAddress;
     this.businessRegistrationProofUrl = props.businessRegistrationProofUrl;
     this.employmentVerificationUrl = props.employmentVerificationUrl;
-    this.isVerified = props.isVerified;
+    this.status = props.status;
     this.planHistory = props.planHistory;
     this.documentReuploadRequests = props.documentReuploadRequests;
-    this.lastDocumentSubmitted = props.lastDocumentSubmitted;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
   }
 
   static create(
-    props: Omit<CompanyProfileProps, 'id' | 'createdAt' | 'updatedAt' | 'isVerified' | 'planHistory' | 'documentReuploadRequests'>
+    props: Omit<CompanyProfileProps, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'planHistory' | 'documentReuploadRequests'>
   ): Omit<CompanyProfileProps, 'id'> {
     const now = new Date();
     return {
       ...props,
-      isVerified: false,
+      status: 'pending',
       planHistory: [],
       documentReuploadRequests: [],
-      lastDocumentSubmitted: null,
       createdAt: now,
       updatedAt: now,
     };

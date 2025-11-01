@@ -168,12 +168,13 @@ export const GetAdminCompanyListQuerySchema = Type.Object({
     Type.Literal('companyWebsite')
   ])),
   status: Type.Optional(Type.Union([
-    Type.Literal('active'),
-    Type.Literal('blocked'),
+    Type.Literal('pending'),
+    Type.Literal('approved'),
+    Type.Literal('rejected'),
     Type.Literal('resubmitted')
   ])),
   companySize: Type.Optional(CompanySizeSchema),
-  isVerified: Type.Optional(Type.Boolean()),
+  isBlocked: Type.Optional(Type.Boolean()),
   sortBy: Type.Optional(Type.Union([
     Type.Literal('createdAt'),
     Type.Literal('updatedAt'),

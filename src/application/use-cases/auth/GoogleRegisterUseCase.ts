@@ -1,6 +1,6 @@
 import { inject, injectable } from 'inversify';
 import { TYPES } from '../../../di/types';
-import { IUserRepository, IRefreshTokenRepository } from '../../../domain/repositories';
+import { IUserRepository, IRefreshTokenRepository, ICompanyProfileRepository } from '../../../domain/repositories';
 import { IGoogleAuthService, ITokenService } from '../../services';
 import { User } from '../../../domain/entities/User';
 import { ConflictError, ValidationError } from '../../../domain/errors';
@@ -20,6 +20,7 @@ export interface GoogleRegisterOutput {
     email: string;
     role: string;
     isProfileCompleted: boolean;
+    status?: 'pending' | 'approved' | 'rejected' | 'resubmitted';
   };
 }
 
@@ -29,7 +30,8 @@ export class GoogleRegisterUseCase {
     @inject(TYPES.GoogleAuthService) private googleAuthService: IGoogleAuthService,
     @inject(TYPES.UserRepository) private userRepository: IUserRepository,
     @inject(TYPES.RefreshTokenRepository) private refreshTokenRepository: IRefreshTokenRepository,
-    @inject(TYPES.TokenService) private tokenService: ITokenService
+    @inject(TYPES.TokenService) private tokenService: ITokenService,
+    @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository
   ) {}
 
   async execute(input: GoogleRegisterInput): Promise<GoogleRegisterOutput> {
@@ -72,6 +74,15 @@ export class GoogleRegisterUseCase {
           config.jwt.refreshTokenExpiry
         );
 
+        // Get company profile status if user is a company
+        let status: 'pending' | 'approved' | 'rejected' | 'resubmitted' | undefined;
+        if (updatedUser.role === 'company') {
+          const companyProfile = await this.companyProfileRepository.findByUserId(updatedUser.id);
+          if (companyProfile) {
+            status = companyProfile.status;
+          }
+        }
+
         return {
           accessToken,
           refreshToken,
@@ -80,6 +91,7 @@ export class GoogleRegisterUseCase {
             email: updatedUser.email,
             role: updatedUser.role,
             isProfileCompleted: updatedUser.isProfileCompleted,
+            ...(status && { status }),
           },
         };
       }
@@ -120,7 +132,16 @@ export class GoogleRegisterUseCase {
       config.jwt.refreshTokenExpiry
     );
 
-    // 6. Return tokens and user data
+    // 6. Get company profile status if user is a company
+    let status: 'pending' | 'approved' | 'rejected' | 'resubmitted' | undefined;
+    if (newUser.role === 'company') {
+      const companyProfile = await this.companyProfileRepository.findByUserId(newUser.id);
+      if (companyProfile) {
+        status = companyProfile.status;
+      }
+    }
+
+    // 7. Return tokens and user data
     return {
       accessToken,
       refreshToken,
@@ -129,6 +150,7 @@ export class GoogleRegisterUseCase {
         email: newUser.email,
         role: newUser.role,
         isProfileCompleted: newUser.isProfileCompleted,
+        ...(status && { status }),
       },
     };
   }

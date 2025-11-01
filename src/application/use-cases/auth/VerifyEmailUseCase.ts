@@ -1,4 +1,4 @@
-import { IUserRepository, IPendingUserRepository, IOTPRepository, IRefreshTokenRepository } from '../../../domain/repositories';
+import { IUserRepository, IPendingUserRepository, IOTPRepository, IRefreshTokenRepository, ICompanyProfileRepository } from '../../../domain/repositories';
 import { ITokenService } from '../../services';
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
@@ -14,7 +14,8 @@ export class VerifyEmailUseCase {
     @inject(TYPES.PendingUserRepository) private pendingUserRepository: IPendingUserRepository,
     @inject(TYPES.OTPRepository) private otpRepository: IOTPRepository,
     @inject(TYPES.RefreshTokenRepository) private refreshTokenRepository: IRefreshTokenRepository,
-    @inject(TYPES.TokenService) private tokenService: ITokenService
+    @inject(TYPES.TokenService) private tokenService: ITokenService,
+    @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository
   ) {}
 
   async execute(input: VerifyEmailInput): Promise<AuthTokensOutput> {
@@ -70,7 +71,16 @@ export class VerifyEmailUseCase {
         config.jwt.refreshTokenExpiry
       );
 
-    // 7. Return tokens and user data
+    // 7. Get company profile status if user is a company
+    let status: 'pending' | 'approved' | 'rejected' | 'resubmitted' | undefined;
+    if (user.role === 'company') {
+      const companyProfile = await this.companyProfileRepository.findByUserId(user.id);
+      if (companyProfile) {
+        status = companyProfile.status;
+      }
+    }
+
+    // 8. Return tokens and user data
     return {
       accessToken,
       refreshToken,
@@ -79,6 +89,7 @@ export class VerifyEmailUseCase {
         email: user.email,
         role: user.role,
         isProfileCompleted: user.isProfileCompleted,
+        ...(status && { status }),
       },
     };
   }

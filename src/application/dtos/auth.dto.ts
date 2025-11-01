@@ -24,6 +24,7 @@ export interface AuthTokensOutput {
     email: string;
     role: UserRole;
     isProfileCompleted: boolean;
+    status?: 'pending' | 'approved' | 'rejected' | 'resubmitted';
   };
 }
 

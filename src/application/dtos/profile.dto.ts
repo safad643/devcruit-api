@@ -7,6 +7,7 @@ import {
   WorkArrangement, 
   SeniorityLevel 
 } from '../../domain/entities/DeveloperProfile';
+import { CompanyProfileStatus } from '../../domain/entities/CompanyProfile';
 
 export interface CreateDeveloperProfileInput {
   userId: string;
@@ -121,10 +122,9 @@ export interface AdminCompanyListItem {
   companySize: '1-10' | '11-50' | '51-200' | '201-500' | '501-1000' | '1000+';
   businessRegistrationNumber: string;
   businessAddress: string;
-  isVerified: boolean;
+  status: CompanyProfileStatus;
   userEmail: string;
   isBlocked: boolean;
-  lastDocumentSubmitted: Date | null;
   documentReuploadRequestsCount: number;
   planHistoryCount: number;
   createdAt: Date;
@@ -136,9 +136,9 @@ export interface GetAdminCompanyListInput {
   limit: number;
   search?: string;
   searchField?: 'companyName' | 'fullName' | 'phoneNumber' | 'businessRegistrationNumber' | 'companyWebsite';
-  status?: 'active' | 'blocked' | 'resubmitted';
+  status?: CompanyProfileStatus;
   companySize?: '1-10' | '11-50' | '51-200' | '201-500' | '501-1000' | '1000+';
-  isVerified?: boolean;
+  isBlocked?: boolean;
   sortBy?: 'createdAt' | 'updatedAt' | 'companyName';
   sortOrder?: 'asc' | 'desc';
 }

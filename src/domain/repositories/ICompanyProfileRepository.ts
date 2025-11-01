@@ -1,13 +1,13 @@
-import { CompanyProfile, CompanyProfileProps } from '../entities/CompanyProfile';
+import { CompanyProfile, CompanyProfileProps, CompanyProfileStatus } from '../entities/CompanyProfile';
 
 export interface CompanyListFilters {
   page: number;
   limit: number;
   search?: string;
   searchField?: 'companyName' | 'fullName' | 'phoneNumber' | 'businessRegistrationNumber' | 'companyWebsite';
-  status?: 'active' | 'blocked' | 'resubmitted';
+  status?: CompanyProfileStatus;
   companySize?: '1-10' | '11-50' | '51-200' | '201-500' | '501-1000' | '1000+';
-  isVerified?: boolean;
+  isBlocked?: boolean;
   sortBy?: 'createdAt' | 'updatedAt' | 'companyName';
   sortOrder?: 'asc' | 'desc';
 }
@@ -25,7 +25,7 @@ export interface ICompanyProfileRepository {
   findByUserId(userId: string): Promise<CompanyProfile | null>;
   findById(id: string): Promise<CompanyProfile | null>;
   create(
-    profile: Omit<CompanyProfileProps, 'id' | 'createdAt' | 'updatedAt' | 'isVerified' | 'planHistory' | 'documentReuploadRequests'>
+    profile: Omit<CompanyProfileProps, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'planHistory' | 'documentReuploadRequests'>
   ): Promise<CompanyProfile>;
   update(userId: string, updates: Partial<CompanyProfileProps>): Promise<CompanyProfile>;
   delete(userId: string): Promise<void>;

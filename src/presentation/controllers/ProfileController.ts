@@ -55,7 +55,7 @@ export class ProfileController {
     request: FastifyRequest<{ Querystring: GetAdminCompanyListQuery }>,
     reply: FastifyReply
   ): Promise<void> => {
-    const { page = 1, limit = 10, search, searchField, status, companySize, isVerified, sortBy, sortOrder } = request.query;
+    const { page = 1, limit = 10, search, searchField, status, companySize, isBlocked, sortBy, sortOrder } = request.query;
     const input: GetAdminCompanyListInput = {
       page,
       limit,
@@ -63,7 +63,7 @@ export class ProfileController {
       searchField,
       status,
       companySize,
-      isVerified,
+      isBlocked,
       sortBy,
       sortOrder,
     };

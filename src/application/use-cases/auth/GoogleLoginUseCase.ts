@@ -1,6 +1,6 @@
 import { inject, injectable } from 'inversify';
 import { TYPES } from '../../../di/types';
-import { IUserRepository, IRefreshTokenRepository } from '../../../domain/repositories';
+import { IUserRepository, IRefreshTokenRepository, ICompanyProfileRepository } from '../../../domain/repositories';
 import { IGoogleAuthService, ITokenService } from '../../services';
 import { UnauthorizedError, ForbiddenError } from '../../../domain/errors';
 import { config } from '../../../config';
@@ -17,6 +17,7 @@ export interface GoogleLoginOutput {
     email: string;
     role: string;
     isProfileCompleted: boolean;
+    status?: 'pending' | 'approved' | 'rejected' | 'resubmitted';
   };
 }
 
@@ -26,7 +27,8 @@ export class GoogleLoginUseCase {
     @inject(TYPES.GoogleAuthService) private googleAuthService: IGoogleAuthService,
     @inject(TYPES.UserRepository) private userRepository: IUserRepository,
     @inject(TYPES.RefreshTokenRepository) private refreshTokenRepository: IRefreshTokenRepository,
-    @inject(TYPES.TokenService) private tokenService: ITokenService
+    @inject(TYPES.TokenService) private tokenService: ITokenService,
+    @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository
   ) {}
 
   async execute(input: GoogleLoginInput): Promise<GoogleLoginOutput> {
@@ -80,7 +82,16 @@ export class GoogleLoginUseCase {
       config.jwt.refreshTokenExpiry
     );
 
-    // 8. Return tokens and user data
+    // 8. Get company profile status if user is a company
+    let status: 'pending' | 'approved' | 'rejected' | 'resubmitted' | undefined;
+    if (user.role === 'company') {
+      const companyProfile = await this.companyProfileRepository.findByUserId(user.id);
+      if (companyProfile) {
+        status = companyProfile.status;
+      }
+    }
+
+    // 9. Return tokens and user data
     return {
       accessToken,
       refreshToken,
@@ -89,6 +100,7 @@ export class GoogleLoginUseCase {
         email: user.email,
         role: user.role,
         isProfileCompleted: user.isProfileCompleted,
+        ...(status && { status }),
       },
     };
   }

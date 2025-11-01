@@ -1,4 +1,4 @@
-import { IUserRepository, IRefreshTokenRepository } from '../../../domain/repositories';
+import { IUserRepository, IRefreshTokenRepository, ICompanyProfileRepository } from '../../../domain/repositories';
 import { IHashService, ITokenService } from '../../services';
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
@@ -12,7 +12,8 @@ export class LoginUseCase {
     @inject(TYPES.UserRepository) private userRepository: IUserRepository,
     @inject(TYPES.RefreshTokenRepository) private refreshTokenRepository: IRefreshTokenRepository,
     @inject(TYPES.HashService) private hashService: IHashService,
-    @inject(TYPES.TokenService) private tokenService: ITokenService
+    @inject(TYPES.TokenService) private tokenService: ITokenService,
+    @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository
   ) {}
 
   async execute(input: LoginInput): Promise<AuthTokensOutput> {
@@ -57,7 +58,16 @@ export class LoginUseCase {
       config.jwt.refreshTokenExpiry
     );
 
-    // 6. Return tokens and user data
+    // 6. Get company profile status if user is a company
+    let status: 'pending' | 'approved' | 'rejected' | 'resubmitted' | undefined;
+    if (user.role === 'company') {
+      const companyProfile = await this.companyProfileRepository.findByUserId(user.id);
+      if (companyProfile) {
+        status = companyProfile.status;
+      }
+    }
+
+    // 7. Return tokens and user data
     return {
       accessToken,
       refreshToken,
@@ -66,6 +76,7 @@ export class LoginUseCase {
         email: user.email,
         role: user.role,
         isProfileCompleted: user.isProfileCompleted,
+        ...(status && { status }),
       },
     };
   }
