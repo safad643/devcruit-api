@@ -10,10 +10,8 @@ import {
   ForgotPasswordSchema,
   ResetPasswordSchema,
   GoogleLoginSchema,
-  GoogleRegisterSchema,
-  CompanyProfileResubmissionSchema
+  GoogleRegisterSchema
 } from '../schemas/auth.schema';
-import { authenticate } from '../middleware/authenticate';
 
 export async function authRoutes(fastify: FastifyInstance): Promise<void> {
   const authController = container.get<AuthController>(TYPES.AuthController);
@@ -30,14 +28,5 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.post('/google-register', { schema: { body: GoogleRegisterSchema } }, authController.googleRegister);
 
   fastify.post('/logout', authController.logout);
-
   // Authenticated routes
-  fastify.post(
-    '/resubmit-company-profile',
-    {
-      preHandler: authenticate,
-      schema: { body: CompanyProfileResubmissionSchema }
-    },
-    authController.resubmitCompanyProfile
-  );
 }

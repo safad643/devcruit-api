@@ -12,8 +12,7 @@ import {
   RefreshTokenUseCase,
   LogoutUseCase,
   GoogleLoginUseCase,
-  GoogleRegisterUseCase,
-  CompanyProfileResubmissionUseCase
+  GoogleRegisterUseCase
 } from '../../application/use-cases/auth';
 import { AuthController } from '../../presentation/controllers/AuthController';
 
@@ -29,7 +28,6 @@ export const authModule = new ContainerModule((bind) => {
   bind<GoogleLoginUseCase>(TYPES.GoogleLoginUseCase).to(GoogleLoginUseCase);
   bind<GoogleRegisterUseCase>(TYPES.GoogleRegisterUseCase).to(GoogleRegisterUseCase);
   bind<LogoutUseCase>(TYPES.LogoutUseCase).to(LogoutUseCase);
-  bind<CompanyProfileResubmissionUseCase>(TYPES.CompanyProfileResubmissionUseCase).to(CompanyProfileResubmissionUseCase);
 
   // Controllers
   bind<AuthController>(TYPES.AuthController).to(AuthController);

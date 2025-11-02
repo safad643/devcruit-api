@@ -93,22 +93,3 @@ export interface AdminAuthTokensOutput {
     role: 'admin';
   };
 }
-
-export interface CompanyProfileResubmissionInput {
-  userId: string;
-  fullName?: string;
-  phoneNumber?: string;
-  companyName?: string;
-  companyWebsite?: string;
-  companySize?: '1-10' | '11-50' | '51-200' | '201-500' | '501-1000' | '1000+';
-  businessRegistrationNumber?: string;
-  businessAddress?: string;
-  businessRegistrationProofUrl?: string;
-  employmentVerificationUrl?: string;
-}
-
-export interface CompanyProfileResubmissionOutput {
-  id: string;
-  userId: string;
-  message: string;
-}

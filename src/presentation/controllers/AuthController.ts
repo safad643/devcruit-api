@@ -13,8 +13,7 @@ import {
   RefreshTokenUseCase,
   LogoutUseCase,
   GoogleLoginUseCase,      
-  GoogleRegisterUseCase,
-  CompanyProfileResubmissionUseCase
+  GoogleRegisterUseCase
 } from '../../application/use-cases/auth';
 import {
   RegisterUserInput,
@@ -22,8 +21,7 @@ import {
   LoginInput,
   ResendOTPInput,
   ForgotPasswordInput,
-  ResetPasswordInput,
-  CompanyProfileResubmissionInput
+  ResetPasswordInput
 } from '../schemas/auth.schema';
 import { config } from '../../config';
 
@@ -40,8 +38,7 @@ export class AuthController {
     @inject(TYPES.RefreshTokenUseCase) private refreshTokenUseCase: RefreshTokenUseCase,
     @inject(TYPES.LogoutUseCase) private logoutUseCase: LogoutUseCase,
     @inject(TYPES.GoogleLoginUseCase) private googleLoginUseCase: GoogleLoginUseCase,           
-    @inject(TYPES.GoogleRegisterUseCase) private googleRegisterUseCase: GoogleRegisterUseCase,
-    @inject(TYPES.CompanyProfileResubmissionUseCase) private companyProfileResubmissionUseCase: CompanyProfileResubmissionUseCase
+    @inject(TYPES.GoogleRegisterUseCase) private googleRegisterUseCase: GoogleRegisterUseCase
   ) {}
 
   // Arrow functions auto-bind 'this'
@@ -176,15 +173,6 @@ export class AuthController {
 
     const result = await this.logoutUseCase.execute({ refreshToken });
     reply.clearCookie('refreshToken', { path: '/' });
-    reply.status(200).send(result);
-  };
-
-  resubmitCompanyProfile = async (
-    request: FastifyRequest<{ Body: CompanyProfileResubmissionInput }>,
-    reply: FastifyReply
-  ): Promise<void> => {
-    const userId = request.user?.id as string;
-    const result = await this.companyProfileResubmissionUseCase.execute({ ...request.body, userId });
     reply.status(200).send(result);
   };
 }

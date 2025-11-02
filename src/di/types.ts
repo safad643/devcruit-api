@@ -26,7 +26,6 @@ export const TYPES = {
     AuthController: Symbol.for('AuthController'),
     GoogleLoginUseCase: Symbol.for('GoogleLoginUseCase'),
     GoogleRegisterUseCase: Symbol.for('GoogleRegisterUseCase'),
-    CompanyProfileResubmissionUseCase: Symbol.for('CompanyProfileResubmissionUseCase'),
     
     // Profile module
     CreateDeveloperProfileUseCase: Symbol.for('CreateDeveloperProfileUseCase'),
