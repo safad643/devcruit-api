@@ -4,6 +4,7 @@ import { CompanyProfile, CompanyProfileProps, DocumentReuploadRequest } from '..
 import { getMongoDb } from './client';
 import { InternalError } from '../../../domain/errors';
 import { injectable } from 'inversify';
+import { CompanyDocumentKey } from '../../../domain/types';
 
 @injectable()
 export class CompanyProfileRepository implements ICompanyProfileRepository {
@@ -329,6 +330,43 @@ export class CompanyProfileRepository implements ICompanyProfileRepository {
     } catch (error) {
       if (error instanceof InternalError) throw error;
       throw new InternalError('Failed to reject company profile', error as Error);
+    }
+  }
+
+  async updateDocuments(userId: string, documents: Partial<Record<CompanyDocumentKey, string>>): Promise<CompanyProfile> {
+    try {
+      if (!ObjectId.isValid(userId)) {
+        throw new InternalError('Invalid user ID format');
+      }
+
+      const updatePayload: any = {
+        status: 'resubmitted',
+        updatedAt: new Date()
+      };
+
+      // Map CompanyDocumentKey to actual field names
+      if (documents.COMPANY_REGISTRATION_DOCUMENT) {
+        updatePayload.businessRegistrationProofUrl = documents.COMPANY_REGISTRATION_DOCUMENT;
+      }
+
+      if (documents.COMPANY_VERIFICATION_DOCUMENT) {
+        updatePayload.employmentVerificationUrl = documents.COMPANY_VERIFICATION_DOCUMENT;
+      }
+
+      const result = await this.collection.findOneAndUpdate(
+        { userId },
+        { $set: updatePayload },
+        { returnDocument: 'after' }
+      );
+
+      if (!result) {
+        throw new InternalError('Company profile not found for document update');
+      }
+
+      return this.mapToEntity(result);
+    } catch (error) {
+      if (error instanceof InternalError) throw error;
+      throw new InternalError('Failed to update company documents', error as Error);
     }
   }
 

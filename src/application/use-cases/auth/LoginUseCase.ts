@@ -4,6 +4,7 @@ import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { LoginInput, AuthTokensOutput } from '../../dtos/auth.dto';
 import { UnauthorizedError, ForbiddenError } from '../../../domain/errors';
+import { CompanyDocumentKey } from '../../../domain/types';
 import { config } from '../../../config';
 
 @injectable()
@@ -60,7 +61,7 @@ export class LoginUseCase {
 
     // 6. Get company profile status if user is a company
     let status: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid' | undefined;
-    let neededDocuments: Array<{ documentKey: string; note?: string }> | undefined;
+    let neededDocuments: Array<{ documentKey: CompanyDocumentKey; note?: string }> | undefined;
     if (user.role === 'company') {
       const companyProfile = await this.companyProfileRepository.findByUserId(user.id);
       if (companyProfile) {

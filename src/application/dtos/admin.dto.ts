@@ -1,3 +1,5 @@
+import { CompanyDocumentKey } from '../../domain/types';
+
 export interface BlockUserInput {
   userId: string;
 }
@@ -29,7 +31,7 @@ export interface ApproveCompanyOutput {
 export interface RejectCompanyInput {
   companyId: string;
   documents: Array<{
-    documentKey: string;
+    documentKey: CompanyDocumentKey;
     note?: string;
   }>;
 }
@@ -97,4 +99,3 @@ export interface ListDevelopersOutput {
   page: number;
   limit: number;
 }
-

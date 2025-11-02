@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { container } from '../../di/container';
 import { TYPES } from '../../di/types';
 import { ProfileController } from '../controllers/ProfileController';
-import { CreateDeveloperProfileSchema, CreateCompanyProfileSchema } from '../schemas/profile.schema';
+import { CreateDeveloperProfileSchema, CreateCompanyProfileSchema, ResubmitDocumentsSchema } from '../schemas/profile.schema';
 import { authenticate } from '../middleware/authenticate';
 
 export async function profileRoutes(fastify: FastifyInstance): Promise<void> {
@@ -29,6 +29,14 @@ export async function profileRoutes(fastify: FastifyInstance): Promise<void> {
     '/me',
   
     profileController.getProfile
+  );
+
+  fastify.post(
+    '/resubmitdocuments',
+    {
+      schema: { body: ResubmitDocumentsSchema }
+    },
+    profileController.resubmitDocuments
   );
 }
 

@@ -1,3 +1,5 @@
+import { CompanyDocumentKey } from '../types';
+
 export type CompanySize = '1-10' | '11-50' | '51-200' | '201-500' | '501-1000' | '1000+';
 
 export type PlanTier = 'Basic' | 'Standard' | 'Premium';
@@ -9,7 +11,7 @@ export interface PlanHistoryItem {
 }
 
 export interface DocumentReuploadRequestDocumentItem {
-  documentKey: string;
+  documentKey: CompanyDocumentKey;
   note?: string;
 }
 

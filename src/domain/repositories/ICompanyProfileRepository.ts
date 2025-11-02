@@ -1,4 +1,5 @@
 import { CompanyProfile, CompanyProfileProps, CompanyProfileStatus, DocumentReuploadRequest } from '../entities/CompanyProfile';
+import { CompanyDocumentKey } from '../types';
 
 export interface CompanyListFilters {
   page: number;
@@ -32,5 +33,6 @@ export interface ICompanyProfileRepository {
   listWithFilters(filters: CompanyListFilters): Promise<CompanyListResult>;
   approveCompany(companyId: string): Promise<CompanyProfile>;
   rejectCompany(companyId: string, documentReuploadRequest: DocumentReuploadRequest): Promise<CompanyProfile>;
+  updateDocuments(userId: string, documents: Partial<Record<CompanyDocumentKey, string>>): Promise<CompanyProfile>;
 }
 

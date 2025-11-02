@@ -5,11 +5,13 @@ import {
   CreateDeveloperProfileUseCase,
   GetDeveloperProfileUseCase,
   CreateCompanyProfileUseCase,
-  GetCompanyProfileUseCase
+  GetCompanyProfileUseCase,
+  ResubmitDocumentsUseCase
 } from '../../application/use-cases/profile';
 import {
   CreateDeveloperProfileInput,
-  CreateCompanyProfileInput
+  CreateCompanyProfileInput,
+  ResubmitDocumentsInput
 } from '../schemas/profile.schema';
 
 @injectable()
@@ -18,7 +20,8 @@ export class ProfileController {
     @inject(TYPES.CreateDeveloperProfileUseCase) private createProfileUseCase: CreateDeveloperProfileUseCase,
     @inject(TYPES.GetDeveloperProfileUseCase) private getDeveloperProfileUseCase: GetDeveloperProfileUseCase,
     @inject(TYPES.GetCompanyProfileUseCase) private getCompanyProfileUseCase: GetCompanyProfileUseCase,
-    @inject(TYPES.CreateCompanyProfileUseCase) private createCompanyProfileUseCase: CreateCompanyProfileUseCase
+    @inject(TYPES.CreateCompanyProfileUseCase) private createCompanyProfileUseCase: CreateCompanyProfileUseCase,
+    @inject(TYPES.ResubmitDocumentsUseCase) private resubmitDocumentsUseCase: ResubmitDocumentsUseCase
   ) {}
 
   createProfile = async (
@@ -54,6 +57,18 @@ export class ProfileController {
     } else {
       reply.status(400).send({ error: 'Invalid user role for profile endpoint' });
     }
+  };
+
+  resubmitDocuments = async (
+    request: FastifyRequest<{ Body: ResubmitDocumentsInput }>,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const userId = request.user?.id as string;
+    const result = await this.resubmitDocumentsUseCase.execute({ 
+      userId,
+      documents: request.body.documents
+    });
+    reply.status(200).send(result);
   };
 }
 

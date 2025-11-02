@@ -10,3 +10,5 @@ export type OTPType = 'register' | 'reset';
 
 export type FileCategory = 'PROFILE_PICTURE' | 'DEGREE_CERTIFICATE' | 'CV' | 'COMPANY_REGISTRATION_DOCUMENT' | 'COMPANY_VERIFICATION_DOCUMENT';
 
+export type CompanyDocumentKey = 'COMPANY_REGISTRATION_DOCUMENT' | 'COMPANY_VERIFICATION_DOCUMENT';
+

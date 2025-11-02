@@ -156,8 +156,21 @@ export const UpdateDeveloperProfileSchema = Type.Object({
   resumeUrl: Type.Optional(Type.String({ format: 'uri' }))
 });
 
+export const ResubmitDocumentsSchema = Type.Object({
+  documents: Type.Object({
+    COMPANY_REGISTRATION_DOCUMENT: Type.Optional(Type.String({ format: 'uri' })),
+    COMPANY_VERIFICATION_DOCUMENT: Type.Optional(Type.String({ format: 'uri' }))
+  }, {
+    minProperties: 1,
+    errorMessage: {
+      minProperties: 'At least one document URL must be provided'
+    }
+  })
+});
+
 // Export TypeScript types
 export type CreateDeveloperProfileInput = Static<typeof CreateDeveloperProfileSchema>;
 export type UpdateDeveloperProfileInput = Static<typeof UpdateDeveloperProfileSchema>;
 export type CreateCompanyProfileInput = Static<typeof CreateCompanyProfileSchema>;
+export type ResubmitDocumentsInput = Static<typeof ResubmitDocumentsSchema>;
 

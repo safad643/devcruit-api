@@ -9,7 +9,8 @@ import {
 } from '../../domain/entities/DeveloperProfile';
 import { CompanyProfileStatus } from '../../domain/entities/CompanyProfile';
 import { PlanHistoryItem } from '../../domain/entities/CompanyProfile';
-import { DocumentReuploadRequest } from '../../domain/entities/CompanyProfile'; 
+import { DocumentReuploadRequest } from '../../domain/entities/CompanyProfile';
+import { CompanyDocumentKey } from '../../domain/types'; 
 export interface CreateDeveloperProfileInput {
   userId: string;
   profilePhotoUrl: string;
@@ -130,4 +131,15 @@ export interface GetCompanyProfileOutput {
   documentReuploadRequests: DocumentReuploadRequest[];
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface ResubmitDocumentsInput {
+  userId: string;
+  documents: Partial<Record<CompanyDocumentKey, string>>;
+}
+
+export interface ResubmitDocumentsOutput {
+  id: string;
+  userId: string;
+  message: string;
 }

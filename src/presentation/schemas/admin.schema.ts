@@ -20,7 +20,10 @@ export const RejectCompanySchema = Type.Object({
   companyId: Type.String({ minLength: 1 }),
   documents: Type.Array(
     Type.Object({
-      documentKey: Type.String({ minLength: 1 }),
+      documentKey: Type.Union([
+        Type.Literal('COMPANY_REGISTRATION_DOCUMENT'),
+        Type.Literal('COMPANY_VERIFICATION_DOCUMENT')
+      ]),
       note: Type.Optional(Type.String())
     }),
     { minItems: 1 }

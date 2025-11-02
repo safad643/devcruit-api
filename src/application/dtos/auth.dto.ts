@@ -1,4 +1,4 @@
-import { UserRole, OTPType } from '../../domain/types';
+import { UserRole, OTPType, CompanyDocumentKey } from '../../domain/types';
 
 export interface RegisterUserInput {
   email: string;
@@ -26,7 +26,7 @@ export interface AuthTokensOutput {
     isProfileCompleted: boolean;
     status?: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid';
     neededDocuments?: Array<{
-      documentKey: string;
+      documentKey: CompanyDocumentKey;
       note?: string;
     }>;
   };

@@ -3,6 +3,7 @@ import { TYPES } from '../../../di/types';
 import { IUserRepository, IRefreshTokenRepository, ICompanyProfileRepository } from '../../../domain/repositories';
 import { IGoogleAuthService, ITokenService } from '../../services';
 import { UnauthorizedError, ForbiddenError } from '../../../domain/errors';
+import { CompanyDocumentKey } from '../../../domain/types';
 import { config } from '../../../config';
 
 export interface GoogleLoginInput {
@@ -19,7 +20,7 @@ export interface GoogleLoginOutput {
     isProfileCompleted: boolean;
     status?: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid';
     neededDocuments?: Array<{
-      documentKey: string;
+      documentKey: CompanyDocumentKey;
       note?: string;
     }>;
   };
@@ -88,7 +89,7 @@ export class GoogleLoginUseCase {
 
     // 8. Get company profile status if user is a company
     let status: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid' | undefined;
-    let neededDocuments: Array<{ documentKey: string; note?: string }> | undefined;
+    let neededDocuments: Array<{ documentKey: CompanyDocumentKey; note?: string }> | undefined;
     if (user.role === 'company') {
       const companyProfile = await this.companyProfileRepository.findByUserId(user.id);
       if (companyProfile) {
