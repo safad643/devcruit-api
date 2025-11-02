@@ -1,5 +1,5 @@
 import { Collection, ObjectId } from 'mongodb';
-import { IDeveloperProfileRepository } from '../../../domain/repositories';
+import { IDeveloperProfileRepository, DeveloperListFilters, DeveloperListResult } from '../../../domain/repositories';
 import { DeveloperProfile, DeveloperProfileProps } from '../../../domain/entities/DeveloperProfile';
 import { getMongoDb } from './client';
 import { InternalError } from '../../../domain/errors';
@@ -174,6 +174,131 @@ export class DeveloperProfileRepository implements IDeveloperProfileRepository {
       return docs.map(doc => this.mapToEntity(doc));
     } catch (error) {
       throw new InternalError('Database query failed', error as Error);
+    }
+  }
+
+  async listWithFilters(filters: DeveloperListFilters): Promise<DeveloperListResult> {
+    try {
+      // Build aggregation pipeline
+      const pipeline: any[] = [];
+
+      // Lookup users to get email and isBlocked
+      pipeline.push({
+        $addFields: {
+          userIdObjectId: {
+            $cond: {
+              if: { $eq: [{ $type: '$userId' }, 'string'] },
+              then: { $toObjectId: '$userId' },
+              else: '$userId'
+            }
+          }
+        }
+      });
+
+      pipeline.push({
+        $lookup: {
+          from: 'users',
+          localField: 'userIdObjectId',
+          foreignField: '_id',
+          as: 'user'
+        }
+      });
+
+      pipeline.push({
+        $unwind: {
+          path: '$user',
+          preserveNullAndEmptyArrays: false
+        }
+      });
+
+      // Ensure we only get developer role users
+      pipeline.push({
+        $match: {
+          'user.role': 'developer'
+        }
+      });
+
+      // Blocked filter
+      if (filters.isBlocked !== undefined) {
+        pipeline.push({
+          $match: {
+            'user.isBlocked': filters.isBlocked
+          }
+        });
+      }
+
+      // Search by email
+      if (filters.search) {
+        const searchRegex = { $regex: filters.search, $options: 'i' };
+        pipeline.push({
+          $match: {
+            'user.email': searchRegex
+          }
+        });
+      }
+
+      // Sorting (default: createdAt desc)
+      const sortField = filters.sortBy ?? 'createdAt';
+      const sortOrder = filters.sortOrder === 'asc' ? 1 : -1;
+
+      // Get total count before pagination
+      const countPipeline = [...pipeline, { $count: 'total' }];
+      const countResult = await this.collection.aggregate(countPipeline).toArray();
+      const total = countResult.length > 0 ? countResult[0].total : 0;
+
+      // Add pagination
+      const skip = (filters.page - 1) * filters.limit;
+      pipeline.push(
+        { $sort: { [sortField]: sortOrder } },
+        { $skip: skip },
+        { $limit: filters.limit }
+      );
+
+      // Project final fields
+      pipeline.push({
+        $project: {
+          _id: 1,
+          userId: 1,
+          profilePhotoUrl: 1,
+          bio: 1,
+          skills: 1,
+          techs: 1,
+          workHistory: 1,
+          employmentStatus: 1,
+          education: 1,
+          certifications: 1,
+          githubUrl: 1,
+          portfolioUrl: 1,
+          projects: 1,
+          linkedinUrl: 1,
+          desiredSalary: 1,
+          jobTypePreferences: 1,
+          workArrangement: 1,
+          yearsExperience: 1,
+          seniorityLevel: 1,
+          willingToRelocate: 1,
+          resumeUrl: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          userEmail: '$user.email',
+          isBlocked: '$user.isBlocked'
+        }
+      });
+
+      const docs = await this.collection.aggregate(pipeline).toArray();
+
+      const developers = docs.map(doc => ({
+        developerProfile: this.mapToEntity(doc),
+        userEmail: doc.userEmail,
+        isBlocked: doc.isBlocked
+      }));
+
+      return {
+        developers,
+        total
+      };
+    } catch (error) {
+      throw new InternalError('Failed to list developers with filters', error as Error);
     }
   }
 

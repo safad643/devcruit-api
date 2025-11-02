@@ -27,9 +27,52 @@ export const RejectCompanySchema = Type.Object({
   )
 });
 
+// List Companies Schema
+export const ListCompaniesSchema = Type.Object({
+  page: Type.Integer({ minimum: 1 }),
+  limit: Type.Integer({ minimum: 1, maximum: 100 }),
+  search: Type.Optional(Type.String({ minLength: 1 })),
+  status: Type.Optional(Type.Union([
+    Type.Literal('pending'),
+    Type.Literal('approved'),
+    Type.Literal('rejected'),
+    Type.Literal('resubmitted'),
+    Type.Literal('paid'),
+    Type.Literal('all')
+  ])),
+  isBlocked: Type.Optional(Type.Boolean()),
+  sortBy: Type.Optional(Type.Union([
+    Type.Literal('createdAt'),
+    Type.Literal('updatedAt'),
+    Type.Literal('companyName')
+  ])),
+  sortOrder: Type.Optional(Type.Union([
+    Type.Literal('asc'),
+    Type.Literal('desc')
+  ]))
+});
+
+// List Developers Schema
+export const ListDevelopersSchema = Type.Object({
+  page: Type.Integer({ minimum: 1 }),
+  limit: Type.Integer({ minimum: 1, maximum: 100 }),
+  search: Type.Optional(Type.String({ minLength: 1 })),
+  isBlocked: Type.Optional(Type.Boolean()),
+  sortBy: Type.Optional(Type.Union([
+    Type.Literal('createdAt'),
+    Type.Literal('updatedAt')
+  ])),
+  sortOrder: Type.Optional(Type.Union([
+    Type.Literal('asc'),
+    Type.Literal('desc')
+  ]))
+});
+
 // Export TypeScript types
 export type BlockUserInput = Static<typeof BlockUserSchema>;
 export type UnblockUserInput = Static<typeof UnblockUserSchema>;
 export type ApproveCompanyInput = Static<typeof ApproveCompanySchema>;
 export type RejectCompanyInput = Static<typeof RejectCompanySchema>;
+export type ListCompaniesInput = Static<typeof ListCompaniesSchema>;
+export type ListDevelopersInput = Static<typeof ListDevelopersSchema>;
 

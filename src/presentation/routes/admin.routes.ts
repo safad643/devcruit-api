@@ -8,7 +8,9 @@ import {
   BlockUserSchema,
   UnblockUserSchema,
   ApproveCompanySchema,
-  RejectCompanySchema
+  RejectCompanySchema,
+  ListCompaniesSchema,
+  ListDevelopersSchema
 } from '../schemas/admin.schema';
 
 export async function adminRoutes(fastify: FastifyInstance): Promise<void> {
@@ -55,6 +57,26 @@ export async function adminRoutes(fastify: FastifyInstance): Promise<void> {
       schema: { body: RejectCompanySchema }
     },
     adminController.rejectCompany
+  );
+
+  // List companies endpoint
+  fastify.post(
+    '/admin/list/companies',
+    {
+      preHandler: authorize('admin'),
+      schema: { body: ListCompaniesSchema }
+    },
+    adminController.listCompanies
+  );
+
+  // List developers endpoint
+  fastify.post(
+    '/admin/list/developers',
+    {
+      preHandler: authorize('admin'),
+      schema: { body: ListDevelopersSchema }
+    },
+    adminController.listDevelopers
   );
 }
 

@@ -40,3 +40,61 @@ export interface RejectCompanyOutput {
   message: string;
 }
 
+// List Companies Input/Output
+export interface ListCompaniesInput {
+  page: number;
+  limit: number;
+  search?: string; // Search by email
+  status?: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid' | 'all';
+  isBlocked?: boolean;
+  sortBy?: 'createdAt' | 'updatedAt' | 'companyName';
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface CompanyListItem {
+  id: string;
+  userId: string;
+  companyName: string;
+  email: string;
+  fullName: string;
+  phoneNumber: string;
+  status: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid';
+  isBlocked: boolean;
+  createdAt: Date;
+}
+
+export interface ListCompaniesOutput {
+  companies: CompanyListItem[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+// List Developers Input/Output
+export interface ListDevelopersInput {
+  page: number;
+  limit: number;
+  search?: string; // Search by email
+  isBlocked?: boolean;
+  sortBy?: 'createdAt' | 'updatedAt';
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface DeveloperListItem {
+  id: string;
+  userId: string;
+  email: string;
+  isBlocked: boolean;
+  seniorityLevel: 'junior' | 'mid' | 'senior' | 'lead';
+  yearsExperience: number;
+  employmentStatus: 'employed' | 'unemployed' | 'self-employed' | 'student' | 'looking';
+  createdAt: Date;
+}
+
+export interface ListDevelopersOutput {
+  developers: DeveloperListItem[];
+  total: number;
+  page: number;
+  limit: number;
+}
+

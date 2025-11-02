@@ -5,13 +5,17 @@ import {
   BlockUserUseCase,
   UnblockUserUseCase,
   ApproveCompanyUseCase,
-  RejectCompanyUseCase
+  RejectCompanyUseCase,
+  ListCompaniesUseCase,
+  ListDevelopersUseCase
 } from '../../application/use-cases/admin';
 import {
   BlockUserInput,
   UnblockUserInput,
   ApproveCompanyInput,
-  RejectCompanyInput
+  RejectCompanyInput,
+  ListCompaniesInput,
+  ListDevelopersInput
 } from '../schemas/admin.schema';
 
 @injectable()
@@ -20,7 +24,9 @@ export class AdminController {
     @inject(TYPES.BlockUserUseCase) private blockUserUseCase: BlockUserUseCase,
     @inject(TYPES.UnblockUserUseCase) private unblockUserUseCase: UnblockUserUseCase,
     @inject(TYPES.ApproveCompanyUseCase) private approveCompanyUseCase: ApproveCompanyUseCase,
-    @inject(TYPES.RejectCompanyUseCase) private rejectCompanyUseCase: RejectCompanyUseCase
+    @inject(TYPES.RejectCompanyUseCase) private rejectCompanyUseCase: RejectCompanyUseCase,
+    @inject(TYPES.ListCompaniesUseCase) private listCompaniesUseCase: ListCompaniesUseCase,
+    @inject(TYPES.ListDevelopersUseCase) private listDevelopersUseCase: ListDevelopersUseCase
   ) {}
 
   blockUser = async (request: FastifyRequest<{ Body: BlockUserInput }>, reply: FastifyReply): Promise<void> => {
@@ -40,6 +46,16 @@ export class AdminController {
 
   rejectCompany = async (request: FastifyRequest<{ Body: RejectCompanyInput }>, reply: FastifyReply): Promise<void> => {
     const result = await this.rejectCompanyUseCase.execute(request.body);
+    reply.status(200).send(result);
+  };
+
+  listCompanies = async (request: FastifyRequest<{ Body: ListCompaniesInput }>, reply: FastifyReply): Promise<void> => {
+    const result = await this.listCompaniesUseCase.execute(request.body);
+    reply.status(200).send(result);
+  };
+
+  listDevelopers = async (request: FastifyRequest<{ Body: ListDevelopersInput }>, reply: FastifyReply): Promise<void> => {
+    const result = await this.listDevelopersUseCase.execute(request.body);
     reply.status(200).send(result);
   };
 }

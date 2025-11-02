@@ -4,7 +4,7 @@ export interface CompanyListFilters {
   page: number;
   limit: number;
   search?: string;
-  searchField?: 'companyName' | 'fullName' | 'phoneNumber' | 'businessRegistrationNumber' | 'companyWebsite';
+  searchField?: 'companyName' | 'fullName' | 'phoneNumber' | 'businessRegistrationNumber' | 'companyWebsite' | 'email';
   status?: CompanyProfileStatus;
   companySize?: '1-10' | '11-50' | '51-200' | '201-500' | '501-1000' | '1000+';
   isBlocked?: boolean;

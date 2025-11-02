@@ -198,11 +198,21 @@ export class CompanyProfileRepository implements ICompanyProfileRepository {
       // Search filter (apply after join in case we need to search user fields)
       if (filters.search && filters.searchField) {
         const searchRegex = { $regex: filters.search, $options: 'i' };
-        pipeline.push({
-          $match: {
-            [filters.searchField]: searchRegex
-          }
-        });
+        if (filters.searchField === 'email') {
+          // Search in user.email field
+          pipeline.push({
+            $match: {
+              'user.email': searchRegex
+            }
+          });
+        } else {
+          // Search in company profile fields
+          pipeline.push({
+            $match: {
+              [filters.searchField]: searchRegex
+            }
+          });
+        }
       }
 
       // Sorting (default: createdAt desc)

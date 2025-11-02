@@ -45,6 +45,8 @@ export const TYPES = {
     UnblockUserUseCase: Symbol.for('UnblockUserUseCase'),
     ApproveCompanyUseCase: Symbol.for('ApproveCompanyUseCase'),
     RejectCompanyUseCase: Symbol.for('RejectCompanyUseCase'),
+    ListCompaniesUseCase: Symbol.for('ListCompaniesUseCase'),
+    ListDevelopersUseCase: Symbol.for('ListDevelopersUseCase'),
     AdminController: Symbol.for('AdminController'),
   };
   
