@@ -25,6 +25,10 @@ export interface AuthTokensOutput {
     role: UserRole;
     isProfileCompleted: boolean;
     status?: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid';
+    neededDocuments?: Array<{
+      documentKey: string;
+      note?: string;
+    }>;
   };
 }
 

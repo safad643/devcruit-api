@@ -60,10 +60,16 @@ export class LoginUseCase {
 
     // 6. Get company profile status if user is a company
     let status: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid' | undefined;
+    let neededDocuments: Array<{ documentKey: string; note?: string }> | undefined;
     if (user.role === 'company') {
       const companyProfile = await this.companyProfileRepository.findByUserId(user.id);
       if (companyProfile) {
         status = companyProfile.status;
+        // If company is rejected, include the needed documents from the latest reupload request
+        if (status === 'rejected' && companyProfile.documentReuploadRequests.length > 0) {
+          const latestRequest = companyProfile.documentReuploadRequests[companyProfile.documentReuploadRequests.length - 1];
+          neededDocuments = latestRequest.documents;
+        }
       }
     }
 
@@ -77,6 +83,7 @@ export class LoginUseCase {
         role: user.role,
         isProfileCompleted: user.isProfileCompleted,
         ...(status && { status }),
+        ...(neededDocuments && { neededDocuments }),
       },
     };
   }
