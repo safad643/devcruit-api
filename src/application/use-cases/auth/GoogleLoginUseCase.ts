@@ -17,7 +17,7 @@ export interface GoogleLoginOutput {
     email: string;
     role: string;
     isProfileCompleted: boolean;
-    status?: 'pending' | 'approved' | 'rejected' | 'resubmitted';
+    status?: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid';
   };
 }
 
@@ -83,7 +83,7 @@ export class GoogleLoginUseCase {
     );
 
     // 8. Get company profile status if user is a company
-    let status: 'pending' | 'approved' | 'rejected' | 'resubmitted' | undefined;
+    let status: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid' | undefined;
     if (user.role === 'company') {
       const companyProfile = await this.companyProfileRepository.findByUserId(user.id);
       if (companyProfile) {

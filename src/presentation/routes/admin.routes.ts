@@ -1,24 +1,60 @@
 import { FastifyInstance } from 'fastify';
 import { container } from '../../di/container';
 import { TYPES } from '../../di/types';
-import { ProfileController } from '../controllers/ProfileController';
+import { AdminController } from '../controllers/AdminController';
 import { authenticate } from '../middleware/authenticate';
 import { authorize } from '../middleware/authorize';
-import { GetAdminCompanyListQuerySchema } from '../schemas/profile.schema';
+import {
+  BlockUserSchema,
+  UnblockUserSchema,
+  ApproveCompanySchema,
+  RejectCompanySchema
+} from '../schemas/admin.schema';
 
 export async function adminRoutes(fastify: FastifyInstance): Promise<void> {
-  const profileController = container.get<ProfileController>(TYPES.ProfileController);
+  const adminController = container.get<AdminController>(TYPES.AdminController);
 
   // Require authentication for all admin routes
   fastify.addHook('preHandler', authenticate);
 
-  fastify.get(
-    '/admin/companies',
+  // Block user endpoint
+  fastify.post(
+    '/admin/block/user',
     {
       preHandler: authorize('admin'),
-      schema: { querystring: GetAdminCompanyListQuerySchema }
+      schema: { body: BlockUserSchema }
     },
-    profileController.getAdminCompanyList
+    adminController.blockUser
+  );
+
+  // Unblock user endpoint
+  fastify.post(
+    '/admin/unblock/user',
+    {
+      preHandler: authorize('admin'),
+      schema: { body: UnblockUserSchema }
+    },
+    adminController.unblockUser
+  );
+
+  // Approve company endpoint
+  fastify.post(
+    '/admin/approve/company',
+    {
+      preHandler: authorize('admin'),
+      schema: { body: ApproveCompanySchema }
+    },
+    adminController.approveCompany
+  );
+
+  // Reject company endpoint
+  fastify.post(
+    '/admin/reject/company',
+    {
+      preHandler: authorize('admin'),
+      schema: { body: RejectCompanySchema }
+    },
+    adminController.rejectCompany
   );
 }
 

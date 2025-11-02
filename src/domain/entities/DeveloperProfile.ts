@@ -15,6 +15,7 @@ export interface Education {
   institution: string;
   fieldOfStudy: string;
   graduationYear: number | null;
+  certificateUrl?: string; // Optional URL to uploaded certificate document
 }
 
 // Certification Interface

@@ -26,17 +26,25 @@ export const TYPES = {
     AuthController: Symbol.for('AuthController'),
     GoogleLoginUseCase: Symbol.for('GoogleLoginUseCase'),
     GoogleRegisterUseCase: Symbol.for('GoogleRegisterUseCase'),
+    CompanyProfileResubmissionUseCase: Symbol.for('CompanyProfileResubmissionUseCase'),
     
     // Profile module
     CreateDeveloperProfileUseCase: Symbol.for('CreateDeveloperProfileUseCase'),
     GetDeveloperProfileUseCase: Symbol.for('GetDeveloperProfileUseCase'),
     CreateCompanyProfileUseCase: Symbol.for('CreateCompanyProfileUseCase'),
-    GetAdminCompanyListUseCase: Symbol.for('GetAdminCompanyListUseCase'),
+    GetCompanyProfileUseCase: Symbol.for('GetCompanyProfileUseCase'),
     ProfileController: Symbol.for('ProfileController'),
     
     // File module
     GenerateSignatureUseCase: Symbol.for('GenerateSignatureUseCase'),
     DeleteFileUseCase: Symbol.for('DeleteFileUseCase'),
     FileController: Symbol.for('FileController'),
+    
+    // Admin module
+    BlockUserUseCase: Symbol.for('BlockUserUseCase'),
+    UnblockUserUseCase: Symbol.for('UnblockUserUseCase'),
+    ApproveCompanyUseCase: Symbol.for('ApproveCompanyUseCase'),
+    RejectCompanyUseCase: Symbol.for('RejectCompanyUseCase'),
+    AdminController: Symbol.for('AdminController'),
   };
   

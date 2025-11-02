@@ -20,7 +20,7 @@ export interface GoogleRegisterOutput {
     email: string;
     role: string;
     isProfileCompleted: boolean;
-    status?: 'pending' | 'approved' | 'rejected' | 'resubmitted';
+    status?: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid';
   };
 }
 
@@ -75,7 +75,7 @@ export class GoogleRegisterUseCase {
         );
 
         // Get company profile status if user is a company
-        let status: 'pending' | 'approved' | 'rejected' | 'resubmitted' | undefined;
+        let status: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid' | undefined;
         if (updatedUser.role === 'company') {
           const companyProfile = await this.companyProfileRepository.findByUserId(updatedUser.id);
           if (companyProfile) {
@@ -133,7 +133,7 @@ export class GoogleRegisterUseCase {
     );
 
     // 6. Get company profile status if user is a company
-    let status: 'pending' | 'approved' | 'rejected' | 'resubmitted' | undefined;
+    let status: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid' | undefined;
     if (newUser.role === 'company') {
       const companyProfile = await this.companyProfileRepository.findByUserId(newUser.id);
       if (companyProfile) {

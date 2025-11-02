@@ -5,23 +5,20 @@ import {
   CreateDeveloperProfileUseCase,
   GetDeveloperProfileUseCase,
   CreateCompanyProfileUseCase,
-  GetAdminCompanyListUseCase
+  GetCompanyProfileUseCase
 } from '../../application/use-cases/profile';
 import {
   CreateDeveloperProfileInput,
-  UpdateDeveloperProfileInput,
   CreateCompanyProfileInput
 } from '../schemas/profile.schema';
-import { GetAdminCompanyListInput } from '../../application/dtos/profile.dto';
-import { GetAdminCompanyListQuery } from '../schemas/profile.schema';
 
 @injectable()
 export class ProfileController {
   constructor(
     @inject(TYPES.CreateDeveloperProfileUseCase) private createProfileUseCase: CreateDeveloperProfileUseCase,
-    @inject(TYPES.GetDeveloperProfileUseCase) private getProfileUseCase: GetDeveloperProfileUseCase,
-    @inject(TYPES.CreateCompanyProfileUseCase) private createCompanyProfileUseCase: CreateCompanyProfileUseCase,
-    @inject(TYPES.GetAdminCompanyListUseCase) private getAdminCompanyListUseCase: GetAdminCompanyListUseCase
+    @inject(TYPES.GetDeveloperProfileUseCase) private getDeveloperProfileUseCase: GetDeveloperProfileUseCase,
+    @inject(TYPES.GetCompanyProfileUseCase) private getCompanyProfileUseCase: GetCompanyProfileUseCase,
+    @inject(TYPES.CreateCompanyProfileUseCase) private createCompanyProfileUseCase: CreateCompanyProfileUseCase
   ) {}
 
   createProfile = async (
@@ -45,30 +42,18 @@ export class ProfileController {
   };
 
   getProfile = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
-    // Get userId from the authenticated user (from token)
-    const userId = (request as any).user.id;
-    const result = await this.getProfileUseCase.execute(userId);
-    reply.status(200).send(result);
-  };
+    const userId = request.user?.id as string;
+    const role = request.user?.role;
 
-  getAdminCompanyList = async (
-    request: FastifyRequest<{ Querystring: GetAdminCompanyListQuery }>,
-    reply: FastifyReply
-  ): Promise<void> => {
-    const { page = 1, limit = 10, search, searchField, status, companySize, isBlocked, sortBy, sortOrder } = request.query;
-    const input: GetAdminCompanyListInput = {
-      page,
-      limit,
-      search,
-      searchField,
-      status,
-      companySize,
-      isBlocked,
-      sortBy,
-      sortOrder,
-    };
-    const result = await this.getAdminCompanyListUseCase.execute(input);
-    reply.status(200).send(result);
+    if (role === 'company') {
+      const result = await this.getCompanyProfileUseCase.execute(userId);
+      reply.status(200).send(result);
+    } else if (role === 'developer') {
+      const result = await this.getDeveloperProfileUseCase.execute(userId);
+      reply.status(200).send(result);
+    } else {
+      reply.status(400).send({ error: 'Invalid user role for profile endpoint' });
+    }
   };
 }
 

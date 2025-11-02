@@ -9,4 +9,5 @@ export { LogoutUseCase } from './LogoutUseCase';
 export { GoogleLoginUseCase } from './GoogleLoginUseCase';
 export { GoogleRegisterUseCase } from './GoogleRegisterUseCase';
 export { AdminLoginUseCase } from './AdminLoginUseCase';
+export { CompanyProfileResubmissionUseCase } from './CompanyProfileResubmissionUseCase';
 

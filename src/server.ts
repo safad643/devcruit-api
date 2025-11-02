@@ -1,4 +1,4 @@
-import 'reflect-metadata';
+
 import Fastify from 'fastify';
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import helmet from '@fastify/helmet';

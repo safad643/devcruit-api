@@ -18,7 +18,7 @@ export interface DocumentReuploadRequest {
   requestedAt: Date;
 }
 
-export type CompanyProfileStatus = 'pending' | 'approved' | 'rejected' | 'resubmitted';
+export type CompanyProfileStatus = 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid';
 
 export interface CompanyProfileProps {
   id: string;

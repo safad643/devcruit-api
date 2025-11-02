@@ -16,7 +16,8 @@ const EducationSchema = Type.Object({
   degreeType: Type.String({ minLength: 1, maxLength: 50 }),
   institution: Type.String({ minLength: 1, maxLength: 200 }),
   fieldOfStudy: Type.String({ minLength: 1, maxLength: 200 }),
-  graduationYear: Type.Union([Type.Number({ minimum: 1900, maximum: 2100 }), Type.Null()])
+  graduationYear: Type.Union([Type.Number({ minimum: 1900, maximum: 2100 }), Type.Null()]),
+  certificateUrl: Type.Optional(Type.String({ format: 'uri' }))
 });
 
 // Certification Schema
@@ -155,40 +156,8 @@ export const UpdateDeveloperProfileSchema = Type.Object({
   resumeUrl: Type.Optional(Type.String({ format: 'uri' }))
 });
 
-// Admin Company List Query Schema
-export const GetAdminCompanyListQuerySchema = Type.Object({
-  page: Type.Optional(Type.Number({ minimum: 1, default: 1 })),
-  limit: Type.Optional(Type.Number({ minimum: 1, maximum: 100, default: 10 })),
-  search: Type.Optional(Type.String({ minLength: 1 })),
-  searchField: Type.Optional(Type.Union([
-    Type.Literal('companyName'),
-    Type.Literal('fullName'),
-    Type.Literal('phoneNumber'),
-    Type.Literal('businessRegistrationNumber'),
-    Type.Literal('companyWebsite')
-  ])),
-  status: Type.Optional(Type.Union([
-    Type.Literal('pending'),
-    Type.Literal('approved'),
-    Type.Literal('rejected'),
-    Type.Literal('resubmitted')
-  ])),
-  companySize: Type.Optional(CompanySizeSchema),
-  isBlocked: Type.Optional(Type.Boolean()),
-  sortBy: Type.Optional(Type.Union([
-    Type.Literal('createdAt'),
-    Type.Literal('updatedAt'),
-    Type.Literal('companyName')
-  ])),
-  sortOrder: Type.Optional(Type.Union([
-    Type.Literal('asc'),
-    Type.Literal('desc')
-  ]))
-});
-
 // Export TypeScript types
 export type CreateDeveloperProfileInput = Static<typeof CreateDeveloperProfileSchema>;
 export type UpdateDeveloperProfileInput = Static<typeof UpdateDeveloperProfileSchema>;
 export type CreateCompanyProfileInput = Static<typeof CreateCompanyProfileSchema>;
-export type GetAdminCompanyListQuery = Static<typeof GetAdminCompanyListQuerySchema>;
 

@@ -1,6 +1,6 @@
 import { Collection, ObjectId } from 'mongodb';
 import { ICompanyProfileRepository, CompanyListFilters, CompanyListResult } from '../../../domain/repositories/ICompanyProfileRepository';
-import { CompanyProfile, CompanyProfileProps } from '../../../domain/entities/CompanyProfile';
+import { CompanyProfile, CompanyProfileProps, DocumentReuploadRequest } from '../../../domain/entities/CompanyProfile';
 import { getMongoDb } from './client';
 import { InternalError } from '../../../domain/errors';
 import { injectable } from 'inversify';
@@ -260,6 +260,65 @@ export class CompanyProfileRepository implements ICompanyProfileRepository {
       };
     } catch (error) {
       throw new InternalError('Failed to list companies with filters', error as Error);
+    }
+  }
+
+  async approveCompany(companyId: string): Promise<CompanyProfile> {
+    try {
+      if (!ObjectId.isValid(companyId)) {
+        throw new InternalError('Invalid company ID format');
+      }
+
+      const result = await this.collection.findOneAndUpdate(
+        { _id: new ObjectId(companyId) },
+        { 
+          $set: { 
+            status: 'approved',
+            updatedAt: new Date()
+          }
+        },
+        { returnDocument: 'after' }
+      );
+
+      if (!result) {
+        throw new InternalError('Company profile not found');
+      }
+
+      return this.mapToEntity(result);
+    } catch (error) {
+      if (error instanceof InternalError) throw error;
+      throw new InternalError('Failed to approve company profile', error as Error);
+    }
+  }
+
+  async rejectCompany(companyId: string, documentReuploadRequest: DocumentReuploadRequest): Promise<CompanyProfile> {
+    try {
+      if (!ObjectId.isValid(companyId)) {
+        throw new InternalError('Invalid company ID format');
+      }
+
+      const result = await this.collection.findOneAndUpdate(
+        { _id: new ObjectId(companyId) },
+        { 
+          $set: { 
+            status: 'rejected',
+            updatedAt: new Date()
+          },
+          $push: {
+            documentReuploadRequests: documentReuploadRequest
+          }
+        },
+        { returnDocument: 'after' }
+      );
+
+      if (!result) {
+        throw new InternalError('Company profile not found');
+      }
+
+      return this.mapToEntity(result);
+    } catch (error) {
+      if (error instanceof InternalError) throw error;
+      throw new InternalError('Failed to reject company profile', error as Error);
     }
   }
 

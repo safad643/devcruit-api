@@ -1,4 +1,4 @@
-import { CompanyProfile, CompanyProfileProps, CompanyProfileStatus } from '../entities/CompanyProfile';
+import { CompanyProfile, CompanyProfileProps, CompanyProfileStatus, DocumentReuploadRequest } from '../entities/CompanyProfile';
 
 export interface CompanyListFilters {
   page: number;
@@ -30,5 +30,7 @@ export interface ICompanyProfileRepository {
   update(userId: string, updates: Partial<CompanyProfileProps>): Promise<CompanyProfile>;
   delete(userId: string): Promise<void>;
   listWithFilters(filters: CompanyListFilters): Promise<CompanyListResult>;
+  approveCompany(companyId: string): Promise<CompanyProfile>;
+  rejectCompany(companyId: string, documentReuploadRequest: DocumentReuploadRequest): Promise<CompanyProfile>;
 }
 

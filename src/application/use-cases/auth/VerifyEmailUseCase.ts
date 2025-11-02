@@ -72,7 +72,7 @@ export class VerifyEmailUseCase {
       );
 
     // 7. Get company profile status if user is a company
-    let status: 'pending' | 'approved' | 'rejected' | 'resubmitted' | undefined;
+    let status: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid' | undefined;
     if (user.role === 'company') {
       const companyProfile = await this.companyProfileRepository.findByUserId(user.id);
       if (companyProfile) {
