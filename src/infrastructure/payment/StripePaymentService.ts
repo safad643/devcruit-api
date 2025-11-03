@@ -3,12 +3,7 @@ import { IPaymentService, CheckoutSessionResult, WebhookVerifiedEvent } from '..
 import { PlanTier } from '../../domain/entities/CompanyProfile';
 import { InternalError, ValidationError } from '../../domain/errors';
 import Stripe from 'stripe';
-
-export interface StripePaymentServiceOptions {
-  secretKey: string;
-  webhookSecret: string;
-  defaultCurrency?: string; // e.g., 'inr'
-}
+import { config } from '../../config';
 
 @injectable()
 export class StripePaymentService implements IPaymentService {
@@ -17,10 +12,10 @@ export class StripePaymentService implements IPaymentService {
   private readonly defaultCurrency: string;
   private readonly stripe: Stripe;
 
-  constructor(options: StripePaymentServiceOptions) {
-    this.secretKey = options.secretKey;
-    this.webhookSecret = options.webhookSecret;
-    this.defaultCurrency = options.defaultCurrency ?? 'inr';
+  constructor() {
+    this.secretKey = config.stripe.secretKey;
+    this.webhookSecret = config.stripe.webhookSecret;
+    this.defaultCurrency = config.stripe.currency;
     this.stripe = new Stripe(this.secretKey);
   }
 

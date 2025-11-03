@@ -26,7 +26,6 @@ import { EmailService } from '../../infrastructure/email/EmailService';
 import { GoogleAuthService } from '../../infrastructure/security/GoogleAuthService';
 import { CloudinaryService } from '../../infrastructure/storage/CloudinaryService';
 import { StripePaymentService } from '../../infrastructure/payment/StripePaymentService';
-import { config } from '../../config';
 
 
 export const infrastructureModule = new ContainerModule((bind) => {
@@ -45,11 +44,5 @@ export const infrastructureModule = new ContainerModule((bind) => {
   bind<ITokenService>(TYPES.TokenService).to(TokenService).inSingletonScope();
   bind<IEmailService>(TYPES.EmailService).to(EmailService).inSingletonScope();
   bind<IFileService>(TYPES.FileService).to(CloudinaryService).inSingletonScope();
-  bind<IPaymentService>(TYPES.PaymentService).toDynamicValue(() => {
-    return new StripePaymentService({
-      secretKey: config.stripe.secretKey,
-      webhookSecret: config.stripe.webhookSecret,
-      defaultCurrency: config.stripe.currency,
-    });
-  }).inSingletonScope();
+  bind<IPaymentService>(TYPES.PaymentService).to(StripePaymentService).inSingletonScope();
 });
