@@ -11,7 +11,7 @@ import {
   IRefreshTokenRepository 
 } from '../../domain/repositories';
 
-import { IHashService, ITokenService, IEmailService, IGoogleAuthService, IFileService } from '../../application/services';
+import { IHashService, ITokenService, IEmailService, IGoogleAuthService, IFileService, IPaymentService } from '../../application/services';
 
 import { UserRepository } from '../../infrastructure/database/mongodb/UserRepository';
 import { AdminRepository } from '../../infrastructure/database/mongodb/AdminRepository';
@@ -25,6 +25,8 @@ import { TokenService } from '../../infrastructure/security/TokenService';
 import { EmailService } from '../../infrastructure/email/EmailService';
 import { GoogleAuthService } from '../../infrastructure/security/GoogleAuthService';
 import { CloudinaryService } from '../../infrastructure/storage/CloudinaryService';
+import { StripePaymentService } from '../../infrastructure/payment/StripePaymentService';
+import { config } from '../../config';
 
 
 export const infrastructureModule = new ContainerModule((bind) => {
@@ -43,4 +45,11 @@ export const infrastructureModule = new ContainerModule((bind) => {
   bind<ITokenService>(TYPES.TokenService).to(TokenService).inSingletonScope();
   bind<IEmailService>(TYPES.EmailService).to(EmailService).inSingletonScope();
   bind<IFileService>(TYPES.FileService).to(CloudinaryService).inSingletonScope();
+  bind<IPaymentService>(TYPES.PaymentService).toDynamicValue(() => {
+    return new StripePaymentService({
+      secretKey: config.stripe.secretKey,
+      webhookSecret: config.stripe.webhookSecret,
+      defaultCurrency: config.stripe.currency,
+    });
+  }).inSingletonScope();
 });

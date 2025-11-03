@@ -17,7 +17,7 @@ function getOptionalEnv(key: string, defaultValue: string): string {
 
 
 function validateConfig() {
-  const required = ['JWT_SECRET', 'EMAIL_USER', 'EMAIL_PASS', 'EMAIL_FROM', 'COOKIE_SECRET', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_REDIRECT_URI', 'CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'];
+  const required = ['JWT_SECRET', 'EMAIL_USER', 'EMAIL_PASS', 'EMAIL_FROM', 'COOKIE_SECRET', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_REDIRECT_URI', 'CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'];
   const missing = required.filter(key => !process.env[key]);
   
   if (missing.length > 0) {
@@ -78,5 +78,10 @@ export const config = {
     cloudName: getRequiredEnv('CLOUDINARY_CLOUD_NAME'),
     apiKey: getRequiredEnv('CLOUDINARY_API_KEY'),
     apiSecret: getRequiredEnv('CLOUDINARY_API_SECRET'),
+  },
+  stripe: {
+    secretKey: getRequiredEnv('STRIPE_SECRET_KEY'),
+    webhookSecret: getRequiredEnv('STRIPE_WEBHOOK_SECRET'),
+    currency: 'inr' as const
   }
 };

@@ -9,9 +9,10 @@ import { authRoutes } from './presentation/routes/auth.routes';
 import { profileRoutes } from './presentation/routes/profile.routes';
 import { fileRoutes } from './presentation/routes/file.routes';
 import { adminRoutes } from './presentation/routes/admin.routes';
+import { paymentRoutes } from './presentation/routes/payment.routes';
+import fastifyRawBody from 'fastify-raw-body';
 import { globalErrorHandler } from './presentation/middleware/errorHandler';
 import { config } from './config';
-import { authenticate } from './presentation/middleware/authenticate';
 import ajvErrors from 'ajv-errors';  
 const server = Fastify({
   logger: {
@@ -67,6 +68,14 @@ export async function buildServer() {
     })
   });
 
+  // Raw body plugin for Stripe webhooks (route-scoped)
+  await server.register(fastifyRawBody, {
+    field: 'rawBody',
+    global: false,
+    encoding: false,
+    runFirst: true
+  });
+
   // Health check route
   server.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }));
   server.setErrorHandler(globalErrorHandler);
@@ -76,6 +85,7 @@ export async function buildServer() {
   await server.register(profileRoutes, { prefix: '/api/profile' });
   await server.register(fileRoutes, { prefix: '/api/file' });
   await server.register(adminRoutes, { prefix: '/api' });
+  await server.register(paymentRoutes, { prefix: '/api/payment' });
 
  
   return server;

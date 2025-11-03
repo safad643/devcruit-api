@@ -12,6 +12,7 @@ export const TYPES = {
     GoogleAuthService: Symbol.for('GoogleAuthService'),
     EmailService: Symbol.for('EmailService'),
     FileService: Symbol.for('FileService'),
+    PaymentService: Symbol.for('PaymentService'),
   
     // Auth module
     RegisterUserUseCase: Symbol.for('RegisterUserUseCase'),
@@ -34,6 +35,12 @@ export const TYPES = {
     GetCompanyProfileUseCase: Symbol.for('GetCompanyProfileUseCase'),
     ResubmitDocumentsUseCase: Symbol.for('ResubmitDocumentsUseCase'),
     ProfileController: Symbol.for('ProfileController'),
+    
+    // Payment module
+    CreateCheckoutSessionUseCase: Symbol.for('CreateCheckoutSessionUseCase'),
+    HandleStripeWebhookUseCase: Symbol.for('HandleStripeWebhookUseCase'),
+    CompletePaymentUseCase: Symbol.for('CompletePaymentUseCase'),
+    PaymentController: Symbol.for('PaymentController'),
     
     // File module
     GenerateSignatureUseCase: Symbol.for('GenerateSignatureUseCase'),
