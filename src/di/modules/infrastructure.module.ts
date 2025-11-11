@@ -8,7 +8,8 @@ import {
   ICompanyProfileRepository,
   IPendingUserRepository, 
   IOTPRepository, 
-  IRefreshTokenRepository 
+  IRefreshTokenRepository,
+  IJobRepository
 } from '../../domain/repositories';
 
 import { IHashService, ITokenService, IEmailService, IGoogleAuthService, IFileService, IPaymentService } from '../../application/services';
@@ -17,6 +18,7 @@ import { UserRepository } from '../../infrastructure/database/mongodb/UserReposi
 import { AdminRepository } from '../../infrastructure/database/mongodb/AdminRepository';
 import { DeveloperProfileRepository } from '../../infrastructure/database/mongodb/DeveloperProfileRepository';
 import { CompanyProfileRepository } from '../../infrastructure/database/mongodb/CompanyProfileRepository';
+import { JobRepository } from '../../infrastructure/database/mongodb/JobRepository';
 import { PendingUserRepository } from '../../infrastructure/database/redis/PendingUserRepository';
 import { OTPRepository } from '../../infrastructure/database/redis/OTPRepository';
 import { RefreshTokenRepository } from '../../infrastructure/database/redis/RefreshTokenRepository';
@@ -34,6 +36,7 @@ export const infrastructureModule = new ContainerModule((bind) => {
   bind<IAdminRepository>(TYPES.AdminRepository).to(AdminRepository).inSingletonScope();
   bind<IDeveloperProfileRepository>(TYPES.DeveloperProfileRepository).to(DeveloperProfileRepository).inSingletonScope();
   bind<ICompanyProfileRepository>(TYPES.CompanyProfileRepository).to(CompanyProfileRepository).inSingletonScope();
+  bind<IJobRepository>(TYPES.JobRepository).to(JobRepository).inSingletonScope();
   bind<IPendingUserRepository>(TYPES.PendingUserRepository).to(PendingUserRepository).inSingletonScope();
   bind<IOTPRepository>(TYPES.OTPRepository).to(OTPRepository).inSingletonScope();
   bind<IRefreshTokenRepository>(TYPES.RefreshTokenRepository).to(RefreshTokenRepository).inSingletonScope();

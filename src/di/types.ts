@@ -55,5 +55,21 @@ export const TYPES = {
     ListCompaniesUseCase: Symbol.for('ListCompaniesUseCase'),
     ListDevelopersUseCase: Symbol.for('ListDevelopersUseCase'),
     AdminController: Symbol.for('AdminController'),
+    
+    // Job module
+    JobRepository: Symbol.for('JobRepository'),
+    CreateJobUseCase: Symbol.for('CreateJobUseCase'),
+    ListJobsUseCase: Symbol.for('ListJobsUseCase'),
+    DeleteJobUseCase: Symbol.for('DeleteJobUseCase'),
+    CloseJobUseCase: Symbol.for('CloseJobUseCase'),
+    OpenJobUseCase: Symbol.for('OpenJobUseCase'),
+    UpdateJobUseCase: Symbol.for('UpdateJobUseCase'),
+    GetJobUseCase: Symbol.for('GetJobUseCase'),
+    JobController: Symbol.for('JobController'),
+    
+    // Public Job module
+    PublicListJobsUseCase: Symbol.for('PublicListJobsUseCase'),
+    PublicGetJobUseCase: Symbol.for('PublicGetJobUseCase'),
+    PublicJobController: Symbol.for('PublicJobController'),
   };
   

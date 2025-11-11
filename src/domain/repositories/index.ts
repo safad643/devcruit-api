@@ -5,5 +5,6 @@ export * from './IUserRepository';
 export * from './IDeveloperProfileRepository';
 export * from './ICompanyProfileRepository';
 export * from './IAdminRepository';
+export * from './IJobRepository';
 
 
