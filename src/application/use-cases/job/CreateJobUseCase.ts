@@ -18,6 +18,7 @@ export class CreateJobUseCase {
     category: string;
     requiredTech: string[];
     requiredSkills: string[];
+    interviewRounds: string[];
     experienceLevel: 'junior' | 'mid' | 'senior' | 'lead';
     minYears: number;
     niceTech: string[];
@@ -54,7 +55,13 @@ export class CreateJobUseCase {
       throw new ValidationError('Location is required for on-site or hybrid work arrangements');
     }
 
-    // 4. Validate compensation structure (inferred)
+    // 4. Validate interview rounds
+    const interviewRounds = (input.interviewRounds || []).map(round => round.trim()).filter(round => round.length > 0);
+    if (interviewRounds.length === 0) {
+      throw new ValidationError('At least one interview round is required');
+    }
+
+    // 5. Validate compensation structure (inferred)
     const isRangeComp = (input.compensation as any).min !== undefined 
       || (input.compensation as any).max !== undefined 
       || (input.compensation as any).currency !== undefined;
@@ -71,13 +78,13 @@ export class CreateJobUseCase {
       }
     }
 
-    // 5. Validate validUntil date is in the future
+    // 6. Validate validUntil date is in the future
     const validUntilDate = new Date(input.validUntil);
     if (validUntilDate <= new Date()) {
       throw new ValidationError('Valid until date must be in the future');
     }
 
-    // 6. Create the job data with status from input
+    // 7. Create the job data with status from input
     const jobData = {
       companyId: input.companyId,
       title: input.title,
@@ -85,6 +92,7 @@ export class CreateJobUseCase {
       category: input.category,
       requiredTech: input.requiredTech,
       requiredSkills: input.requiredSkills,
+      interviewRounds,
       experienceLevel: input.experienceLevel,
       minYears: input.minYears,
       niceTech: input.niceTech,
@@ -100,7 +108,7 @@ export class CreateJobUseCase {
       status: input.status,
     };
 
-    // 7. Save to database
+    // 8. Save to database
     const createdJob = await this.jobRepository.create(jobData);
 
     return {

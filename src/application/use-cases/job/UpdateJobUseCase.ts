@@ -7,7 +7,7 @@ import { JobProps } from '../../../domain/entities/Job';
 interface UpdateJobInput {
   jobId: string;
   companyId: string;
-  updates: Partial<Pick<JobProps, 'description' | 'benefits' | 'validUntil' | 'niceTech' | 'niceSkills' | 'autoShortlist'>>;
+  updates: Partial<Pick<JobProps, 'description' | 'benefits' | 'validUntil' | 'niceTech' | 'niceSkills' | 'interviewRounds' | 'autoShortlist'>>;
 }
 
 @injectable()
@@ -41,6 +41,9 @@ export class UpdateJobUseCase {
     }
     if (input.updates.niceSkills !== undefined) {
       updates.niceSkills = input.updates.niceSkills;
+    }
+    if (input.updates.interviewRounds !== undefined) {
+      updates.interviewRounds = input.updates.interviewRounds;
     }
     if (input.updates.autoShortlist !== undefined) {
       updates.autoShortlist = input.updates.autoShortlist;

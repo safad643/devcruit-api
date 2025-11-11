@@ -7,6 +7,7 @@ export interface CreateJobInput {
   category: string;
   requiredTech: string[];
   requiredSkills: string[];
+  interviewRounds: string[];
   experienceLevel: ExperienceLevel;
   minYears: number;
   niceTech: string[];
@@ -48,6 +49,7 @@ export interface JobListItem {
   category: string;
   requiredTech: string[];
   requiredSkills: string[];
+  interviewRounds: string[];
   experienceLevel: ExperienceLevel;
   minYears: number;
   niceTech: string[];

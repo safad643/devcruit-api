@@ -28,6 +28,7 @@ export const CreateJobSchema = Type.Object({
   minYears: Type.Number({ minimum: 0, maximum: 100 }),
   niceTech: Type.Array(Type.String(), { minItems: 0 }),
   niceSkills: Type.Array(Type.String(), { minItems: 0 }),
+  interviewRounds: Type.Array(Type.String({ minLength: 1 }), { minItems: 1 }),
   jobType: Type.Union([
     Type.Literal('full-time'),
     Type.Literal('part-time'),

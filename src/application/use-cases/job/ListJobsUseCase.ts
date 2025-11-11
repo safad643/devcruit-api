@@ -33,6 +33,7 @@ export class ListJobsUseCase {
       category: job.category,
       requiredTech: job.requiredTech,
       requiredSkills: job.requiredSkills,
+      interviewRounds: job.interviewRounds,
       experienceLevel: job.experienceLevel,
       minYears: job.minYears,
       niceTech: job.niceTech,

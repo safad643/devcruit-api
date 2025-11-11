@@ -19,6 +19,7 @@ export interface JobProps {
   category: string;
   requiredTech: string[];
   requiredSkills: string[];
+  interviewRounds: string[];
   experienceLevel: ExperienceLevel;
   minYears: number;
   niceTech: string[];
@@ -44,6 +45,7 @@ export class Job {
   public readonly category: string;
   public readonly requiredTech: string[];
   public readonly requiredSkills: string[];
+  public readonly interviewRounds: string[];
   public readonly experienceLevel: ExperienceLevel;
   public readonly minYears: number;
   public readonly niceTech: string[];
@@ -68,6 +70,7 @@ export class Job {
     this.category = props.category;
     this.requiredTech = props.requiredTech;
     this.requiredSkills = props.requiredSkills;
+    this.interviewRounds = props.interviewRounds;
     this.experienceLevel = props.experienceLevel;
     this.minYears = props.minYears;
     this.niceTech = props.niceTech;
