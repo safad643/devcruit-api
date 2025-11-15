@@ -198,6 +198,43 @@ export class EmailService implements IEmailService {
       // Silently fail - don't throw
     }
   }
+
+  async sendShortlistNotification(email: string, companyName: string, jobTitle: string): Promise<void> {
+    try {
+      const subject = '🎉 Congratulations! You\'ve Been Shortlisted - Devcruit';
+      const heading = 'Application Shortlisted';
+      const message = `
+        Great news! Your application has been shortlisted for the following position:
+        <br><br>
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea; margin: 20px 0;">
+          <p style="margin: 0 0 10px 0; font-size: 16px; font-weight: 600; color: #333333;">
+            <strong>Company:</strong> ${companyName}
+          </p>
+          <p style="margin: 0; font-size: 16px; font-weight: 600; color: #333333;">
+            <strong>Position:</strong> ${jobTitle}
+          </p>
+        </div>
+        <br>
+        The company will be in touch with you soon regarding the next steps in the interview process. 
+        Please keep an eye on your email and application dashboard for updates.
+        <br><br>
+        We wish you the best of luck with your application!
+      `;
+  
+      const html = this.getEmailTemplate(subject, heading, message);
+  
+      await this.transporter.sendMail({
+        from: `"Devcruit" <${config.email.from}>`,
+        to: email,
+        subject,
+        text: `Congratulations! Your application has been shortlisted for the position "${jobTitle}" at ${companyName}. The company will be in touch with you soon regarding the next steps.`,
+        html,
+      });
+    } catch (error) {
+      console.error('Failed to send shortlist notification email to', email, error);
+      // Silently fail - don't throw to avoid breaking the application flow
+    }
+  }
   
   
 }

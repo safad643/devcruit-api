@@ -1,0 +1,34 @@
+import { 
+  IApplicationRepository,
+  IJobRepository
+} from '../../../domain/repositories';
+import { injectable, inject } from 'inversify';
+import { TYPES } from '../../../di/types';
+import { NotFoundError, ForbiddenError } from '../../../domain/errors';
+import { ApplicationMetricsOutput } from '../../dtos/application.dto';
+
+@injectable()
+export class GetApplicationMetricsUseCase {
+  constructor(
+    @inject(TYPES.ApplicationRepository) private applicationRepository: IApplicationRepository,
+    @inject(TYPES.JobRepository) private jobRepository: IJobRepository
+  ) {}
+
+  async execute(jobId: string, companyId: string): Promise<ApplicationMetricsOutput> {
+    // Verify the job exists and belongs to the company
+    const job = await this.jobRepository.findById(jobId);
+    if (!job) {
+      throw new NotFoundError('Job not found');
+    }
+
+    if (job.companyId !== companyId) {
+      throw new ForbiddenError('You do not have access to this job');
+    }
+
+    // Get metrics
+    const metrics = await this.applicationRepository.getMetricsByJobId(jobId, companyId);
+
+    return metrics;
+  }
+}
+

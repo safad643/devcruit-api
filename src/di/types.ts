@@ -67,6 +67,17 @@ export const TYPES = {
     GetJobUseCase: Symbol.for('GetJobUseCase'),
     JobController: Symbol.for('JobController'),
     
+    // Application module
+    ApplicationRepository: Symbol.for('ApplicationRepository'),
+    CreateApplicationUseCase: Symbol.for('CreateApplicationUseCase'),
+    ListApplicationsForCompanyUseCase: Symbol.for('ListApplicationsForCompanyUseCase'),
+    GetApplicationDetailsUseCase: Symbol.for('GetApplicationDetailsUseCase'),
+    ListApplicationsForDeveloperUseCase: Symbol.for('ListApplicationsForDeveloperUseCase'),
+    WithdrawApplicationUseCase: Symbol.for('WithdrawApplicationUseCase'),
+    GetApplicationMetricsUseCase: Symbol.for('GetApplicationMetricsUseCase'),
+    UpdateApplicationStatusUseCase: Symbol.for('UpdateApplicationStatusUseCase'),
+    ApplicationController: Symbol.for('ApplicationController'),
+    
     // Public Job module
     PublicListJobsUseCase: Symbol.for('PublicListJobsUseCase'),
     PublicGetJobUseCase: Symbol.for('PublicGetJobUseCase'),

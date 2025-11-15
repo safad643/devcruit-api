@@ -12,6 +12,7 @@ import { adminRoutes } from './presentation/routes/admin.routes';
 import { paymentRoutes } from './presentation/routes/payment.routes';
 import { jobRoutes } from './presentation/routes/job.routes';
 import { publicJobRoutes } from './presentation/routes/public.jobs.routes';
+import { applicationRoutes } from './presentation/routes/application.routes';
 import fastifyRawBody from 'fastify-raw-body';
 import { globalErrorHandler } from './presentation/middleware/errorHandler';
 import { config } from './config';
@@ -90,6 +91,7 @@ export async function buildServer() {
   await server.register(paymentRoutes, { prefix: '/api/payment' });
   await server.register(jobRoutes, { prefix: '/api/company' });
   await server.register(publicJobRoutes, { prefix: '/api/jobs' });
+  await server.register(applicationRoutes, { prefix: '/api' });
 
  
   return server;

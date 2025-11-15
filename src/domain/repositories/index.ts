@@ -6,5 +6,6 @@ export * from './IDeveloperProfileRepository';
 export * from './ICompanyProfileRepository';
 export * from './IAdminRepository';
 export * from './IJobRepository';
+export * from './IApplicationRepository';
 
 
