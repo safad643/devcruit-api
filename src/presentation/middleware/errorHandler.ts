@@ -8,18 +8,19 @@ import {
   ConflictError,
   TooManyRequestsError
 } from '../../domain/errors';
+import { HttpStatus } from '../../utils/statusCodes';
 
 // Map domain errors to HTTP status codes
 function getStatusCode(error: AppError): number {
   
   
-  if (error instanceof ValidationError) return 400;
-  if (error instanceof UnauthorizedError) return 401;
-  if (error instanceof ForbiddenError) return 403;
-  if (error instanceof TooManyRequestsError) return 429;
-  if (error instanceof NotFoundError) return 404;
-  if (error instanceof ConflictError) return 409;
-  return 500;
+  if (error instanceof ValidationError) return HttpStatus.BAD_REQUEST;
+  if (error instanceof UnauthorizedError) return HttpStatus.UNAUTHORIZED;
+  if (error instanceof ForbiddenError) return HttpStatus.FORBIDDEN;
+  if (error instanceof TooManyRequestsError) return HttpStatus.TOO_MANY_REQUESTS;
+  if (error instanceof NotFoundError) return HttpStatus.NOT_FOUND;
+  if (error instanceof ConflictError) return HttpStatus.CONFLICT;
+  return HttpStatus.INTERNAL_SERVER_ERROR;
 }
 
 export function globalErrorHandler(
@@ -48,6 +49,7 @@ export function globalErrorHandler(
     }
 
     return reply.status(statusCode).send({
+      success: false,
       error: {
         code: error.code,
         message: error.message,
@@ -64,7 +66,8 @@ export function globalErrorHandler(
       fields[field] = err.message || 'Validation failed';
     });
 
-    return reply.status(400).send({
+    return reply.status(HttpStatus.BAD_REQUEST).send({
+      success: false,
       error: {
         code: 'VALIDATION_ERROR',
         message: 'Request validation failed',
@@ -84,7 +87,8 @@ export function globalErrorHandler(
   
 
   // Don't leak error details for programmer errors
-  return reply.status(500).send({
+  return reply.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+    success: false,
     error: {
       code: 'INTERNAL_ERROR',
       message: 'An unexpected error occurred',

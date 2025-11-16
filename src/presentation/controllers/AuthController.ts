@@ -24,6 +24,8 @@ import {
   ResetPasswordInput
 } from '../schemas/auth.schema';
 import { config } from '../../config';
+import { wrapSuccess } from '../../utils/response';
+import { HttpStatus } from '../../utils/statusCodes';
 
 @injectable()
 export class AuthController {
@@ -44,7 +46,7 @@ export class AuthController {
   // Arrow functions auto-bind 'this'
   register = async (request: FastifyRequest<{ Body: RegisterUserInput }>, reply: FastifyReply): Promise<void> => {
     const result = await this.registerUserUseCase.execute(request.body);
-    reply.status(201).send(result);
+    reply.status(HttpStatus.CREATED).send(wrapSuccess(result));
   };
 
   verifyEmail = async (request: FastifyRequest<{ Body: VerifyEmailInput }>, reply: FastifyReply): Promise<void> => {
@@ -58,7 +60,7 @@ export class AuthController {
     });
     // Exclude refresh token from response body
     const { refreshToken, ...responseData } = result;
-    reply.status(200).send(responseData);
+    reply.status(HttpStatus.OK).send(wrapSuccess(responseData));
   };
 
   login = async (request: FastifyRequest<{ Body: LoginInput }>, reply: FastifyReply): Promise<void> => {
@@ -72,7 +74,7 @@ export class AuthController {
     });
     // Exclude refresh token from response body
     const { refreshToken, ...responseData } = result;
-    reply.status(200).send(responseData);
+    reply.status(HttpStatus.OK).send(wrapSuccess(responseData));
   };
 
   adminLogin = async (request: FastifyRequest<{ Body: LoginInput }>, reply: FastifyReply): Promise<void> => {
@@ -85,22 +87,22 @@ export class AuthController {
       path: '/'
     });
     const { refreshToken, ...responseData } = result;
-    reply.status(200).send(responseData);
+    reply.status(HttpStatus.OK).send(wrapSuccess(responseData));
   };
 
   resendOTP = async (request: FastifyRequest<{ Body: ResendOTPInput }>, reply: FastifyReply): Promise<void> => {
     const result = await this.resendOTPUseCase.execute(request.body);
-    reply.status(200).send(result);
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
   forgotPassword = async (request: FastifyRequest<{ Body: ForgotPasswordInput }>, reply: FastifyReply): Promise<void> => {
     const result = await this.forgotPasswordUseCase.execute(request.body);
-    reply.status(200).send(result);
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
   resetPassword = async (request: FastifyRequest<{ Body: ResetPasswordInput }>, reply: FastifyReply): Promise<void> => {
     const result = await this.resetPasswordUseCase.execute(request.body);
-    reply.status(200).send(result);
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
   refreshToken = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => { 
@@ -120,7 +122,7 @@ export class AuthController {
     });
     // Exclude refresh token from response body
     const { refreshToken, ...responseData } = result;
-    reply.status(200).send(responseData);
+    reply.status(HttpStatus.OK).send(wrapSuccess(responseData));
   };
 
   googleLogin = async (
@@ -139,7 +141,7 @@ export class AuthController {
   
     // Exclude refresh token from response body
     const { refreshToken, ...responseData } = result;
-    reply.status(200).send(responseData);
+    reply.status(HttpStatus.OK).send(wrapSuccess(responseData));
   };
   
   googleRegister = async (
@@ -158,7 +160,7 @@ export class AuthController {
   
     // Exclude refresh token from response body
     const { refreshToken, ...responseData } = result;
-    reply.status(200).send(responseData);
+    reply.status(HttpStatus.OK).send(wrapSuccess(responseData));
   };
   
 
@@ -173,6 +175,6 @@ export class AuthController {
 
     const result = await this.logoutUseCase.execute({ refreshToken });
     reply.clearCookie('refreshToken', { path: '/' });
-    reply.status(200).send(result);
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 }

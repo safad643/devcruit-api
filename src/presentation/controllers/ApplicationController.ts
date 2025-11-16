@@ -16,6 +16,8 @@ import {
   ListApplicationsForDeveloperQueryInput,
   WithdrawApplicationInput
 } from '../schemas/application.schema';
+import { wrapSuccess } from '../../utils/response';
+import { HttpStatus } from '../../utils/statusCodes';
 
 @injectable()
 export class ApplicationController {
@@ -39,7 +41,7 @@ export class ApplicationController {
       ...request.body, 
       developerId 
     });
-    reply.status(201).send(result);
+    reply.status(HttpStatus.CREATED).send(wrapSuccess(result));
   };
 
   // Company endpoint: List applications for their jobs
@@ -64,7 +66,7 @@ export class ApplicationController {
       sortOrder: query.sortOrder,
     });
     
-    reply.status(200).send(result);
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
   // Company endpoint: Get application details
@@ -75,7 +77,7 @@ export class ApplicationController {
     const companyId = request.user?.id as string;
     const applicationId = request.params.id;
     const result = await this.getApplicationDetailsUseCase.execute(applicationId, companyId);
-    reply.status(200).send(result);
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
   // Developer endpoint: List their own applications
@@ -99,7 +101,7 @@ export class ApplicationController {
       sortOrder: query.sortOrder,
     });
     
-    reply.status(200).send(result);
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
   // Developer endpoint: Withdraw application
@@ -112,7 +114,7 @@ export class ApplicationController {
       applicationId: request.body.applicationId,
       developerId,
     });
-    reply.status(200).send(result);
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
   // Company endpoint: Get application metrics for a job
@@ -123,7 +125,7 @@ export class ApplicationController {
     const companyId = request.user?.id as string;
     const jobId = request.params.jobId;
     const result = await this.getApplicationMetricsUseCase.execute(jobId, companyId);
-    reply.status(200).send(result);
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
   // Company endpoint: Shortlist application
@@ -137,7 +139,7 @@ export class ApplicationController {
       applicationId,
       companyId,
     });
-    reply.status(200).send(result);
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 }
 

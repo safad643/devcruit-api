@@ -11,6 +11,8 @@ import {
   IUpdateJobUseCase,
   IGetJobUseCase
 } from '../../application/use-cases/job/interfaces';
+import { wrapSuccess } from '../../utils/response';
+import { HttpStatus } from '../../utils/statusCodes';
 
 @injectable()
 export class JobController {
@@ -30,7 +32,7 @@ export class JobController {
   ): Promise<void> => {
     const companyId = request.user?.id as string;
     const result = await this.createJobUseCase.execute({ ...request.body, companyId });
-    reply.status(201).send(result);
+    reply.status(HttpStatus.CREATED).send(wrapSuccess(result));
   };
 
   listJobs = async (
@@ -57,7 +59,7 @@ export class JobController {
       sortOrder: query.sortOrder,
     });
     
-    reply.status(200).send(result);
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
   deleteJob = async (
@@ -67,7 +69,7 @@ export class JobController {
     const companyId = request.user?.id as string;
     const jobId = request.params.id;
     await this.deleteJobUseCase.execute({ jobId, companyId });
-    reply.status(200).send({ message: 'Job deleted successfully' });
+    reply.status(HttpStatus.OK).send(wrapSuccess({ message: 'Job deleted successfully' }));
   };
 
   closeJob = async (
@@ -77,7 +79,7 @@ export class JobController {
     const companyId = request.user?.id as string;
     const jobId = request.params.id;
     const result = await this.closeJobUseCase.execute({ jobId, companyId });
-    reply.status(200).send(result);
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
   openJob = async (
@@ -87,14 +89,14 @@ export class JobController {
     const companyId = request.user?.id as string;
     const jobId = request.params.id;
     const result = await this.openJobUseCase.execute({ jobId, companyId });
-    reply.status(200).send(result);
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
   getJob = async (
     request: FastifyRequest<{ Params: { id: string } }>,
     reply: FastifyReply
   ): Promise<void> => {
     const job = await this.getJobUseCase.execute(request.params.id);
-    reply.status(200).send(job);
+    reply.status(HttpStatus.OK).send(wrapSuccess(job));
   };
 
   updateJob = async (
@@ -108,7 +110,7 @@ export class JobController {
       companyId,
       updates: request.body
     });
-    reply.status(200).send(result);
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 }
 

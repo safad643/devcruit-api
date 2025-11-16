@@ -13,6 +13,8 @@ import {
   CreateCompanyProfileInput,
   ResubmitDocumentsInput
 } from '../schemas/profile.schema';
+import { wrapSuccess } from '../../utils/response';
+import { HttpStatus } from '../../utils/statusCodes';
 
 @injectable()
 export class ProfileController {
@@ -31,7 +33,7 @@ export class ProfileController {
 
     const userId = request.user?.id as string; //wont reach here is req.user is not avaible so its fine to assert
     const result = await this.createProfileUseCase.execute({ ...request.body, userId });
-    reply.status(201).send(result);
+    reply.status(HttpStatus.CREATED).send(wrapSuccess(result));
   };
 
   createCompanyProfile = async (
@@ -41,7 +43,7 @@ export class ProfileController {
 
     const userId = request.user?.id as string;
     const result = await this.createCompanyProfileUseCase.execute({ ...request.body, userId });
-    reply.status(201).send(result);
+    reply.status(HttpStatus.CREATED).send(wrapSuccess(result));
   };
 
   getProfile = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
@@ -50,12 +52,12 @@ export class ProfileController {
 
     if (role === 'company') {
       const result = await this.getCompanyProfileUseCase.execute(userId);
-      reply.status(200).send(result);
+      reply.status(HttpStatus.OK).send(wrapSuccess(result));
     } else if (role === 'developer') {
       const result = await this.getDeveloperProfileUseCase.execute(userId);
-      reply.status(200).send(result);
+      reply.status(HttpStatus.OK).send(wrapSuccess(result));
     } else {
-      reply.status(400).send({ error: 'Invalid user role for profile endpoint' });
+      reply.status(HttpStatus.BAD_REQUEST).send({ success: false, error: { message: 'Invalid user role for profile endpoint' } });
     }
   };
 
@@ -68,7 +70,7 @@ export class ProfileController {
       userId,
       documents: request.body.documents
     });
-    reply.status(200).send(result);
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 }
 

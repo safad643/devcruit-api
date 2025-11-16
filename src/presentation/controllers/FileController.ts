@@ -4,6 +4,8 @@ import { TYPES } from '../../di/types';
 import { DeleteFileUseCase, GenerateSignatureUseCase } from '../../application/use-cases/file';
 import { BadRequestError } from '../../domain/errors';
 import { DeleteFileInput, GenerateSignatureInput } from '../schemas/file.schema';
+import { wrapSuccess } from '../../utils/response';
+import { HttpStatus } from '../../utils/statusCodes';
 
 @injectable()
 export class FileController {
@@ -32,7 +34,7 @@ export class FileController {
       userId,
     });
 
-    reply.status(200).send(result);
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
   delete = async (
@@ -43,6 +45,6 @@ export class FileController {
       publicId: request.body.publicId,
     });
 
-    reply.status(200).send(result);
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 }

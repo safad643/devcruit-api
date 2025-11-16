@@ -4,6 +4,8 @@ import { TYPES } from '../../di/types';
 import { PublicListJobsUseCase } from '../../application/use-cases/job/PublicListJobsUseCase';
 import { PublicGetJobUseCase } from '../../application/use-cases/job/PublicGetJobUseCase';
 import { PublicListJobsQueryInput } from '../schemas/public.job.schema';
+import { wrapSuccess } from '../../utils/response';
+import { HttpStatus } from '../../utils/statusCodes';
 
 @injectable()
 export class PublicJobController {
@@ -32,7 +34,7 @@ export class PublicJobController {
       sortBy: q.sortBy,
       sortOrder: q.sortOrder,
     });
-    reply.status(200).send(result);
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
   get = async (
@@ -40,7 +42,7 @@ export class PublicJobController {
     reply: FastifyReply
   ): Promise<void> => {
     const job = await this.getUseCase.execute(request.params.id);
-    reply.status(200).send(job);
+    reply.status(HttpStatus.OK).send(wrapSuccess(job));
   };
 }
 

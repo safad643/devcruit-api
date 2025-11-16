@@ -16,7 +16,8 @@ import { applicationRoutes } from './presentation/routes/application.routes';
 import fastifyRawBody from 'fastify-raw-body';
 import { globalErrorHandler } from './presentation/middleware/errorHandler';
 import { config } from './config';
-import ajvErrors from 'ajv-errors';  
+import ajvErrors from 'ajv-errors';
+import { HttpStatus } from './utils/statusCodes';  
 const server = Fastify({
   logger: {
     level: config.nodeEnv === 'production' ? 'info' : 'debug',
@@ -64,11 +65,13 @@ export async function buildServer() {
     max: 100,
     timeWindow: '15 minutes',
     errorResponseBuilder: (req, context) => ({
+      success: false,
       error: {
         code: 'TOO_MANY_REQUESTS',
         message: 'Rate limit exceeded. Please try again later.'
       }
-    })
+    }),
+    statusCode: HttpStatus.TOO_MANY_REQUESTS
   });
 
   // Raw body plugin for Stripe webhooks (route-scoped)

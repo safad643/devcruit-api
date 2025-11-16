@@ -4,6 +4,8 @@ import { TYPES } from '../../di/types';
 import { CreateCheckoutSessionUseCase, HandleStripeWebhookUseCase, CompletePaymentUseCase } from '../../application/use-cases/payment';
 import { ValidationError } from '../../domain/errors';
 import { CreateCheckoutInput } from '../schemas/payment.schema';
+import { wrapSuccess } from '../../utils/response';
+import { HttpStatus } from '../../utils/statusCodes';
 
 @injectable()
 export class PaymentController {
@@ -26,7 +28,7 @@ export class PaymentController {
       cancelUrl,
     });
 
-    reply.status(200).send({ sessionId: result.sessionId, url: result.url });
+    reply.status(HttpStatus.OK).send(wrapSuccess({ sessionId: result.sessionId, url: result.url }));
   };
 
   webhook = async (
@@ -56,7 +58,7 @@ export class PaymentController {
       plan: verified.plan
     });
 
-    reply.status(200).send({ received: true, eventType: verified.eventType });
+    reply.status(HttpStatus.OK).send(wrapSuccess({ received: true, eventType: verified.eventType }));
   };
 }
 
