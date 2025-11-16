@@ -5,9 +5,10 @@ import { TYPES } from '../../../di/types';
 import { ForgotPasswordInput, ForgotPasswordOutput } from '../../dtos/auth.dto';
 import { NotFoundError } from '../../../domain/errors';
 import { config } from '../../../config';
+import { IForgotPasswordUseCase } from './interfaces';
 
 @injectable()
-export class ForgotPasswordUseCase {
+export class ForgotPasswordUseCase implements IForgotPasswordUseCase {
   constructor(
     @inject(TYPES.UserRepository) private userRepository: IUserRepository,
     @inject(TYPES.OTPRepository) private otpRepository: IOTPRepository,

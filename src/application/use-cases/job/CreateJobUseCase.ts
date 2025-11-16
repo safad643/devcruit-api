@@ -3,9 +3,10 @@ import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { NotFoundError, ValidationError } from '../../../domain/errors';
 import { Job } from '../../../domain/entities/Job';
+import { ICreateJobUseCase } from './interfaces';
 
 @injectable()
-export class CreateJobUseCase {
+export class CreateJobUseCase implements ICreateJobUseCase {
   constructor(
     @inject(TYPES.JobRepository) private jobRepository: IJobRepository,
     @inject(TYPES.UserRepository) private userRepository: IUserRepository

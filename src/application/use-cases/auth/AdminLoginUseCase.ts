@@ -5,9 +5,10 @@ import { TYPES } from '../../../di/types';
 import { LoginInput, AdminAuthTokensOutput } from '../../dtos/auth.dto';
 import { UnauthorizedError } from '../../../domain/errors';
 import { config } from '../../../config';
+import { IAdminLoginUseCase } from './interfaces';
 
 @injectable()
-export class AdminLoginUseCase {
+export class AdminLoginUseCase implements IAdminLoginUseCase {
   constructor(
     @inject(TYPES.AdminRepository) private adminRepository: IAdminRepository,
     @inject(TYPES.RefreshTokenRepository) private refreshTokenRepository: IRefreshTokenRepository,

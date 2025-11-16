@@ -8,9 +8,10 @@ import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { ForbiddenError } from '../../../domain/errors';
 import { ListApplicationsForCompanyInput, ListApplicationsForCompanyOutput, ApplicationListItem } from '../../dtos/application.dto';
+import { IListApplicationsForCompanyUseCase } from './interfaces';
 
 @injectable()
-export class ListApplicationsForCompanyUseCase {
+export class ListApplicationsForCompanyUseCase implements IListApplicationsForCompanyUseCase {
   constructor(
     @inject(TYPES.ApplicationRepository) private applicationRepository: IApplicationRepository,
     @inject(TYPES.JobRepository) private jobRepository: IJobRepository,

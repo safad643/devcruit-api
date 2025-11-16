@@ -2,19 +2,15 @@ import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { IJobRepository } from '../../../domain/repositories';
 import { ForbiddenError, NotFoundError, ValidationError } from '../../../domain/errors';
-
-interface CloseJobInput {
-  jobId: string;
-  companyId: string;
-}
+import { ICloseJobUseCase } from './interfaces';
 
 @injectable()
-export class CloseJobUseCase {
+export class CloseJobUseCase implements ICloseJobUseCase {
   constructor(
     @inject(TYPES.JobRepository) private jobRepository: IJobRepository
   ) {}
 
-  async execute(input: CloseJobInput): Promise<{ message: string }> {
+  async execute(input: { jobId: string; companyId: string }): Promise<{ message: string }> {
     const job = await this.jobRepository.findById(input.jobId);
     if (!job) {
       throw new NotFoundError('Job not found');

@@ -7,9 +7,10 @@ import { TYPES } from '../../../di/types';
 import { NotFoundError, ForbiddenError, ValidationError } from '../../../domain/errors';
 import { WithdrawApplicationInput, WithdrawApplicationOutput } from '../../dtos/application.dto';
 import { ApplicationStatus } from '../../../domain/entities/Application';
+import { IWithdrawApplicationUseCase } from './interfaces';
 
 @injectable()
-export class WithdrawApplicationUseCase {
+export class WithdrawApplicationUseCase implements IWithdrawApplicationUseCase {
   constructor(
     @inject(TYPES.ApplicationRepository) private applicationRepository: IApplicationRepository,
     @inject(TYPES.DeveloperProfileRepository) private developerProfileRepository: IDeveloperProfileRepository

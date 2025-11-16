@@ -6,9 +6,10 @@ import { LoginInput, AuthTokensOutput } from '../../dtos/auth.dto';
 import { UnauthorizedError, ForbiddenError } from '../../../domain/errors';
 import { CompanyDocumentKey } from '../../../domain/types';
 import { config } from '../../../config';
+import { ILoginUseCase } from './interfaces';
 
 @injectable()
-export class LoginUseCase {
+export class LoginUseCase implements ILoginUseCase {
   constructor(
     @inject(TYPES.UserRepository) private userRepository: IUserRepository,
     @inject(TYPES.RefreshTokenRepository) private refreshTokenRepository: IRefreshTokenRepository,

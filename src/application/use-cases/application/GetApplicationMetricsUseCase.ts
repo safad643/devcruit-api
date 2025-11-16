@@ -6,9 +6,10 @@ import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { NotFoundError, ForbiddenError } from '../../../domain/errors';
 import { ApplicationMetricsOutput } from '../../dtos/application.dto';
+import { IGetApplicationMetricsUseCase } from './interfaces';
 
 @injectable()
-export class GetApplicationMetricsUseCase {
+export class GetApplicationMetricsUseCase implements IGetApplicationMetricsUseCase {
   constructor(
     @inject(TYPES.ApplicationRepository) private applicationRepository: IApplicationRepository,
     @inject(TYPES.JobRepository) private jobRepository: IJobRepository

@@ -84,21 +84,8 @@ export const WithdrawApplicationSchema = Type.Object({
 
 export type WithdrawApplicationInput = Static<typeof WithdrawApplicationSchema>;
 
-// Update Application Status Schema
-export const UpdateApplicationStatusSchema = Type.Object({
-  status: Type.Union([
-    Type.Literal('applied'),
-    Type.Literal('shortlisted'),
-    Type.Literal('interviewing'),
-    Type.Literal('rejected'),
-    Type.Literal('offer_extended'),
-    Type.Literal('offer_accepted'),
-    Type.Literal('offer_declined'),
-    Type.Literal('withdrawn')
-  ]),
-  rejectionReason: Type.Optional(Type.String({ minLength: 1 })),
-  roundName: Type.Optional(Type.String({ minLength: 1 }))
-});
+// Update Application Status Schema (Shortlist Only - no body required)
+export const UpdateApplicationStatusSchema = Type.Object({});
 
 export type UpdateApplicationStatusInput = Static<typeof UpdateApplicationStatusSchema>;
 

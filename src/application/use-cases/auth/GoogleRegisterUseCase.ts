@@ -24,8 +24,10 @@ export interface GoogleRegisterOutput {
   };
 }
 
+import { IGoogleRegisterUseCase } from './interfaces';
+
 @injectable()
-export class GoogleRegisterUseCase {
+export class GoogleRegisterUseCase implements IGoogleRegisterUseCase {
   constructor(
     @inject(TYPES.GoogleAuthService) private googleAuthService: IGoogleAuthService,
     @inject(TYPES.UserRepository) private userRepository: IUserRepository,

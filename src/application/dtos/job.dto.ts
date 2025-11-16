@@ -65,6 +65,7 @@ export interface JobListItem {
   status: JobStatus;
   createdAt: Date;
   updatedAt: Date;
+  applicationCount: number;
 }
 
 export interface ListJobsOutput {

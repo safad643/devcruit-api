@@ -5,9 +5,10 @@ import { TYPES } from '../../../di/types';
 import { ResetPasswordInput, ResetPasswordOutput } from '../../dtos/auth.dto';
 import { UnauthorizedError, NotFoundError } from '../../../domain/errors';
 import { PasswordValidator } from '../../validators/PasswordValidator';
+import { IResetPasswordUseCase } from './interfaces';
 
 @injectable()
-export class ResetPasswordUseCase {
+export class ResetPasswordUseCase implements IResetPasswordUseCase {
   constructor(
     @inject(TYPES.UserRepository) private userRepository: IUserRepository,
     @inject(TYPES.OTPRepository) private otpRepository: IOTPRepository,

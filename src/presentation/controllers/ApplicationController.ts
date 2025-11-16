@@ -1,31 +1,32 @@
 import { injectable, inject } from 'inversify';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { TYPES } from '../../di/types';
-import { CreateApplicationUseCase } from '../../application/use-cases/application/CreateApplicationUseCase';
-import { ListApplicationsForCompanyUseCase } from '../../application/use-cases/application/ListApplicationsForCompanyUseCase';
-import { GetApplicationDetailsUseCase } from '../../application/use-cases/application/GetApplicationDetailsUseCase';
-import { ListApplicationsForDeveloperUseCase } from '../../application/use-cases/application/ListApplicationsForDeveloperUseCase';
-import { WithdrawApplicationUseCase } from '../../application/use-cases/application/WithdrawApplicationUseCase';
-import { GetApplicationMetricsUseCase } from '../../application/use-cases/application/GetApplicationMetricsUseCase';
-import { UpdateApplicationStatusUseCase } from '../../application/use-cases/application/UpdateApplicationStatusUseCase';
+import {
+  ICreateApplicationUseCase,
+  IListApplicationsForCompanyUseCase,
+  IGetApplicationDetailsUseCase,
+  IListApplicationsForDeveloperUseCase,
+  IWithdrawApplicationUseCase,
+  IGetApplicationMetricsUseCase,
+  IUpdateApplicationStatusUseCase
+} from '../../application/use-cases/application/interfaces';
 import { 
   CreateApplicationInput, 
   ListApplicationsForCompanyQueryInput,
   ListApplicationsForDeveloperQueryInput,
-  WithdrawApplicationInput,
-  UpdateApplicationStatusInput
+  WithdrawApplicationInput
 } from '../schemas/application.schema';
 
 @injectable()
 export class ApplicationController {
   constructor(
-    @inject(TYPES.CreateApplicationUseCase) private createApplicationUseCase: CreateApplicationUseCase,
-    @inject(TYPES.ListApplicationsForCompanyUseCase) private listApplicationsForCompanyUseCase: ListApplicationsForCompanyUseCase,
-    @inject(TYPES.GetApplicationDetailsUseCase) private getApplicationDetailsUseCase: GetApplicationDetailsUseCase,
-    @inject(TYPES.ListApplicationsForDeveloperUseCase) private listApplicationsForDeveloperUseCase: ListApplicationsForDeveloperUseCase,
-    @inject(TYPES.WithdrawApplicationUseCase) private withdrawApplicationUseCase: WithdrawApplicationUseCase,
-    @inject(TYPES.GetApplicationMetricsUseCase) private getApplicationMetricsUseCase: GetApplicationMetricsUseCase,
-    @inject(TYPES.UpdateApplicationStatusUseCase) private updateApplicationStatusUseCase: UpdateApplicationStatusUseCase
+    @inject(TYPES.CreateApplicationUseCase) private createApplicationUseCase: ICreateApplicationUseCase,
+    @inject(TYPES.ListApplicationsForCompanyUseCase) private listApplicationsForCompanyUseCase: IListApplicationsForCompanyUseCase,
+    @inject(TYPES.GetApplicationDetailsUseCase) private getApplicationDetailsUseCase: IGetApplicationDetailsUseCase,
+    @inject(TYPES.ListApplicationsForDeveloperUseCase) private listApplicationsForDeveloperUseCase: IListApplicationsForDeveloperUseCase,
+    @inject(TYPES.WithdrawApplicationUseCase) private withdrawApplicationUseCase: IWithdrawApplicationUseCase,
+    @inject(TYPES.GetApplicationMetricsUseCase) private getApplicationMetricsUseCase: IGetApplicationMetricsUseCase,
+    @inject(TYPES.UpdateApplicationStatusUseCase) private updateApplicationStatusUseCase: IUpdateApplicationStatusUseCase
   ) {}
 
   // Developer endpoint: Apply to a job
@@ -125,9 +126,9 @@ export class ApplicationController {
     reply.status(200).send(result);
   };
 
-  // Company endpoint: Update application status
-  updateApplicationStatus = async (
-    request: FastifyRequest<{ Params: { id: string }; Body: UpdateApplicationStatusInput }>,
+  // Company endpoint: Shortlist application
+  shortlistApplication = async (
+    request: FastifyRequest<{ Params: { id: string } }>,
     reply: FastifyReply
   ): Promise<void> => {
     const companyId = request.user?.id as string;
@@ -135,7 +136,6 @@ export class ApplicationController {
     const result = await this.updateApplicationStatusUseCase.execute({
       applicationId,
       companyId,
-      ...request.body,
     });
     reply.status(200).send(result);
   };

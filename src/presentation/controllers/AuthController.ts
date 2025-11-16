@@ -2,19 +2,19 @@ import { injectable, inject } from 'inversify';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { TYPES } from '../../di/types';
 import { ValidationError } from '../../domain/errors';
-import { 
-  RegisterUserUseCase,
-  VerifyEmailUseCase,
-  LoginUseCase,
-  AdminLoginUseCase,
-  ResendOTPUseCase,
-  ForgotPasswordUseCase,
-  ResetPasswordUseCase,
-  RefreshTokenUseCase,
-  LogoutUseCase,
-  GoogleLoginUseCase,      
-  GoogleRegisterUseCase
-} from '../../application/use-cases/auth';
+import {
+  IRegisterUserUseCase,
+  IVerifyEmailUseCase,
+  ILoginUseCase,
+  IAdminLoginUseCase,
+  IResendOTPUseCase,
+  IForgotPasswordUseCase,
+  IResetPasswordUseCase,
+  IRefreshTokenUseCase,
+  ILogoutUseCase,
+  IGoogleLoginUseCase,
+  IGoogleRegisterUseCase
+} from '../../application/use-cases/auth/interfaces';
 import {
   RegisterUserInput,
   VerifyEmailInput,
@@ -28,17 +28,17 @@ import { config } from '../../config';
 @injectable()
 export class AuthController {
   constructor(
-    @inject(TYPES.RegisterUserUseCase) private registerUserUseCase: RegisterUserUseCase,
-    @inject(TYPES.VerifyEmailUseCase) private verifyEmailUseCase: VerifyEmailUseCase,
-    @inject(TYPES.LoginUseCase) private loginUseCase: LoginUseCase,
-    @inject(TYPES.AdminLoginUseCase) private adminLoginUseCase: AdminLoginUseCase,
-    @inject(TYPES.ResendOTPUseCase) private resendOTPUseCase: ResendOTPUseCase,
-    @inject(TYPES.ForgotPasswordUseCase) private forgotPasswordUseCase: ForgotPasswordUseCase,
-    @inject(TYPES.ResetPasswordUseCase) private resetPasswordUseCase: ResetPasswordUseCase,
-    @inject(TYPES.RefreshTokenUseCase) private refreshTokenUseCase: RefreshTokenUseCase,
-    @inject(TYPES.LogoutUseCase) private logoutUseCase: LogoutUseCase,
-    @inject(TYPES.GoogleLoginUseCase) private googleLoginUseCase: GoogleLoginUseCase,           
-    @inject(TYPES.GoogleRegisterUseCase) private googleRegisterUseCase: GoogleRegisterUseCase
+    @inject(TYPES.RegisterUserUseCase) private registerUserUseCase: IRegisterUserUseCase,
+    @inject(TYPES.VerifyEmailUseCase) private verifyEmailUseCase: IVerifyEmailUseCase,
+    @inject(TYPES.LoginUseCase) private loginUseCase: ILoginUseCase,
+    @inject(TYPES.AdminLoginUseCase) private adminLoginUseCase: IAdminLoginUseCase,
+    @inject(TYPES.ResendOTPUseCase) private resendOTPUseCase: IResendOTPUseCase,
+    @inject(TYPES.ForgotPasswordUseCase) private forgotPasswordUseCase: IForgotPasswordUseCase,
+    @inject(TYPES.ResetPasswordUseCase) private resetPasswordUseCase: IResetPasswordUseCase,
+    @inject(TYPES.RefreshTokenUseCase) private refreshTokenUseCase: IRefreshTokenUseCase,
+    @inject(TYPES.LogoutUseCase) private logoutUseCase: ILogoutUseCase,
+    @inject(TYPES.GoogleLoginUseCase) private googleLoginUseCase: IGoogleLoginUseCase,
+    @inject(TYPES.GoogleRegisterUseCase) private googleRegisterUseCase: IGoogleRegisterUseCase
   ) {}
 
   // Arrow functions auto-bind 'this'

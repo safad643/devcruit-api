@@ -26,8 +26,10 @@ export interface GoogleLoginOutput {
   };
 }
 
+import { IGoogleLoginUseCase } from './interfaces';
+
 @injectable()
-export class GoogleLoginUseCase {
+export class GoogleLoginUseCase implements IGoogleLoginUseCase {
   constructor(
     @inject(TYPES.GoogleAuthService) private googleAuthService: IGoogleAuthService,
     @inject(TYPES.UserRepository) private userRepository: IUserRepository,

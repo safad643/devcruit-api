@@ -3,9 +3,10 @@ import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { PublicListJobsInput, PublicListJobsOutput } from '../../dtos/job.dto';
 import { getMongoDb } from '../../../infrastructure/database/mongodb/client';
+import { IPublicListJobsUseCase } from './interfaces';
 
 @injectable()
-export class PublicListJobsUseCase {
+export class PublicListJobsUseCase implements IPublicListJobsUseCase {
   constructor(
     @inject(TYPES.JobRepository) private jobRepository: IJobRepository
   ) {}

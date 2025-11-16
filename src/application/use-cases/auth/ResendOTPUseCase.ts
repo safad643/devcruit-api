@@ -5,9 +5,10 @@ import { TYPES } from '../../../di/types';
 import { ResendOTPInput, ResendOTPOutput } from '../../dtos/auth.dto';
 import { NotFoundError, TooManyRequestsError } from '../../../domain/errors';
 import { config } from '../../../config';
+import { IResendOTPUseCase } from './interfaces';
 
 @injectable()
-export class ResendOTPUseCase {
+export class ResendOTPUseCase implements IResendOTPUseCase {
   private readonly MAX_ATTEMPTS = 3;
 
   constructor(

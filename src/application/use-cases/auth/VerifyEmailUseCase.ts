@@ -6,9 +6,10 @@ import { User } from '../../../domain/entities/User';
 import { VerifyEmailInput, AuthTokensOutput } from '../../dtos/auth.dto';
 import { UnauthorizedError, NotFoundError } from '../../../domain/errors';
 import { config } from '../../../config';
+import { IVerifyEmailUseCase } from './interfaces';
 
 @injectable()
-export class VerifyEmailUseCase {
+export class VerifyEmailUseCase implements IVerifyEmailUseCase {
   constructor(
     @inject(TYPES.UserRepository) private userRepository: IUserRepository,
     @inject(TYPES.PendingUserRepository) private pendingUserRepository: IPendingUserRepository,

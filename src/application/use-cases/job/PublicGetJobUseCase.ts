@@ -4,9 +4,10 @@ import { TYPES } from '../../../di/types';
 import { PublicJobDetail } from '../../dtos/job.dto';
 import { NotFoundError } from '../../../domain/errors';
 import { getMongoDb } from '../../../infrastructure/database/mongodb/client';
+import { IPublicGetJobUseCase } from './interfaces';
 
 @injectable()
-export class PublicGetJobUseCase {
+export class PublicGetJobUseCase implements IPublicGetJobUseCase {
   constructor(
     @inject(TYPES.JobRepository) private jobRepository: IJobRepository
   ) {}

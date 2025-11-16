@@ -11,9 +11,10 @@ import { NotFoundError, ValidationError } from '../../../domain/errors';
 import { Application, InterviewRound } from '../../../domain/entities/Application';
 import { CreateApplicationInput, CreateApplicationOutput } from '../../dtos/application.dto';
 import { IEmailService } from '../../services';
+import { ICreateApplicationUseCase } from './interfaces';
 
 @injectable()
-export class CreateApplicationUseCase {
+export class CreateApplicationUseCase implements ICreateApplicationUseCase {
   constructor(
     @inject(TYPES.ApplicationRepository) private applicationRepository: IApplicationRepository,
     @inject(TYPES.JobRepository) private jobRepository: IJobRepository,

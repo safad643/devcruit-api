@@ -89,13 +89,39 @@ export const JobIdParamsSchema = Type.Object({
   id: Type.String({ minLength: 1 })
 });
 
-// Update Job Schema - only editable fields
+// Update Job Schema - all fields are now editable (since we prevent editing after applications)
 export const UpdateJobSchema = Type.Object({
+  title: Type.Optional(Type.String({ minLength: 1, maxLength: 200 })),
   description: Type.Optional(Type.String({ minLength: 1, maxLength: 10000 })),
-  benefits: Type.Optional(Type.String({ maxLength: 2000 })),
-  validUntil: Type.Optional(Type.String({ format: 'date' })), // can only extend (validated in use case)
+  category: Type.Optional(Type.String({ minLength: 1, maxLength: 100 })),
+  requiredTech: Type.Optional(Type.Array(Type.String(), { minItems: 1 })),
+  requiredSkills: Type.Optional(Type.Array(Type.String(), { minItems: 1 })),
+  experienceLevel: Type.Optional(Type.Union([
+    Type.Literal('junior'),
+    Type.Literal('mid'),
+    Type.Literal('senior'),
+    Type.Literal('lead')
+  ])),
+  minYears: Type.Optional(Type.Number({ minimum: 0, maximum: 100 })),
   niceTech: Type.Optional(Type.Array(Type.String(), { minItems: 0 })),
   niceSkills: Type.Optional(Type.Array(Type.String(), { minItems: 0 })),
+  interviewRounds: Type.Optional(Type.Array(Type.String({ minLength: 1 }), { minItems: 1 })),
+  jobType: Type.Optional(Type.Union([
+    Type.Literal('full-time'),
+    Type.Literal('part-time'),
+    Type.Literal('contract'),
+    Type.Literal('freelance')
+  ])),
+  workArrangement: Type.Optional(Type.Union([
+    Type.Literal('remote'),
+    Type.Literal('hybrid'),
+    Type.Literal('on-site')
+  ])),
+  location: Type.Optional(Type.String({ minLength: 1, maxLength: 200 })),
+  relocation: Type.Optional(Type.Boolean()),
+  compensation: Type.Optional(CompensationSchema),
+  benefits: Type.Optional(Type.String({ maxLength: 2000 })),
+  validUntil: Type.Optional(Type.String({ format: 'date' })),
   autoShortlist: Type.Optional(Type.Boolean()),
 });
 

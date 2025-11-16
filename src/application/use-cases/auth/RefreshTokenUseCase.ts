@@ -5,9 +5,10 @@ import { TYPES } from '../../../di/types';
 import { RefreshTokenInput, RefreshTokenOutput } from '../../dtos/auth.dto';
 import { UnauthorizedError } from '../../../domain/errors';
 import { config } from '../../../config';
+import { IRefreshTokenUseCase } from './interfaces';
 
 @injectable()
-export class RefreshTokenUseCase {
+export class RefreshTokenUseCase implements IRefreshTokenUseCase {
   constructor(
     @inject(TYPES.RefreshTokenRepository) private refreshTokenRepository: IRefreshTokenRepository,
     @inject(TYPES.TokenService) private tokenService: ITokenService

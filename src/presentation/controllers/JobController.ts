@@ -1,25 +1,27 @@
 import { injectable, inject } from 'inversify';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { TYPES } from '../../di/types';
-import { CreateJobUseCase } from '../../application/use-cases/job/CreateJobUseCase';
-import { ListJobsUseCase } from '../../application/use-cases/job/ListJobsUseCase';
 import { CreateJobInput, ListJobsQueryInput, UpdateJobInput } from '../schemas/job.schema';
-import { DeleteJobUseCase } from '../../application/use-cases/job/DeleteJobUseCase';
-import { CloseJobUseCase } from '../../application/use-cases/job/CloseJobUseCase';
-import { UpdateJobUseCase } from '../../application/use-cases/job/UpdateJobUseCase';
-import { GetJobUseCase } from '../../application/use-cases/job/GetJobUseCase';
-import { OpenJobUseCase } from '../../application/use-cases/job/OpenJobUseCase';
+import {
+  ICreateJobUseCase,
+  IListJobsUseCase,
+  IDeleteJobUseCase,
+  ICloseJobUseCase,
+  IOpenJobUseCase,
+  IUpdateJobUseCase,
+  IGetJobUseCase
+} from '../../application/use-cases/job/interfaces';
 
 @injectable()
 export class JobController {
   constructor(
-    @inject(TYPES.CreateJobUseCase) private createJobUseCase: CreateJobUseCase,
-    @inject(TYPES.ListJobsUseCase) private listJobsUseCase: ListJobsUseCase,
-    @inject(TYPES.DeleteJobUseCase) private deleteJobUseCase: DeleteJobUseCase,
-    @inject(TYPES.CloseJobUseCase) private closeJobUseCase: CloseJobUseCase,
-    @inject(TYPES.OpenJobUseCase) private openJobUseCase: OpenJobUseCase,
-    @inject(TYPES.UpdateJobUseCase) private updateJobUseCase: UpdateJobUseCase,
-    @inject(TYPES.GetJobUseCase) private getJobUseCase: GetJobUseCase
+    @inject(TYPES.CreateJobUseCase) private createJobUseCase: ICreateJobUseCase,
+    @inject(TYPES.ListJobsUseCase) private listJobsUseCase: IListJobsUseCase,
+    @inject(TYPES.DeleteJobUseCase) private deleteJobUseCase: IDeleteJobUseCase,
+    @inject(TYPES.CloseJobUseCase) private closeJobUseCase: ICloseJobUseCase,
+    @inject(TYPES.OpenJobUseCase) private openJobUseCase: IOpenJobUseCase,
+    @inject(TYPES.UpdateJobUseCase) private updateJobUseCase: IUpdateJobUseCase,
+    @inject(TYPES.GetJobUseCase) private getJobUseCase: IGetJobUseCase
   ) {}
 
   createJob = async (

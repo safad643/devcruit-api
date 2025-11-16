@@ -3,9 +3,10 @@ import { ITokenService } from '../../services';
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { LogoutInput, LogoutOutput } from '../../dtos/auth.dto';
+import { ILogoutUseCase } from './interfaces';
 
 @injectable()
-export class LogoutUseCase {
+export class LogoutUseCase implements ILogoutUseCase {
   constructor(
     @inject(TYPES.RefreshTokenRepository) private refreshTokenRepository: IRefreshTokenRepository,
     @inject(TYPES.TokenService) private tokenService: ITokenService

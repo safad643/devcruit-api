@@ -75,7 +75,7 @@ export async function applicationRoutes(fastify: FastifyInstance): Promise<void>
   );
 
   fastify.patch(
-    '/company/applications/:id/status',
+    '/company/applications/:id/shortlist',
     {
       preHandler: [authenticate, authorize('company'), checkCompanyPaid],
       schema: { 
@@ -83,7 +83,7 @@ export async function applicationRoutes(fastify: FastifyInstance): Promise<void>
         body: UpdateApplicationStatusSchema
       }
     },
-    applicationController.updateApplicationStatus
+    applicationController.shortlistApplication
   );
 }
 

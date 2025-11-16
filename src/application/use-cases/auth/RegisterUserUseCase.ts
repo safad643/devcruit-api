@@ -6,9 +6,10 @@ import { RegisterUserInput, RegisterUserOutput } from '../../dtos/auth.dto';
 import { ConflictError } from '../../../domain/errors';
 import { PasswordValidator } from '../../validators/PasswordValidator';
 import { config } from '../../../config';
+import { IRegisterUserUseCase } from './interfaces';
 
 @injectable()
-export class RegisterUserUseCase {
+export class RegisterUserUseCase implements IRegisterUserUseCase {
   constructor(
     @inject(TYPES.UserRepository) private userRepository: IUserRepository,
     @inject(TYPES.PendingUserRepository) private pendingUserRepository: IPendingUserRepository,

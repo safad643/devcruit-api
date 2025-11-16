@@ -141,12 +141,10 @@ export interface ApplicationMetricsOutput {
   withdrawn: number;
 }
 
-// Update Application Status
+// Update Application Status (Shortlist Only)
 export interface UpdateApplicationStatusInput {
   applicationId: string;
-  status: ApplicationStatus;
-  rejectionReason?: string;
-  roundName?: string; // Optional: specific round name when status is 'interviewing'
+  companyId: string;
 }
 
 export interface UpdateApplicationStatusOutput {

@@ -8,15 +8,24 @@ import { WithdrawApplicationUseCase } from '../../application/use-cases/applicat
 import { GetApplicationMetricsUseCase } from '../../application/use-cases/application/GetApplicationMetricsUseCase';
 import { UpdateApplicationStatusUseCase } from '../../application/use-cases/application/UpdateApplicationStatusUseCase';
 import { ApplicationController } from '../../presentation/controllers/ApplicationController';
+import {
+  ICreateApplicationUseCase,
+  IListApplicationsForCompanyUseCase,
+  IGetApplicationDetailsUseCase,
+  IListApplicationsForDeveloperUseCase,
+  IWithdrawApplicationUseCase,
+  IGetApplicationMetricsUseCase,
+  IUpdateApplicationStatusUseCase
+} from '../../application/use-cases/application/interfaces';
 
 export const applicationModule = new ContainerModule((bind) => {
-  bind<CreateApplicationUseCase>(TYPES.CreateApplicationUseCase).to(CreateApplicationUseCase);
-  bind<ListApplicationsForCompanyUseCase>(TYPES.ListApplicationsForCompanyUseCase).to(ListApplicationsForCompanyUseCase);
-  bind<GetApplicationDetailsUseCase>(TYPES.GetApplicationDetailsUseCase).to(GetApplicationDetailsUseCase);
-  bind<ListApplicationsForDeveloperUseCase>(TYPES.ListApplicationsForDeveloperUseCase).to(ListApplicationsForDeveloperUseCase);
-  bind<WithdrawApplicationUseCase>(TYPES.WithdrawApplicationUseCase).to(WithdrawApplicationUseCase);
-  bind<GetApplicationMetricsUseCase>(TYPES.GetApplicationMetricsUseCase).to(GetApplicationMetricsUseCase);
-  bind<UpdateApplicationStatusUseCase>(TYPES.UpdateApplicationStatusUseCase).to(UpdateApplicationStatusUseCase);
+  bind<ICreateApplicationUseCase>(TYPES.CreateApplicationUseCase).to(CreateApplicationUseCase);
+  bind<IListApplicationsForCompanyUseCase>(TYPES.ListApplicationsForCompanyUseCase).to(ListApplicationsForCompanyUseCase);
+  bind<IGetApplicationDetailsUseCase>(TYPES.GetApplicationDetailsUseCase).to(GetApplicationDetailsUseCase);
+  bind<IListApplicationsForDeveloperUseCase>(TYPES.ListApplicationsForDeveloperUseCase).to(ListApplicationsForDeveloperUseCase);
+  bind<IWithdrawApplicationUseCase>(TYPES.WithdrawApplicationUseCase).to(WithdrawApplicationUseCase);
+  bind<IGetApplicationMetricsUseCase>(TYPES.GetApplicationMetricsUseCase).to(GetApplicationMetricsUseCase);
+  bind<IUpdateApplicationStatusUseCase>(TYPES.UpdateApplicationStatusUseCase).to(UpdateApplicationStatusUseCase);
   bind<ApplicationController>(TYPES.ApplicationController).to(ApplicationController);
 });
 
