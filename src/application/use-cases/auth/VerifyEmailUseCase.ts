@@ -55,14 +55,12 @@ export class VerifyEmailUseCase implements IVerifyEmailUseCase {
     // 5. Generate tokens
     const accessToken = this.tokenService.generateAccessToken({
       userId: user.id,
-      role: user.role,
-      email:user.email
+      role: user.role
     });
 
     const { token: refreshToken, tokenId } = this.tokenService.generateRefreshToken({
       userId: user.id,
-      role: user.role,
-      email:user.email
+      role: user.role
     });
 
     // 6. Save refresh token to Redis

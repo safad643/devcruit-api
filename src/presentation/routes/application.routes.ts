@@ -12,7 +12,8 @@ import {
   ApplicationIdParamsSchema,
   ListApplicationsForDeveloperQuerySchema,
   WithdrawApplicationSchema,
-  UpdateApplicationStatusSchema
+  UpdateApplicationStatusSchema,
+  RejectApplicationSchema
 } from '../schemas/application.schema';
 
 export async function applicationRoutes(fastify: FastifyInstance): Promise<void> {
@@ -84,6 +85,18 @@ export async function applicationRoutes(fastify: FastifyInstance): Promise<void>
       }
     },
     applicationController.shortlistApplication
+  );
+
+  fastify.patch(
+    '/company/applications/:id/reject',
+    {
+      preHandler: [authenticate, authorize('company'), checkCompanyPaid],
+      schema: { 
+        params: ApplicationIdParamsSchema,
+        body: RejectApplicationSchema
+      }
+    },
+    applicationController.rejectApplication
   );
 }
 

@@ -84,8 +84,17 @@ export const WithdrawApplicationSchema = Type.Object({
 
 export type WithdrawApplicationInput = Static<typeof WithdrawApplicationSchema>;
 
-// Update Application Status Schema (Shortlist Only - no body required)
-export const UpdateApplicationStatusSchema = Type.Object({});
+// Update Application Status Schema (Shortlist Only - optional note)
+export const UpdateApplicationStatusSchema = Type.Object({
+  note: Type.Optional(Type.String({ maxLength: 500 }))
+});
 
 export type UpdateApplicationStatusInput = Static<typeof UpdateApplicationStatusSchema>;
+
+// Reject Application Schema
+export const RejectApplicationSchema = Type.Object({
+  note: Type.Optional(Type.String({ maxLength: 500 }))
+});
+
+export type RejectApplicationInput = Static<typeof RejectApplicationSchema>;
 

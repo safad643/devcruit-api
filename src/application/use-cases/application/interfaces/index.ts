@@ -4,5 +4,6 @@ export * from './IListApplicationsForDeveloperUseCase';
 export * from './IGetApplicationDetailsUseCase';
 export * from './IWithdrawApplicationUseCase';
 export * from './IGetApplicationMetricsUseCase';
-export * from './IUpdateApplicationStatusUseCase';
+export * from './IShortlistApplicationUseCase';
+export * from './IRejectApplicationUseCase';
 

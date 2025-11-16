@@ -23,6 +23,16 @@ export interface InterviewRound {
   interviewerIds: string[];
 }
 
+export interface StatusNotes {
+  shortlisted?: string;
+  rejected?: string;
+  interviewing?: string;
+  offer_extended?: string;
+  offer_accepted?: string;
+  offer_declined?: string;
+  withdrawn?: string;
+}
+
 export interface ApplicationProps {
   id: string;
   jobId: string; // Reference to the Job
@@ -30,11 +40,11 @@ export interface ApplicationProps {
   companyId: string; // Reference to the CompanyProfile (denormalized for faster queries)
   status: ApplicationStatus;
   shortlistMethod?: ShortlistMethod; // Set when status becomes 'shortlisted'
+  statusNotes?: StatusNotes; // Notes for different status transitions
   appliedAt: Date;
   lastUpdatedAt: Date;
   rejectedAt?: Date;
   rejectedAtStage?: string; // Exact stage or round at which rejection happened
-  rejectionReason?: string;
   interviewRounds: InterviewRound[];
 }
 
@@ -45,11 +55,11 @@ export class Application {
   public readonly companyId: string;
   public readonly status: ApplicationStatus;
   public readonly shortlistMethod?: ShortlistMethod;
+  public readonly statusNotes?: StatusNotes;
   public readonly appliedAt: Date;
   public readonly lastUpdatedAt: Date;
   public readonly rejectedAt?: Date;
   public readonly rejectedAtStage?: string;
-  public readonly rejectionReason?: string;
   public readonly interviewRounds: InterviewRound[];
 
   constructor(props: ApplicationProps) {
@@ -59,11 +69,11 @@ export class Application {
     this.companyId = props.companyId;
     this.status = props.status;
     this.shortlistMethod = props.shortlistMethod;
+    this.statusNotes = props.statusNotes;
     this.appliedAt = props.appliedAt;
     this.lastUpdatedAt = props.lastUpdatedAt;
     this.rejectedAt = props.rejectedAt;
     this.rejectedAtStage = props.rejectedAtStage;
-    this.rejectionReason = props.rejectionReason;
     this.interviewRounds = props.interviewRounds;
   }
 

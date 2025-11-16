@@ -235,6 +235,59 @@ export class EmailService implements IEmailService {
       // Silently fail - don't throw to avoid breaking the application flow
     }
   }
+
+  async sendRejectionNotification(email: string, companyName: string, jobTitle: string, rejectionNote?: string): Promise<void> {
+    try {
+      const subject = 'Application Status Update - Devcruit';
+      const heading = 'Application Status Update';
+      const rejectionNoteSection = rejectionNote 
+        ? `
+        <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107; margin: 20px 0;">
+          <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #856404; text-transform: uppercase; letter-spacing: 0.5px;">
+            Feedback from ${companyName}:
+          </p>
+          <p style="margin: 0; font-size: 15px; color: #856404; line-height: 1.5;">
+            ${rejectionNote}
+          </p>
+        </div>
+        `
+        : '';
+      
+      const message = `
+        Thank you for your interest in the position at ${companyName}. After careful consideration, we regret to inform you that your application for the following position has not been selected to move forward:
+        <br><br>
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #dc3545; margin: 20px 0;">
+          <p style="margin: 0 0 10px 0; font-size: 16px; font-weight: 600; color: #333333;">
+            <strong>Company:</strong> ${companyName}
+          </p>
+          <p style="margin: 0; font-size: 16px; font-weight: 600; color: #333333;">
+            <strong>Position:</strong> ${jobTitle}
+          </p>
+        </div>
+        ${rejectionNoteSection}
+        <br>
+        We appreciate the time and effort you invested in your application. This decision does not reflect on your qualifications, and we encourage you to continue exploring other opportunities on our platform.
+        <br><br>
+        We wish you the best of luck in your job search!
+      `;
+  
+      const html = this.getEmailTemplate(subject, heading, message);
+  
+      const textNote = rejectionNote ? `\n\nFeedback from ${companyName}: ${rejectionNote}` : '';
+      const textMessage = `Thank you for your interest. After careful consideration, we regret to inform you that your application for the position "${jobTitle}" at ${companyName} has not been selected to move forward.${textNote}\n\nWe appreciate the time and effort you invested in your application and wish you the best of luck in your job search.`;
+  
+      await this.transporter.sendMail({
+        from: `"Devcruit" <${config.email.from}>`,
+        to: email,
+        subject,
+        text: textMessage,
+        html,
+      });
+    } catch (error) {
+      console.error('Failed to send rejection notification email to', email, error);
+      // Silently fail - don't throw to avoid breaking the application flow
+    }
+  }
   
   
 }

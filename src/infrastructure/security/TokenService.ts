@@ -36,7 +36,7 @@ export class TokenService implements ITokenService {
   verifyAccessToken(token: string): TokenPayload {
     try {
       const decoded = jwt.verify(token, config.jwt.secret) as TokenPayload;
-      return { userId: decoded.userId, role: decoded.role, email: decoded.email };
+      return { userId: decoded.userId, role: decoded.role };
     } catch (error) {
       if (error instanceof jwt.JsonWebTokenError || error instanceof jwt.TokenExpiredError) {
         throw new UnauthorizedError('Invalid or expired access token');
@@ -56,7 +56,6 @@ export class TokenService implements ITokenService {
       return {
         userId: decoded.userId,
         role: decoded.role,
-        email: decoded.email,
         tokenId: decoded.jti,
       };
     } catch (error) {

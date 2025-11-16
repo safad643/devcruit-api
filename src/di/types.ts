@@ -75,7 +75,8 @@ export const TYPES = {
     ListApplicationsForDeveloperUseCase: Symbol.for('ListApplicationsForDeveloperUseCase'),
     WithdrawApplicationUseCase: Symbol.for('WithdrawApplicationUseCase'),
     GetApplicationMetricsUseCase: Symbol.for('GetApplicationMetricsUseCase'),
-    UpdateApplicationStatusUseCase: Symbol.for('UpdateApplicationStatusUseCase'),
+    ShortlistApplicationUseCase: Symbol.for('ShortlistApplicationUseCase'),
+    RejectApplicationUseCase: Symbol.for('RejectApplicationUseCase'),
     ApplicationController: Symbol.for('ApplicationController'),
     
     // Public Job module

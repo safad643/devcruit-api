@@ -43,14 +43,12 @@ export class LoginUseCase implements ILoginUseCase {
     // 4. Generate tokens
     const accessToken = this.tokenService.generateAccessToken({
       userId: user.id,
-      role: user.role,
-      email:user.email
+      role: user.role
     });
 
     const { token: refreshToken, tokenId } = this.tokenService.generateRefreshToken({
       userId: user.id,
-      role: user.role,
-      email:user.email
+      role: user.role
     });
 
     // 5. Save refresh token to Redis

@@ -1,4 +1,4 @@
-import { ApplicationStatus, ShortlistMethod, InterviewRound, InterviewRoundStatus, InterviewRoundResult } from '../../domain/entities/Application';
+import { ApplicationStatus, ShortlistMethod, InterviewRound, InterviewRoundStatus, InterviewRoundResult, StatusNotes } from '../../domain/entities/Application';
 
 // Create Application (Apply to Job)
 export interface CreateApplicationInput {
@@ -32,11 +32,11 @@ export interface ApplicationListItem {
   companyId: string;
   status: ApplicationStatus;
   shortlistMethod?: ShortlistMethod;
+  statusNotes?: StatusNotes;
   appliedAt: Date;
   lastUpdatedAt: Date;
   rejectedAt?: Date;
   rejectedAtStage?: string;
-  rejectionReason?: string;
   interviewRounds: InterviewRound[];
   // Enriched fields for display
   jobTitle?: string;
@@ -66,11 +66,11 @@ export interface DeveloperApplicationListItem {
   companyId: string;
   status: ApplicationStatus;
   shortlistMethod?: ShortlistMethod;
+  statusNotes?: StatusNotes;
   appliedAt: Date;
   lastUpdatedAt: Date;
   rejectedAt?: Date;
   rejectedAtStage?: string;
-  rejectionReason?: string;
   interviewRounds: InterviewRound[];
   // Enriched fields for display
   jobTitle?: string;
@@ -92,11 +92,11 @@ export interface GetApplicationDetailsOutput {
   companyId: string;
   status: ApplicationStatus;
   shortlistMethod?: ShortlistMethod;
+  statusNotes?: StatusNotes;
   appliedAt: Date;
   lastUpdatedAt: Date;
   rejectedAt?: Date;
   rejectedAtStage?: string;
-  rejectionReason?: string;
   interviewRounds: InterviewRound[];
   // Enriched fields
   job?: {
@@ -145,9 +145,23 @@ export interface ApplicationMetricsOutput {
 export interface UpdateApplicationStatusInput {
   applicationId: string;
   companyId: string;
+  note?: string;
 }
 
 export interface UpdateApplicationStatusOutput {
+  id: string;
+  status: ApplicationStatus;
+  message: string;
+}
+
+// Reject Application
+export interface RejectApplicationInput {
+  applicationId: string;
+  companyId: string;
+  note?: string;
+}
+
+export interface RejectApplicationOutput {
   id: string;
   status: ApplicationStatus;
   message: string;

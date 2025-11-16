@@ -60,14 +60,12 @@ export class GoogleRegisterUseCase implements IGoogleRegisterUseCase {
         // Generate tokens
         const accessToken = this.tokenService.generateAccessToken({
           userId: updatedUser.id,
-          role: updatedUser.role,
-          email: updatedUser.email,
+          role: updatedUser.role
         });
 
         const { token: refreshToken, tokenId } = this.tokenService.generateRefreshToken({
           userId: updatedUser.id,
-          role: updatedUser.role,
-          email: updatedUser.email,
+          role: updatedUser.role
         });
 
         await this.refreshTokenRepository.save(
@@ -118,14 +116,12 @@ export class GoogleRegisterUseCase implements IGoogleRegisterUseCase {
     // 5. Generate tokens
     const accessToken = this.tokenService.generateAccessToken({
       userId: newUser.id,
-      role: newUser.role,
-      email: newUser.email,
+      role: newUser.role
     });
 
     const { token: refreshToken, tokenId } = this.tokenService.generateRefreshToken({
       userId: newUser.id,
-      role: newUser.role,
-      email: newUser.email,
+      role: newUser.role
     });
 
     await this.refreshTokenRepository.save(

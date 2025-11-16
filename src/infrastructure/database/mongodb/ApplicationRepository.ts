@@ -1,6 +1,6 @@
 import { Collection, ObjectId } from 'mongodb';
 import { IApplicationRepository, ApplicationListFilters, ApplicationListResult, ApplicationMetrics } from '../../../domain/repositories/IApplicationRepository';
-import { Application, ApplicationProps, InterviewRound } from '../../../domain/entities/Application';
+import { Application, ApplicationProps, InterviewRound, StatusNotes } from '../../../domain/entities/Application';
 import { getMongoDb } from './client';
 import { InternalError, ForbiddenError } from '../../../domain/errors';
 import { injectable } from 'inversify';
@@ -25,9 +25,9 @@ export class ApplicationRepository implements IApplicationRepository {
         companyId: application.companyId,
         status: application.status || 'applied',
         shortlistMethod: application.shortlistMethod,
+        statusNotes: application.statusNotes,
         rejectedAt: application.rejectedAt,
         rejectedAtStage: application.rejectedAtStage,
-        rejectionReason: application.rejectionReason,
         interviewRounds: application.interviewRounds || [],
         appliedAt: now,
         lastUpdatedAt: now,
@@ -238,6 +238,20 @@ export class ApplicationRepository implements IApplicationRepository {
       }));
     };
 
+    // Migrate old fields to statusNotes for backward compatibility
+    let statusNotes: StatusNotes | undefined = doc.statusNotes;
+    
+    // If statusNotes doesn't exist, create it from old fields
+    if (!statusNotes && (doc.shortlistNote || doc.rejectionReason)) {
+      statusNotes = {};
+      if (doc.shortlistNote) {
+        statusNotes.shortlisted = doc.shortlistNote;
+      }
+      if (doc.rejectionReason) {
+        statusNotes.rejected = doc.rejectionReason;
+      }
+    }
+
     return new Application({
       id: doc._id.toString(),
       jobId: doc.jobId,
@@ -245,11 +259,11 @@ export class ApplicationRepository implements IApplicationRepository {
       companyId: doc.companyId,
       status: doc.status || 'applied',
       shortlistMethod: doc.shortlistMethod,
+      statusNotes,
       appliedAt: doc.appliedAt instanceof Date ? doc.appliedAt : new Date(doc.appliedAt),
       lastUpdatedAt: doc.lastUpdatedAt instanceof Date ? doc.lastUpdatedAt : new Date(doc.lastUpdatedAt),
       rejectedAt: doc.rejectedAt ? (doc.rejectedAt instanceof Date ? doc.rejectedAt : new Date(doc.rejectedAt)) : undefined,
       rejectedAtStage: doc.rejectedAtStage,
-      rejectionReason: doc.rejectionReason,
       interviewRounds: mapInterviewRounds(doc.interviewRounds || []),
     });
   }

@@ -29,14 +29,12 @@ export class AdminLoginUseCase implements IAdminLoginUseCase {
 
     const accessToken = this.tokenService.generateAccessToken({
       userId: admin.id,
-      role: admin.role,
-      email: admin.email
+      role: admin.role
     });
 
     const { token: refreshToken, tokenId } = this.tokenService.generateRefreshToken({
       userId: admin.id,
-      role: admin.role,
-      email: admin.email
+      role: admin.role
     });
 
     await this.refreshTokenRepository.save(

@@ -35,7 +35,6 @@ export async function authenticate(
     // Attach user to request
     request.user = {
       id: payload.userId,
-      email: payload.email,
       role: payload.role
     };
 

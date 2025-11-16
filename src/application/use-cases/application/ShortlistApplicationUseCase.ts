@@ -8,13 +8,13 @@ import {
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { NotFoundError, ForbiddenError, ValidationError } from '../../../domain/errors';
-import { ApplicationStatus } from '../../../domain/entities/Application';
+import { ApplicationStatus, StatusNotes } from '../../../domain/entities/Application';
 import { UpdateApplicationStatusInput, UpdateApplicationStatusOutput } from '../../dtos/application.dto';
 import { IEmailService } from '../../services';
-import { IUpdateApplicationStatusUseCase } from './interfaces';
+import { IShortlistApplicationUseCase } from './interfaces';
 
 @injectable()
-export class UpdateApplicationStatusUseCase implements IUpdateApplicationStatusUseCase {
+export class ShortlistApplicationUseCase implements IShortlistApplicationUseCase {
   constructor(
     @inject(TYPES.ApplicationRepository) private applicationRepository: IApplicationRepository,
     @inject(TYPES.JobRepository) private jobRepository: IJobRepository,
@@ -58,10 +58,20 @@ export class UpdateApplicationStatusUseCase implements IUpdateApplicationStatusU
       updateData.shortlistMethod = 'manual';
     }
 
-    // 7. Update application
+    // 7. Add note to statusNotes if provided
+    if (input.note) {
+      const trimmedNote = input.note.trim();
+      const statusNotes: StatusNotes = {
+        ...application.statusNotes,
+        shortlisted: trimmedNote,
+      };
+      updateData.statusNotes = statusNotes;
+    }
+
+    // 8. Update application
     const updatedApplication = await this.applicationRepository.update(input.applicationId, updateData);
 
-    // 8. Send email notification
+    // 9. Send email notification
     try {
       // Get developer profile to get userId
       const developerProfile = await this.developerProfileRepository.findById(application.developerId);

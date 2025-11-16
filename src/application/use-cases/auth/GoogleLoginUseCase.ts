@@ -73,13 +73,11 @@ export class GoogleLoginUseCase implements IGoogleLoginUseCase {
     const accessToken = this.tokenService.generateAccessToken({
       userId: user.id,
       role: user.role,
-      email: user.email,
     });
 
     const { token: refreshToken, tokenId } = this.tokenService.generateRefreshToken({
       userId: user.id,
       role: user.role,
-      email: user.email,
     });
 
     // 7. Save refresh token to Redis (7 days in seconds)

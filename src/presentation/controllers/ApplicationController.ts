@@ -8,13 +8,15 @@ import {
   IListApplicationsForDeveloperUseCase,
   IWithdrawApplicationUseCase,
   IGetApplicationMetricsUseCase,
-  IUpdateApplicationStatusUseCase
+  IShortlistApplicationUseCase,
+  IRejectApplicationUseCase
 } from '../../application/use-cases/application/interfaces';
 import { 
   CreateApplicationInput, 
   ListApplicationsForCompanyQueryInput,
   ListApplicationsForDeveloperQueryInput,
-  WithdrawApplicationInput
+  WithdrawApplicationInput,
+  RejectApplicationInput
 } from '../schemas/application.schema';
 import { wrapSuccess } from '../../utils/response';
 import { HttpStatus } from '../../utils/statusCodes';
@@ -28,7 +30,8 @@ export class ApplicationController {
     @inject(TYPES.ListApplicationsForDeveloperUseCase) private listApplicationsForDeveloperUseCase: IListApplicationsForDeveloperUseCase,
     @inject(TYPES.WithdrawApplicationUseCase) private withdrawApplicationUseCase: IWithdrawApplicationUseCase,
     @inject(TYPES.GetApplicationMetricsUseCase) private getApplicationMetricsUseCase: IGetApplicationMetricsUseCase,
-    @inject(TYPES.UpdateApplicationStatusUseCase) private updateApplicationStatusUseCase: IUpdateApplicationStatusUseCase
+    @inject(TYPES.ShortlistApplicationUseCase) private shortlistApplicationUseCase: IShortlistApplicationUseCase,
+    @inject(TYPES.RejectApplicationUseCase) private rejectApplicationUseCase: IRejectApplicationUseCase
   ) {}
 
   // Developer endpoint: Apply to a job
@@ -130,14 +133,32 @@ export class ApplicationController {
 
   // Company endpoint: Shortlist application
   shortlistApplication = async (
-    request: FastifyRequest<{ Params: { id: string } }>,
+    request: FastifyRequest<{ Params: { id: string }; Body?: { note?: string } }>,
     reply: FastifyReply
   ): Promise<void> => {
     const companyId = request.user?.id as string;
     const applicationId = request.params.id;
-    const result = await this.updateApplicationStatusUseCase.execute({
+    const note = request.body?.note?.trim() || undefined;
+    const result = await this.shortlistApplicationUseCase.execute({
       applicationId,
       companyId,
+      note,
+    });
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
+  };
+
+  // Company endpoint: Reject application
+  rejectApplication = async (
+    request: FastifyRequest<{ Params: { id: string }; Body?: RejectApplicationInput }>,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const companyId = request.user?.id as string;
+    const applicationId = request.params.id;
+    const note = request.body?.note?.trim() || undefined;
+    const result = await this.rejectApplicationUseCase.execute({
+      applicationId,
+      companyId,
+      note,
     });
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };

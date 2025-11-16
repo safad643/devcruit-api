@@ -61,11 +61,11 @@ export class GetApplicationDetailsUseCase implements IGetApplicationDetailsUseCa
       companyId: application.companyId,
       status: application.status,
       shortlistMethod: application.shortlistMethod,
+      statusNotes: application.statusNotes,
       appliedAt: application.appliedAt,
       lastUpdatedAt: application.lastUpdatedAt,
       rejectedAt: application.rejectedAt,
       rejectedAtStage: application.rejectedAtStage,
-      rejectionReason: application.rejectionReason,
       interviewRounds: application.interviewRounds,
       job: job ? {
         id: job.id,

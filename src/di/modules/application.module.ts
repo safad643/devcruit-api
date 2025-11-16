@@ -6,7 +6,8 @@ import { GetApplicationDetailsUseCase } from '../../application/use-cases/applic
 import { ListApplicationsForDeveloperUseCase } from '../../application/use-cases/application/ListApplicationsForDeveloperUseCase';
 import { WithdrawApplicationUseCase } from '../../application/use-cases/application/WithdrawApplicationUseCase';
 import { GetApplicationMetricsUseCase } from '../../application/use-cases/application/GetApplicationMetricsUseCase';
-import { UpdateApplicationStatusUseCase } from '../../application/use-cases/application/UpdateApplicationStatusUseCase';
+import { ShortlistApplicationUseCase } from '../../application/use-cases/application/ShortlistApplicationUseCase';
+import { RejectApplicationUseCase } from '../../application/use-cases/application/RejectApplicationUseCase';
 import { ApplicationController } from '../../presentation/controllers/ApplicationController';
 import {
   ICreateApplicationUseCase,
@@ -15,7 +16,8 @@ import {
   IListApplicationsForDeveloperUseCase,
   IWithdrawApplicationUseCase,
   IGetApplicationMetricsUseCase,
-  IUpdateApplicationStatusUseCase
+  IShortlistApplicationUseCase,
+  IRejectApplicationUseCase
 } from '../../application/use-cases/application/interfaces';
 
 export const applicationModule = new ContainerModule((bind) => {
@@ -25,7 +27,8 @@ export const applicationModule = new ContainerModule((bind) => {
   bind<IListApplicationsForDeveloperUseCase>(TYPES.ListApplicationsForDeveloperUseCase).to(ListApplicationsForDeveloperUseCase);
   bind<IWithdrawApplicationUseCase>(TYPES.WithdrawApplicationUseCase).to(WithdrawApplicationUseCase);
   bind<IGetApplicationMetricsUseCase>(TYPES.GetApplicationMetricsUseCase).to(GetApplicationMetricsUseCase);
-  bind<IUpdateApplicationStatusUseCase>(TYPES.UpdateApplicationStatusUseCase).to(UpdateApplicationStatusUseCase);
+  bind<IShortlistApplicationUseCase>(TYPES.ShortlistApplicationUseCase).to(ShortlistApplicationUseCase);
+  bind<IRejectApplicationUseCase>(TYPES.RejectApplicationUseCase).to(RejectApplicationUseCase);
   bind<ApplicationController>(TYPES.ApplicationController).to(ApplicationController);
 });
 
