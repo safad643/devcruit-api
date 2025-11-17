@@ -126,5 +126,8 @@ export interface PublicJobDetail extends Omit<PublicJobSummary, 'tags'> {
   niceTech: string[];
   niceSkills: string[];
   minYears: number;
+  interviewRounds: string[];
+  relocation: boolean;
+  autoShortlist: boolean;
 }
 

@@ -78,7 +78,10 @@ export class CreateApplicationUseCase implements ICreateApplicationUseCase {
       }
     }
 
-    // 8. Create the application
+    // 8. Determine resume URL - use provided resumeUrl or fall back to profile resumeUrl
+    const resumeUrl = input.resumeUrl || developerProfile.resumeUrl;
+
+    // 9. Create the application
     const applicationData = Application.create({
       jobId: input.jobId,
       developerId: developerProfile.id,
@@ -86,11 +89,12 @@ export class CreateApplicationUseCase implements ICreateApplicationUseCase {
       status,
       shortlistMethod,
       interviewRounds,
+      resumeUrl,
     });
 
     const createdApplication = await this.applicationRepository.create(applicationData);
 
-    // 9. Send email notification if shortlisted
+    // 10. Send email notification if shortlisted
     if (status === 'shortlisted') {
       try {
         // Get company profile for company name

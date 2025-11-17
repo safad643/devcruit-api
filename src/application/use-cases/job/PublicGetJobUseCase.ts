@@ -43,6 +43,9 @@ export class PublicGetJobUseCase implements IPublicGetJobUseCase {
       niceTech: job.niceTech,
       niceSkills: job.niceSkills,
       minYears: job.minYears,
+      interviewRounds: job.interviewRounds,
+      relocation: job.relocation,
+      autoShortlist: job.autoShortlist,
     };
   }
 }

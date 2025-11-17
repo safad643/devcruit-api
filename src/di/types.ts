@@ -33,6 +33,8 @@ export const TYPES = {
     GetDeveloperProfileUseCase: Symbol.for('GetDeveloperProfileUseCase'),
     CreateCompanyProfileUseCase: Symbol.for('CreateCompanyProfileUseCase'),
     GetCompanyProfileUseCase: Symbol.for('GetCompanyProfileUseCase'),
+    UpdateDeveloperProfileUseCase: Symbol.for('UpdateDeveloperProfileUseCase'),
+    UpdateCompanyProfileUseCase: Symbol.for('UpdateCompanyProfileUseCase'),
     ResubmitDocumentsUseCase: Symbol.for('ResubmitDocumentsUseCase'),
     ProfileController: Symbol.for('ProfileController'),
     

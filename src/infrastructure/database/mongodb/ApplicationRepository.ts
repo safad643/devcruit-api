@@ -29,6 +29,7 @@ export class ApplicationRepository implements IApplicationRepository {
         rejectedAt: application.rejectedAt,
         rejectedAtStage: application.rejectedAtStage,
         interviewRounds: application.interviewRounds || [],
+        resumeUrl: application.resumeUrl,
         appliedAt: now,
         lastUpdatedAt: now,
       });
@@ -265,6 +266,7 @@ export class ApplicationRepository implements IApplicationRepository {
       rejectedAt: doc.rejectedAt ? (doc.rejectedAt instanceof Date ? doc.rejectedAt : new Date(doc.rejectedAt)) : undefined,
       rejectedAtStage: doc.rejectedAtStage,
       interviewRounds: mapInterviewRounds(doc.interviewRounds || []),
+      resumeUrl: doc.resumeUrl,
     });
   }
 }

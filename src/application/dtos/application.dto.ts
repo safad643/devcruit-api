@@ -3,6 +3,7 @@ import { ApplicationStatus, ShortlistMethod, InterviewRound, InterviewRoundStatu
 // Create Application (Apply to Job)
 export interface CreateApplicationInput {
   jobId: string;
+  resumeUrl?: string; // Optional resume URL for this specific application
 }
 
 export interface CreateApplicationOutput {

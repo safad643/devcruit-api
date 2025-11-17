@@ -46,6 +46,7 @@ export interface ApplicationProps {
   rejectedAt?: Date;
   rejectedAtStage?: string; // Exact stage or round at which rejection happened
   interviewRounds: InterviewRound[];
+  resumeUrl?: string; // Optional resume URL for this specific application
 }
 
 export class Application {
@@ -61,6 +62,7 @@ export class Application {
   public readonly rejectedAt?: Date;
   public readonly rejectedAtStage?: string;
   public readonly interviewRounds: InterviewRound[];
+  public readonly resumeUrl?: string;
 
   constructor(props: ApplicationProps) {
     this.id = props.id;
@@ -75,6 +77,7 @@ export class Application {
     this.rejectedAt = props.rejectedAt;
     this.rejectedAtStage = props.rejectedAtStage;
     this.interviewRounds = props.interviewRounds;
+    this.resumeUrl = props.resumeUrl;
   }
 
   static create(

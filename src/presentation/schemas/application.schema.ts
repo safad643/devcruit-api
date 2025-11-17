@@ -2,7 +2,8 @@ import { Type, Static } from '@sinclair/typebox';
 
 // Create Application Schema
 export const CreateApplicationSchema = Type.Object({
-  jobId: Type.String({ minLength: 1 })
+  jobId: Type.String({ minLength: 1 }),
+  resumeUrl: Type.Optional(Type.String({ format: 'uri' }))
 });
 
 export type CreateApplicationInput = Static<typeof CreateApplicationSchema>;

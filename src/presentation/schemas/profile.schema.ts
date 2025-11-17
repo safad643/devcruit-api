@@ -156,6 +156,12 @@ export const UpdateDeveloperProfileSchema = Type.Object({
   resumeUrl: Type.Optional(Type.String({ format: 'uri' }))
 });
 
+export const UpdateCompanyProfileSchema = Type.Object({
+  companyName: Type.Optional(Type.String({ minLength: 1, maxLength: 200 })),
+  companyWebsite: Type.Optional(Type.String({ format: 'uri' })),
+  businessAddress: Type.Optional(Type.String({ minLength: 1, maxLength: 500 }))
+});
+
 export const ResubmitDocumentsSchema = Type.Object({
   documents: Type.Object({
     COMPANY_REGISTRATION_DOCUMENT: Type.Optional(Type.String({ format: 'uri' })),
@@ -172,5 +178,6 @@ export const ResubmitDocumentsSchema = Type.Object({
 export type CreateDeveloperProfileInput = Static<typeof CreateDeveloperProfileSchema>;
 export type UpdateDeveloperProfileInput = Static<typeof UpdateDeveloperProfileSchema>;
 export type CreateCompanyProfileInput = Static<typeof CreateCompanyProfileSchema>;
+export type UpdateCompanyProfileInput = Static<typeof UpdateCompanyProfileSchema>;
 export type ResubmitDocumentsInput = Static<typeof ResubmitDocumentsSchema>;
 

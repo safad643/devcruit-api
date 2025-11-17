@@ -2,7 +2,13 @@ import { FastifyInstance } from 'fastify';
 import { container } from '../../di/container';
 import { TYPES } from '../../di/types';
 import { ProfileController } from '../controllers/ProfileController';
-import { CreateDeveloperProfileSchema, CreateCompanyProfileSchema, ResubmitDocumentsSchema } from '../schemas/profile.schema';
+import {
+  CreateDeveloperProfileSchema,
+  CreateCompanyProfileSchema,
+  UpdateDeveloperProfileSchema,
+  UpdateCompanyProfileSchema,
+  ResubmitDocumentsSchema
+} from '../schemas/profile.schema';
 import { authenticate } from '../middleware/authenticate';
 
 export async function profileRoutes(fastify: FastifyInstance): Promise<void> {
@@ -29,6 +35,24 @@ export async function profileRoutes(fastify: FastifyInstance): Promise<void> {
     '/me',
   
     profileController.getProfile
+  );
+
+  // Developer profile update
+  fastify.patch(
+    '/developer',
+    {
+      schema: { body: UpdateDeveloperProfileSchema }
+    },
+    profileController.updateDeveloperProfile
+  );
+
+  // Company profile update
+  fastify.patch(
+    '/company',
+    {
+      schema: { body: UpdateCompanyProfileSchema }
+    },
+    profileController.updateCompanyProfile
   );
 
   fastify.post(

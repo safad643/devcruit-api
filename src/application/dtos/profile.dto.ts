@@ -133,6 +133,17 @@ export interface GetCompanyProfileOutput {
   updatedAt: Date;
 }
 
+export interface UpdateCompanyProfileInput {
+  companyName?: string;
+  companyWebsite?: string;
+  businessAddress?: string;
+}
+
+export interface UpdateCompanyProfileOutput {
+  id: string;
+  message: string;
+}
+
 export interface ResubmitDocumentsInput {
   userId: string;
   documents: Partial<Record<CompanyDocumentKey, string>>;

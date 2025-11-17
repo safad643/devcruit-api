@@ -6,11 +6,15 @@ import {
   GetDeveloperProfileUseCase,
   CreateCompanyProfileUseCase,
   GetCompanyProfileUseCase,
+  UpdateDeveloperProfileUseCase,
+  UpdateCompanyProfileUseCase,
   ResubmitDocumentsUseCase
 } from '../../application/use-cases/profile';
 import {
   CreateDeveloperProfileInput,
   CreateCompanyProfileInput,
+  UpdateDeveloperProfileInput,
+  UpdateCompanyProfileInput,
   ResubmitDocumentsInput
 } from '../schemas/profile.schema';
 import { wrapSuccess } from '../../utils/response';
@@ -23,6 +27,8 @@ export class ProfileController {
     @inject(TYPES.GetDeveloperProfileUseCase) private getDeveloperProfileUseCase: GetDeveloperProfileUseCase,
     @inject(TYPES.GetCompanyProfileUseCase) private getCompanyProfileUseCase: GetCompanyProfileUseCase,
     @inject(TYPES.CreateCompanyProfileUseCase) private createCompanyProfileUseCase: CreateCompanyProfileUseCase,
+    @inject(TYPES.UpdateDeveloperProfileUseCase) private updateDeveloperProfileUseCase: UpdateDeveloperProfileUseCase,
+    @inject(TYPES.UpdateCompanyProfileUseCase) private updateCompanyProfileUseCase: UpdateCompanyProfileUseCase,
     @inject(TYPES.ResubmitDocumentsUseCase) private resubmitDocumentsUseCase: ResubmitDocumentsUseCase
   ) {}
 
@@ -32,7 +38,7 @@ export class ProfileController {
   ): Promise<void> => {
 
     const userId = request.user?.id as string; //wont reach here is req.user is not avaible so its fine to assert
-    const result = await this.createProfileUseCase.execute({ ...request.body, userId });
+    const result = await this.createProfileUseCase.execute({ ...(request.body as any), userId });
     reply.status(HttpStatus.CREATED).send(wrapSuccess(result));
   };
 
@@ -59,6 +65,42 @@ export class ProfileController {
     } else {
       reply.status(HttpStatus.BAD_REQUEST).send({ success: false, error: { message: 'Invalid user role for profile endpoint' } });
     }
+  };
+
+  updateDeveloperProfile = async (
+    request: FastifyRequest<{ Body: UpdateDeveloperProfileInput }>,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const userId = request.user?.id as string;
+    const role = request.user?.role;
+
+    if (role !== 'developer') {
+      reply
+        .status(HttpStatus.FORBIDDEN)
+        .send({ success: false, error: { message: 'Only developers can update developer profiles' } });
+      return;
+    }
+
+    const result = await this.updateDeveloperProfileUseCase.execute(userId, request.body);
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
+  };
+
+  updateCompanyProfile = async (
+    request: FastifyRequest<{ Body: UpdateCompanyProfileInput }>,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const userId = request.user?.id as string;
+    const role = request.user?.role;
+
+    if (role !== 'company') {
+      reply
+        .status(HttpStatus.FORBIDDEN)
+        .send({ success: false, error: { message: 'Only companies can update company profiles' } });
+      return;
+    }
+
+    const result = await this.updateCompanyProfileUseCase.execute(userId, request.body);
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
   resubmitDocuments = async (
