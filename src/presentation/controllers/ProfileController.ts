@@ -8,14 +8,17 @@ import {
   GetCompanyProfileUseCase,
   UpdateDeveloperProfileUseCase,
   UpdateCompanyProfileUseCase,
-  ResubmitDocumentsUseCase
+  ResubmitDocumentsUseCase,
+  InviteCompanyTeamMemberUseCase,
+  ListCompanyTeamMembersUseCase
 } from '../../application/use-cases/profile';
 import {
   CreateDeveloperProfileInput,
   CreateCompanyProfileInput,
   UpdateDeveloperProfileInput,
   UpdateCompanyProfileInput,
-  ResubmitDocumentsInput
+  ResubmitDocumentsInput,
+  InviteCompanyTeamMemberInput
 } from '../schemas/profile.schema';
 import { wrapSuccess } from '../../utils/response';
 import { HttpStatus } from '../../utils/statusCodes';
@@ -29,7 +32,9 @@ export class ProfileController {
     @inject(TYPES.CreateCompanyProfileUseCase) private createCompanyProfileUseCase: CreateCompanyProfileUseCase,
     @inject(TYPES.UpdateDeveloperProfileUseCase) private updateDeveloperProfileUseCase: UpdateDeveloperProfileUseCase,
     @inject(TYPES.UpdateCompanyProfileUseCase) private updateCompanyProfileUseCase: UpdateCompanyProfileUseCase,
-    @inject(TYPES.ResubmitDocumentsUseCase) private resubmitDocumentsUseCase: ResubmitDocumentsUseCase
+    @inject(TYPES.ResubmitDocumentsUseCase) private resubmitDocumentsUseCase: ResubmitDocumentsUseCase,
+    @inject(TYPES.InviteCompanyTeamMemberUseCase) private inviteCompanyTeamMemberUseCase: InviteCompanyTeamMemberUseCase,
+    @inject(TYPES.ListCompanyTeamMembersUseCase) private listCompanyTeamMembersUseCase: ListCompanyTeamMembersUseCase
   ) {}
 
   createProfile = async (
@@ -113,6 +118,31 @@ export class ProfileController {
       documents: request.body.documents
     });
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
+  };
+
+  listCompanyTeam = async (
+    request: FastifyRequest,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const companyContext = (request as any).companyContext;
+    const companyUserId = companyContext?.companyUserId ?? (request.user?.id as string);
+    const result = await this.listCompanyTeamMembersUseCase.execute(companyUserId);
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
+  };
+
+  inviteCompanyTeamMember = async (
+    request: FastifyRequest<{ Body: InviteCompanyTeamMemberInput }>,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const inviterUserId = request.user?.id as string;
+    const result = await this.inviteCompanyTeamMemberUseCase.execute({
+      inviterUserId,
+      email: request.body.email,
+      role: request.body.role,
+      fullName: request.body.fullName,
+      jobTitle: request.body.jobTitle,
+    });
+    reply.status(HttpStatus.CREATED).send(wrapSuccess(result));
   };
 }
 

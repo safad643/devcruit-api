@@ -1,7 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { container } from '../../di/container';
 import { TYPES } from '../../di/types';
-import { ICompanyProfileRepository } from '../../domain/repositories';
+import { ICompanyProfileRepository, ICompanyTeamRepository, CompanyTeamMember } from '../../domain/repositories';
 import { ForbiddenError, UnauthorizedError, NotFoundError } from '../../domain/errors';
 
 export async function checkCompanyPaid(
@@ -13,15 +13,34 @@ export async function checkCompanyPaid(
       throw new UnauthorizedError('Authentication required');
     }
 
-    if (request.user.role !== 'company') {
-      throw new ForbiddenError('Only company users can access this endpoint');
+    const companyProfileRepository = container.get<ICompanyProfileRepository>(TYPES.CompanyProfileRepository);
+    const companyTeamRepository = container.get<ICompanyTeamRepository>(TYPES.CompanyTeamRepository);
+
+    let companyProfileUserId: string | null = null;
+    let teamMemberId: string | undefined;
+    let teamMemberRole: 'hr' | 'interviewer' | undefined;
+    let teamMember: CompanyTeamMember | undefined;
+
+    if (request.user.role === 'company') {
+      companyProfileUserId = request.user.id;
+    } else if (request.user.role === 'hr' || request.user.role === 'interviewer') {
+      const foundMember = await companyTeamRepository.findByUserId(request.user.id);
+      if (!foundMember || foundMember.status !== 'active') {
+        throw new ForbiddenError('You do not have access to this company resources');
+      }
+      companyProfileUserId = foundMember.companyId;
+      teamMemberId = foundMember.id;
+      teamMemberRole = request.user.role;
+      teamMember = foundMember;
+    } else {
+      throw new ForbiddenError('Only company and HR accounts can access this endpoint');
     }
 
-    const companyProfileRepository = container.get<ICompanyProfileRepository>(
-      TYPES.CompanyProfileRepository
-    );
+    if (!companyProfileUserId) {
+      throw new UnauthorizedError('Unable to resolve company context');
+    }
 
-    const companyProfile = await companyProfileRepository.findByUserId(request.user.id);
+    const companyProfile = await companyProfileRepository.findByUserId(companyProfileUserId);
 
     if (!companyProfile) {
       throw new NotFoundError('Company profile not found');
@@ -31,8 +50,13 @@ export async function checkCompanyPaid(
       throw new ForbiddenError('Company must have a paid subscription to access this feature');
     }
 
-    // Attach company profile to request for use in controllers if needed
-    (request as any).companyProfile = companyProfile;
+    (request as any).companyContext = {
+      companyProfile,
+      companyUserId: companyProfile.userId,
+      teamMemberId,
+      teamMemberRole,
+      teamMember,
+    };
   } catch (error) {
     if (error instanceof UnauthorizedError || error instanceof ForbiddenError || error instanceof NotFoundError) {
       throw error;

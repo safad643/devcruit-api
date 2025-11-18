@@ -1,12 +1,21 @@
 import 'fastify';
 import '@fastify/cookie';
 import { UserRole } from '../../domain/types';
+import { CompanyProfile } from '../../domain/entities/CompanyProfile';
+import { CompanyTeamMember } from '../../domain/repositories';
 
 declare module 'fastify' {
   interface FastifyRequest {
     user?: {
       id: string;
       role: UserRole;
+    };
+    companyContext?: {
+      companyProfile: CompanyProfile;
+      companyUserId: string;
+      teamMemberId?: string;
+      teamMemberRole?: 'hr' | 'interviewer';
+      teamMember?: CompanyTeamMember;
     };
   }
 

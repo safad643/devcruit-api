@@ -174,10 +174,18 @@ export const ResubmitDocumentsSchema = Type.Object({
   })
 });
 
+export const InviteCompanyTeamMemberSchema = Type.Object({
+  email: Type.String({ format: 'email' }),
+  role: Type.Union([Type.Literal('hr'), Type.Literal('interviewer')]),
+  fullName: Type.Optional(Type.String({ minLength: 1, maxLength: 200 })),
+  jobTitle: Type.Optional(Type.String({ minLength: 1, maxLength: 200 }))
+});
+
 // Export TypeScript types
 export type CreateDeveloperProfileInput = Static<typeof CreateDeveloperProfileSchema>;
 export type UpdateDeveloperProfileInput = Static<typeof UpdateDeveloperProfileSchema>;
 export type CreateCompanyProfileInput = Static<typeof CreateCompanyProfileSchema>;
 export type UpdateCompanyProfileInput = Static<typeof UpdateCompanyProfileSchema>;
 export type ResubmitDocumentsInput = Static<typeof ResubmitDocumentsSchema>;
+export type InviteCompanyTeamMemberInput = Static<typeof InviteCompanyTeamMemberSchema>;
 

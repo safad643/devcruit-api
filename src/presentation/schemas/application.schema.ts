@@ -99,3 +99,25 @@ export const RejectApplicationSchema = Type.Object({
 
 export type RejectApplicationInput = Static<typeof RejectApplicationSchema>;
 
+// Schedule Interview Round Schema
+export const ScheduleInterviewRoundSchema = Type.Object({
+  roundName: Type.String({ minLength: 1 }),
+  interviewerIds: Type.Array(Type.String({ minLength: 1 }), { minItems: 1 }),
+  scheduledAt: Type.String({ format: 'date-time' })
+});
+
+export type ScheduleInterviewRoundInput = Static<typeof ScheduleInterviewRoundSchema>;
+
+// Update Interview Result Schema
+export const UpdateInterviewResultSchema = Type.Object({
+  roundName: Type.String({ minLength: 1 }),
+  result: Type.Union([
+    Type.Literal('pass'),
+    Type.Literal('fail'),
+    Type.Literal('on-hold')
+  ]),
+  feedback: Type.Optional(Type.String({ maxLength: 2000 }))
+});
+
+export type UpdateInterviewResultInput = Static<typeof UpdateInterviewResultSchema>;
+

@@ -8,6 +8,9 @@ import { WithdrawApplicationUseCase } from '../../application/use-cases/applicat
 import { GetApplicationMetricsUseCase } from '../../application/use-cases/application/GetApplicationMetricsUseCase';
 import { ShortlistApplicationUseCase } from '../../application/use-cases/application/ShortlistApplicationUseCase';
 import { RejectApplicationUseCase } from '../../application/use-cases/application/RejectApplicationUseCase';
+import { ScheduleInterviewRoundUseCase } from '../../application/use-cases/application/ScheduleInterviewRoundUseCase';
+import { UpdateInterviewResultUseCase } from '../../application/use-cases/application/UpdateInterviewResultUseCase';
+import { GetInterviewsForInterviewerUseCase } from '../../application/use-cases/application/GetInterviewsForInterviewerUseCase';
 import { ApplicationController } from '../../presentation/controllers/ApplicationController';
 import {
   ICreateApplicationUseCase,
@@ -17,7 +20,10 @@ import {
   IWithdrawApplicationUseCase,
   IGetApplicationMetricsUseCase,
   IShortlistApplicationUseCase,
-  IRejectApplicationUseCase
+  IRejectApplicationUseCase,
+  IScheduleInterviewRoundUseCase,
+  IUpdateInterviewResultUseCase,
+  IGetInterviewsForInterviewerUseCase
 } from '../../application/use-cases/application/interfaces';
 
 export const applicationModule = new ContainerModule((bind) => {
@@ -29,6 +35,9 @@ export const applicationModule = new ContainerModule((bind) => {
   bind<IGetApplicationMetricsUseCase>(TYPES.GetApplicationMetricsUseCase).to(GetApplicationMetricsUseCase);
   bind<IShortlistApplicationUseCase>(TYPES.ShortlistApplicationUseCase).to(ShortlistApplicationUseCase);
   bind<IRejectApplicationUseCase>(TYPES.RejectApplicationUseCase).to(RejectApplicationUseCase);
+  bind<IScheduleInterviewRoundUseCase>(TYPES.ScheduleInterviewRoundUseCase).to(ScheduleInterviewRoundUseCase);
+  bind<IUpdateInterviewResultUseCase>(TYPES.UpdateInterviewResultUseCase).to(UpdateInterviewResultUseCase);
+  bind<IGetInterviewsForInterviewerUseCase>(TYPES.GetInterviewsForInterviewerUseCase).to(GetInterviewsForInterviewerUseCase);
   bind<ApplicationController>(TYPES.ApplicationController).to(ApplicationController);
 });
 

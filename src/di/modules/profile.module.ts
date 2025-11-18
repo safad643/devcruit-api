@@ -8,7 +8,9 @@ import {
   GetCompanyProfileUseCase,
   UpdateDeveloperProfileUseCase,
   UpdateCompanyProfileUseCase,
-  ResubmitDocumentsUseCase
+  ResubmitDocumentsUseCase,
+  InviteCompanyTeamMemberUseCase,
+  ListCompanyTeamMembersUseCase
 } from '../../application/use-cases/profile';
 import { ProfileController } from '../../presentation/controllers/ProfileController';
 
@@ -20,6 +22,8 @@ export const profileModule = new ContainerModule((bind) => {
   bind<UpdateDeveloperProfileUseCase>(TYPES.UpdateDeveloperProfileUseCase).to(UpdateDeveloperProfileUseCase);
   bind<UpdateCompanyProfileUseCase>(TYPES.UpdateCompanyProfileUseCase).to(UpdateCompanyProfileUseCase);
   bind<ResubmitDocumentsUseCase>(TYPES.ResubmitDocumentsUseCase).to(ResubmitDocumentsUseCase);
+  bind<InviteCompanyTeamMemberUseCase>(TYPES.InviteCompanyTeamMemberUseCase).to(InviteCompanyTeamMemberUseCase);
+  bind<ListCompanyTeamMembersUseCase>(TYPES.ListCompanyTeamMembersUseCase).to(ListCompanyTeamMembersUseCase);
 
   // Controllers
   bind<ProfileController>(TYPES.ProfileController).to(ProfileController);

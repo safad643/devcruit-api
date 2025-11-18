@@ -4,6 +4,7 @@ export const TYPES = {
     AdminRepository: Symbol.for('AdminRepository'),
     DeveloperProfileRepository: Symbol.for('DeveloperProfileRepository'),
     CompanyProfileRepository: Symbol.for('CompanyProfileRepository'),
+    CompanyTeamRepository: Symbol.for('CompanyTeamRepository'),
     PendingUserRepository: Symbol.for('PendingUserRepository'),
     OTPRepository: Symbol.for('OTPRepository'),
     RefreshTokenRepository: Symbol.for('RefreshTokenRepository'),
@@ -36,6 +37,8 @@ export const TYPES = {
     UpdateDeveloperProfileUseCase: Symbol.for('UpdateDeveloperProfileUseCase'),
     UpdateCompanyProfileUseCase: Symbol.for('UpdateCompanyProfileUseCase'),
     ResubmitDocumentsUseCase: Symbol.for('ResubmitDocumentsUseCase'),
+    InviteCompanyTeamMemberUseCase: Symbol.for('InviteCompanyTeamMemberUseCase'),
+    ListCompanyTeamMembersUseCase: Symbol.for('ListCompanyTeamMembersUseCase'),
     ProfileController: Symbol.for('ProfileController'),
     
     // Payment module
@@ -79,6 +82,9 @@ export const TYPES = {
     GetApplicationMetricsUseCase: Symbol.for('GetApplicationMetricsUseCase'),
     ShortlistApplicationUseCase: Symbol.for('ShortlistApplicationUseCase'),
     RejectApplicationUseCase: Symbol.for('RejectApplicationUseCase'),
+    ScheduleInterviewRoundUseCase: Symbol.for('ScheduleInterviewRoundUseCase'),
+    UpdateInterviewResultUseCase: Symbol.for('UpdateInterviewResultUseCase'),
+    GetInterviewsForInterviewerUseCase: Symbol.for('GetInterviewsForInterviewerUseCase'),
     ApplicationController: Symbol.for('ApplicationController'),
     
     // Public Job module

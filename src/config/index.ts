@@ -83,5 +83,8 @@ export const config = {
     secretKey: getRequiredEnv('STRIPE_SECRET_KEY'),
     webhookSecret: getRequiredEnv('STRIPE_WEBHOOK_SECRET'),
     currency: 'inr' as const
+  },
+  webApp: {
+    url: getOptionalEnv('WEB_APP_URL', 'http://localhost:3000')
   }
 };

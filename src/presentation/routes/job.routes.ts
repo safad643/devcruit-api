@@ -13,7 +13,7 @@ export async function jobRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.post(
     '/jobs',
     {
-      preHandler: [authenticate, authorize('company'), checkCompanyPaid],
+      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
       schema: { body: CreateJobSchema }
     },
     jobController.createJob
@@ -22,7 +22,7 @@ export async function jobRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get(
     '/jobs',
     {
-      preHandler: [authenticate, authorize('company'), checkCompanyPaid],
+      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
       schema: { querystring: ListJobsQuerySchema }
     },
     jobController.listJobs
@@ -31,7 +31,7 @@ export async function jobRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.delete(
     '/jobs/:id',
     {
-      preHandler: [authenticate, authorize('company'), checkCompanyPaid],
+      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
       schema: { params: JobIdParamsSchema }
     },
     jobController.deleteJob
@@ -40,7 +40,7 @@ export async function jobRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.post(
     '/jobs/:id/close',
     {
-      preHandler: [authenticate, authorize('company'), checkCompanyPaid],
+      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
       schema: { params: JobIdParamsSchema }
     },
     jobController.closeJob
@@ -49,7 +49,7 @@ export async function jobRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.post(
     '/jobs/:id/open',
     {
-      preHandler: [authenticate, authorize('company'), checkCompanyPaid],
+      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
       schema: { params: JobIdParamsSchema }
     },
     jobController.openJob
@@ -58,7 +58,7 @@ export async function jobRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get(
     '/jobs/:id',
     {
-      preHandler: [authenticate, authorize('company'), checkCompanyPaid],
+      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
       schema: { params: JobIdParamsSchema }
     },
     jobController.getJob
@@ -67,7 +67,7 @@ export async function jobRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.put(
     '/jobs/:id',
     {
-      preHandler: [authenticate, authorize('company'), checkCompanyPaid],
+      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
       schema: { params: JobIdParamsSchema, body: UpdateJobSchema }
     },
     jobController.updateJob

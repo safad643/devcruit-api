@@ -9,14 +9,19 @@ import {
   IWithdrawApplicationUseCase,
   IGetApplicationMetricsUseCase,
   IShortlistApplicationUseCase,
-  IRejectApplicationUseCase
+  IRejectApplicationUseCase,
+  IScheduleInterviewRoundUseCase,
+  IUpdateInterviewResultUseCase,
+  IGetInterviewsForInterviewerUseCase
 } from '../../application/use-cases/application/interfaces';
 import { 
   CreateApplicationInput, 
   ListApplicationsForCompanyQueryInput,
   ListApplicationsForDeveloperQueryInput,
   WithdrawApplicationInput,
-  RejectApplicationInput
+  RejectApplicationInput,
+  ScheduleInterviewRoundInput,
+  UpdateInterviewResultInput
 } from '../schemas/application.schema';
 import { wrapSuccess } from '../../utils/response';
 import { HttpStatus } from '../../utils/statusCodes';
@@ -31,7 +36,10 @@ export class ApplicationController {
     @inject(TYPES.WithdrawApplicationUseCase) private withdrawApplicationUseCase: IWithdrawApplicationUseCase,
     @inject(TYPES.GetApplicationMetricsUseCase) private getApplicationMetricsUseCase: IGetApplicationMetricsUseCase,
     @inject(TYPES.ShortlistApplicationUseCase) private shortlistApplicationUseCase: IShortlistApplicationUseCase,
-    @inject(TYPES.RejectApplicationUseCase) private rejectApplicationUseCase: IRejectApplicationUseCase
+    @inject(TYPES.RejectApplicationUseCase) private rejectApplicationUseCase: IRejectApplicationUseCase,
+    @inject(TYPES.ScheduleInterviewRoundUseCase) private scheduleInterviewRoundUseCase: IScheduleInterviewRoundUseCase,
+    @inject(TYPES.UpdateInterviewResultUseCase) private updateInterviewResultUseCase: IUpdateInterviewResultUseCase,
+    @inject(TYPES.GetInterviewsForInterviewerUseCase) private getInterviewsForInterviewerUseCase: IGetInterviewsForInterviewerUseCase
   ) {}
 
   // Developer endpoint: Apply to a job
@@ -52,7 +60,8 @@ export class ApplicationController {
     request: FastifyRequest<{ Querystring: ListApplicationsForCompanyQueryInput }>,
     reply: FastifyReply
   ): Promise<void> => {
-    const companyId = request.user?.id as string;
+    const companyContext = (request as any).companyContext;
+    const companyId = companyContext?.companyUserId ?? (request.user?.id as string);
     const query = request.query;
     
     // Convert string query parameters to integers
@@ -77,7 +86,8 @@ export class ApplicationController {
     request: FastifyRequest<{ Params: { id: string } }>,
     reply: FastifyReply
   ): Promise<void> => {
-    const companyId = request.user?.id as string;
+    const companyContext = (request as any).companyContext;
+    const companyId = companyContext?.companyUserId ?? (request.user?.id as string);
     const applicationId = request.params.id;
     const result = await this.getApplicationDetailsUseCase.execute(applicationId, companyId);
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
@@ -125,7 +135,8 @@ export class ApplicationController {
     request: FastifyRequest<{ Params: { jobId: string } }>,
     reply: FastifyReply
   ): Promise<void> => {
-    const companyId = request.user?.id as string;
+    const companyContext = (request as any).companyContext;
+    const companyId = companyContext?.companyUserId ?? (request.user?.id as string);
     const jobId = request.params.jobId;
     const result = await this.getApplicationMetricsUseCase.execute(jobId, companyId);
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
@@ -136,7 +147,8 @@ export class ApplicationController {
     request: FastifyRequest<{ Params: { id: string }; Body?: { note?: string } }>,
     reply: FastifyReply
   ): Promise<void> => {
-    const companyId = request.user?.id as string;
+    const companyContext = (request as any).companyContext;
+    const companyId = companyContext?.companyUserId ?? (request.user?.id as string);
     const applicationId = request.params.id;
     const note = request.body?.note?.trim() || undefined;
     const result = await this.shortlistApplicationUseCase.execute({
@@ -152,7 +164,8 @@ export class ApplicationController {
     request: FastifyRequest<{ Params: { id: string }; Body?: RejectApplicationInput }>,
     reply: FastifyReply
   ): Promise<void> => {
-    const companyId = request.user?.id as string;
+    const companyContext = (request as any).companyContext;
+    const companyId = companyContext?.companyUserId ?? (request.user?.id as string);
     const applicationId = request.params.id;
     const note = request.body?.note?.trim() || undefined;
     const result = await this.rejectApplicationUseCase.execute({
@@ -160,6 +173,47 @@ export class ApplicationController {
       companyId,
       note,
     });
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
+  };
+
+  // Company/HR endpoint: Schedule interview round
+  scheduleInterviewRound = async (
+    request: FastifyRequest<{ Params: { id: string }; Body: ScheduleInterviewRoundInput }>,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const companyContext = (request as any).companyContext;
+    const companyId = companyContext?.companyUserId ?? (request.user?.id as string);
+    const applicationId = request.params.id;
+    const result = await this.scheduleInterviewRoundUseCase.execute({
+      applicationId,
+      companyId,
+      ...request.body,
+    });
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
+  };
+
+  // Interviewer endpoint: Update interview result
+  updateInterviewResult = async (
+    request: FastifyRequest<{ Params: { id: string }; Body: UpdateInterviewResultInput }>,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const interviewerId = request.user?.id as string;
+    const applicationId = request.params.id;
+    const result = await this.updateInterviewResultUseCase.execute({
+      applicationId,
+      interviewerId,
+      ...request.body,
+    });
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
+  };
+
+  // Interviewer endpoint: Get interviews for interviewer
+  getInterviewsForInterviewer = async (
+    request: FastifyRequest,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const interviewerId = request.user?.id as string;
+    const result = await this.getInterviewsForInterviewerUseCase.execute(interviewerId);
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 }

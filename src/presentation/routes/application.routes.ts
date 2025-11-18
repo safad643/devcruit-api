@@ -13,7 +13,9 @@ import {
   ListApplicationsForDeveloperQuerySchema,
   WithdrawApplicationSchema,
   UpdateApplicationStatusSchema,
-  RejectApplicationSchema
+  RejectApplicationSchema,
+  ScheduleInterviewRoundSchema,
+  UpdateInterviewResultSchema
 } from '../schemas/application.schema';
 
 export async function applicationRoutes(fastify: FastifyInstance): Promise<void> {
@@ -51,7 +53,7 @@ export async function applicationRoutes(fastify: FastifyInstance): Promise<void>
   fastify.get(
     '/company/applications',
     {
-      preHandler: [authenticate, authorize('company'), checkCompanyPaid],
+      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
       schema: { querystring: ListApplicationsForCompanyQuerySchema }
     },
     applicationController.listApplicationsForCompany
@@ -60,7 +62,7 @@ export async function applicationRoutes(fastify: FastifyInstance): Promise<void>
   fastify.get(
     '/company/applications/:id',
     {
-      preHandler: [authenticate, authorize('company'), checkCompanyPaid],
+      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
       schema: { params: ApplicationIdParamsSchema }
     },
     applicationController.getApplicationDetails
@@ -69,7 +71,7 @@ export async function applicationRoutes(fastify: FastifyInstance): Promise<void>
   fastify.get(
     '/company/applications/job/:jobId/metrics',
     {
-      preHandler: [authenticate, authorize('company'), checkCompanyPaid],
+      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
       schema: { params: Type.Object({ jobId: Type.String({ minLength: 1 }) }) }
     },
     applicationController.getApplicationMetrics
@@ -78,7 +80,7 @@ export async function applicationRoutes(fastify: FastifyInstance): Promise<void>
   fastify.patch(
     '/company/applications/:id/shortlist',
     {
-      preHandler: [authenticate, authorize('company'), checkCompanyPaid],
+      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
       schema: { 
         params: ApplicationIdParamsSchema,
         body: UpdateApplicationStatusSchema
@@ -90,13 +92,47 @@ export async function applicationRoutes(fastify: FastifyInstance): Promise<void>
   fastify.patch(
     '/company/applications/:id/reject',
     {
-      preHandler: [authenticate, authorize('company'), checkCompanyPaid],
+      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
       schema: { 
         params: ApplicationIdParamsSchema,
         body: RejectApplicationSchema
       }
     },
     applicationController.rejectApplication
+  );
+
+  // Company/HR route: Schedule interview round
+  fastify.post(
+    '/company/applications/:id/schedule-interview',
+    {
+      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
+      schema: {
+        params: ApplicationIdParamsSchema,
+        body: ScheduleInterviewRoundSchema
+      }
+    },
+    applicationController.scheduleInterviewRound
+  );
+
+  // Interviewer routes
+  fastify.get(
+    '/interviewer/interviews',
+    {
+      preHandler: [authenticate, authorize('interviewer')]
+    },
+    applicationController.getInterviewsForInterviewer
+  );
+
+  fastify.post(
+    '/interviewer/applications/:id/update-interview-result',
+    {
+      preHandler: [authenticate, authorize('interviewer')],
+      schema: {
+        params: ApplicationIdParamsSchema,
+        body: UpdateInterviewResultSchema
+      }
+    },
+    applicationController.updateInterviewResult
   );
 }
 

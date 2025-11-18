@@ -1,10 +1,15 @@
 
-export type UserRole = 'admin' | 'developer' | 'company';
+export type UserRole = 'admin' | 'developer' | 'company' | 'hr' | 'interviewer';
 export interface PendingUserData {
   email: string;
-  password: string; // hashed
+  password?: string; // hashed
   role: UserRole;
+  invitedByCompanyId?: string;
+  invitedByUserId?: string;
+  invitationToken?: string;
 }
+
+export type CompanyTeamMemberStatus = 'invited' | 'active' | 'disabled';
 
 export type OTPType = 'register' | 'reset';
 

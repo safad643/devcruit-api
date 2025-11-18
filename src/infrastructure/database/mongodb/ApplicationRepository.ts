@@ -224,6 +224,18 @@ export class ApplicationRepository implements IApplicationRepository {
     }
   }
 
+  async findByInterviewerId(interviewerId: string): Promise<Application[]> {
+    try {
+      // Find all applications where the interviewerId is in any interview round's interviewerIds array
+      const docs = await this.collection.find({
+        'interviewRounds.interviewerIds': interviewerId
+      }).toArray();
+      return docs.map(doc => this.mapToEntity(doc));
+    } catch (error) {
+      throw new InternalError('Database query failed', error as Error);
+    }
+  }
+
   private mapToEntity(doc: any): Application {
     // Helper to map interview rounds
     const mapInterviewRounds = (rounds: any[]): InterviewRound[] => {

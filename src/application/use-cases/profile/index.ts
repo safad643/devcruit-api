@@ -5,3 +5,5 @@ export { GetCompanyProfileUseCase } from './GetCompanyProfileUseCase';
 export { UpdateDeveloperProfileUseCase } from './UpdateDeveloperProfileUseCase';
 export { UpdateCompanyProfileUseCase } from './UpdateCompanyProfileUseCase';
 export { ResubmitDocumentsUseCase } from './ResubmitDocumentsUseCase';
+export { InviteCompanyTeamMemberUseCase } from './InviteCompanyTeamMemberUseCase';
+export { ListCompanyTeamMembersUseCase } from './ListCompanyTeamMembersUseCase';

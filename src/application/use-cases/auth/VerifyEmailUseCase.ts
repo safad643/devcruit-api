@@ -37,6 +37,10 @@ export class VerifyEmailUseCase implements IVerifyEmailUseCase {
     }
 
     // 3. Create user in database
+    if (!pendingUser.password) {
+      throw new UnauthorizedError('Registration session missing password');
+    }
+
     const userProps = User.create({
       email: pendingUser.email,
       password: pendingUser.password,

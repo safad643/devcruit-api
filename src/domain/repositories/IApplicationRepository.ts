@@ -40,5 +40,6 @@ export interface IApplicationRepository {
   update(id: string, updates: Partial<ApplicationProps>): Promise<Application>;
   listWithFilters(filters: ApplicationListFilters): Promise<ApplicationListResult>;
   getMetricsByJobId(jobId: string, companyId: string): Promise<ApplicationMetrics>;
+  findByInterviewerId(interviewerId: string): Promise<Application[]>;
 }
 
