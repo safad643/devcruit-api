@@ -70,6 +70,8 @@ export const config = {
   },
   otp: {
     ttl: 60,
+    length: parseInt(getOptionalEnv('OTP_LENGTH', '6')),
+    maxAttempts: parseInt(getOptionalEnv('OTP_MAX_ATTEMPTS', '3')),
   },
   pendingUser:{
     ttl:120

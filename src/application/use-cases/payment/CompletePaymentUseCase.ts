@@ -1,13 +1,9 @@
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { ICompanyProfileRepository } from '../../../domain/repositories';
-import { PlanTier } from '../../../domain/entities/CompanyProfile';
+import { CompanyProfileProps } from '../../../domain/entities/CompanyProfile';
 import { InternalError, NotFoundError } from '../../../domain/errors';
-
-export interface CompletePaymentInput {
-  userId: string;
-  plan: PlanTier;
-}
+import { CompletePaymentInput } from '../../dtos/payment.dto';
 
 @injectable()
 export class CompletePaymentUseCase {
@@ -26,7 +22,7 @@ export class CompletePaymentUseCase {
     const updated = await this.companyRepo.update(input.userId, {
       status: 'paid',
       planHistory: newHistory
-    } as any);
+    } as Partial<CompanyProfileProps>);
 
     if (!updated) {
       throw new InternalError('Failed to update company profile after payment');

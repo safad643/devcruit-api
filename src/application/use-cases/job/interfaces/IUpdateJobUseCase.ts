@@ -1,10 +1,6 @@
-import { JobProps } from '../../../../domain/entities/Job';
+import { UpdateJobInput, UpdateJobOutput } from '../../../dtos/job.dto';
 
 export interface IUpdateJobUseCase {
-  execute(input: {
-    jobId: string;
-    companyId: string;
-    updates: Partial<Omit<JobProps, 'id' | 'companyId' | 'createdAt' | 'updatedAt' | 'status'>>;
-  }): Promise<{ id: string; message: string }>;
+  execute(input: UpdateJobInput): Promise<UpdateJobOutput>;
 }
 

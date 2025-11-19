@@ -29,6 +29,7 @@ export class GetCompanyProfileUseCase {
       businessAddress: profile.businessAddress,
       businessRegistrationProofUrl: profile.businessRegistrationProofUrl,
       employmentVerificationUrl: profile.employmentVerificationUrl,
+      logoUrl: profile.logoUrl,
       status: profile.status,
       planHistory: profile.planHistory,
       documentReuploadRequests: profile.documentReuploadRequests,

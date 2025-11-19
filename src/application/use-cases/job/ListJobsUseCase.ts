@@ -1,7 +1,7 @@
 import { IJobRepository, IApplicationRepository } from '../../../domain/repositories';
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
-import { ListJobsInput, ListJobsOutput, JobListItem } from '../../dtos/job.dto';
+import { ListJobsInput, ListJobsOutput, JobListSummary } from '../../dtos/job.dto';
 import { IListJobsUseCase } from './interfaces';
 
 @injectable()
@@ -26,34 +26,20 @@ export class ListJobsUseCase implements IListJobsUseCase {
     // Call repository
     const result = await this.jobRepository.listWithFilters(filters);
 
-    // Map to output DTO with all fields, including application count
-    const jobs: JobListItem[] = await Promise.all(
+    // Map to lightweight output DTO with only fields used in list view
+    const jobs: JobListSummary[] = await Promise.all(
       result.jobs.map(async (job) => {
         const applications = await this.applicationRepository.findByJobId(job.id);
         return {
           id: job.id,
-          companyId: job.companyId,
           title: job.title,
-          description: job.description,
           category: job.category,
-          requiredTech: job.requiredTech,
-          requiredSkills: job.requiredSkills,
-          interviewRounds: job.interviewRounds,
-          experienceLevel: job.experienceLevel,
-          minYears: job.minYears,
-          niceTech: job.niceTech,
-          niceSkills: job.niceSkills,
           jobType: job.jobType,
           workArrangement: job.workArrangement,
-          location: job.location,
-          relocation: job.relocation,
-          compensation: job.compensation,
-          benefits: job.benefits,
-          validUntil: job.validUntil,
-          autoShortlist: job.autoShortlist,
+          experienceLevel: job.experienceLevel,
           status: job.status,
           createdAt: job.createdAt,
-          updatedAt: job.updatedAt,
+          validUntil: job.validUntil,
           applicationCount: applications.length,
         };
       })

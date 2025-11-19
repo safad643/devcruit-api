@@ -1,20 +1,7 @@
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { IFileService } from '../../services';
-import { FileCategory } from '../../../domain/types';
-
-export interface GenerateSignatureInput {
-  timestamp: number;
-  category: FileCategory;
-  userId: string;
-}
-
-export interface GenerateSignatureOutput {
-  signature: string;
-  apiKey: string;
-  timestamp: number;
-  folder: string;
-}
+import { GenerateSignatureInput, GenerateSignatureOutput } from '../../dtos/file.dto';
 
 @injectable()
 export class GenerateSignatureUseCase {

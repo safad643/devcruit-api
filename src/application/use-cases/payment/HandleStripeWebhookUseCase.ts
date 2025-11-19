@@ -1,18 +1,7 @@
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { IPaymentService } from '../../services';
-import { PlanTier } from '../../../domain/entities/CompanyProfile';
-
-export interface HandleStripeWebhookInput {
-  rawBody: Buffer;
-  signature: string;
-}
-
-export interface HandleStripeWebhookOutput {
-  eventType: string;
-  userId: string;
-  plan: PlanTier;
-}
+import { HandleStripeWebhookInput, HandleStripeWebhookOutput } from '../../dtos/payment.dto';
 
 @injectable()
 export class HandleStripeWebhookUseCase {

@@ -2,6 +2,7 @@ import { UserRole, OTPType, CompanyDocumentKey } from '../../domain/types';
 
 export interface RegisterUserInput {
   email: string;
+  name: string;
   password: string;
   role: UserRole;
 }
@@ -22,6 +23,7 @@ export interface AuthTokensOutput {
   user: {
     id: string;
     email: string;
+    name: string;
     role: UserRole;
     isProfileCompleted: boolean;
     status?: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid';
@@ -91,5 +93,48 @@ export interface AdminAuthTokensOutput {
     id: string;
     email: string;
     role: 'admin';
+  };
+}
+
+export interface GoogleLoginInput {
+  code: string;
+}
+
+export interface GoogleLoginOutput {
+  accessToken: string;
+  refreshToken: string;
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+    isProfileCompleted: boolean;
+    status?: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid';
+    neededDocuments?: Array<{
+      documentKey: CompanyDocumentKey;
+      note?: string;
+    }>;
+  };
+}
+
+export interface GoogleRegisterInput {
+  code: string;
+  role: UserRole;
+}
+
+export interface GoogleRegisterOutput {
+  accessToken: string;
+  refreshToken: string;
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+    isProfileCompleted: boolean;
+    status?: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid';
+    neededDocuments?: Array<{
+      documentKey: CompanyDocumentKey;
+      note?: string;
+    }>;
   };
 }

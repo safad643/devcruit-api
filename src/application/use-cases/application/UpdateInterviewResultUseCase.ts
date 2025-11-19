@@ -2,6 +2,7 @@ import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { IApplicationRepository, ICompanyTeamRepository } from '../../../domain/repositories';
 import { NotFoundError, ForbiddenError, ValidationError } from '../../../domain/errors';
+import { InterviewRoundResult, InterviewRoundStatus } from '../../../domain/entities/Application';
 import { IUpdateInterviewResultUseCase, UpdateInterviewResultInput, UpdateInterviewResultOutput } from './interfaces';
 
 @injectable()
@@ -34,8 +35,9 @@ export class UpdateInterviewResultUseCase implements IUpdateInterviewResultUseCa
     }
 
     // 4. Validate result
-    if (!['pass', 'fail', 'on-hold'].includes(input.result)) {
-      throw new ValidationError('Result must be "pass", "fail", or "on-hold"');
+    const validResults = Object.values(InterviewRoundResult);
+    if (!validResults.includes(input.result as InterviewRoundResult)) {
+      throw new ValidationError(`Result must be one of: ${validResults.join(', ')}`);
     }
 
     // 5. Update the interview round
@@ -43,7 +45,7 @@ export class UpdateInterviewResultUseCase implements IUpdateInterviewResultUseCa
       if (r.roundName === input.roundName) {
         return {
           ...r,
-          status: 'completed',
+          status: 'completed' as InterviewRoundStatus,
           result: input.result,
           feedback: input.feedback,
           completedAt: new Date(),

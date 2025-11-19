@@ -1,5 +1,5 @@
 import { IUserRepository, IOTPRepository } from '../../../domain/repositories';
-import { IEmailService } from '../../services';
+import { IEmailService, ICryptographicService } from '../../services';
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { ForgotPasswordInput, ForgotPasswordOutput } from '../../dtos/auth.dto';
@@ -12,7 +12,8 @@ export class ForgotPasswordUseCase implements IForgotPasswordUseCase {
   constructor(
     @inject(TYPES.UserRepository) private userRepository: IUserRepository,
     @inject(TYPES.OTPRepository) private otpRepository: IOTPRepository,
-    @inject(TYPES.EmailService) private emailService: IEmailService
+    @inject(TYPES.EmailService) private emailService: IEmailService,
+    @inject(TYPES.CryptographicService) private cryptographicService: ICryptographicService
   ) {}
 
   async execute(input: ForgotPasswordInput): Promise<ForgotPasswordOutput> {
@@ -23,7 +24,7 @@ export class ForgotPasswordUseCase implements IForgotPasswordUseCase {
     }
 
     // 2. Generate OTP
-    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpCode = this.cryptographicService.generateOTP();
 
     // 3. Save OTP to Redis
     await this.otpRepository.save(input.email, otpCode, 'reset', config.otp.ttl);

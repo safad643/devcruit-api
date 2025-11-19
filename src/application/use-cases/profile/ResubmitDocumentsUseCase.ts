@@ -3,12 +3,17 @@ import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { ResubmitDocumentsInput, ResubmitDocumentsOutput } from '../../dtos/profile.dto';
 import { NotFoundError, ValidationError } from '../../../domain/errors';
+import { CompanyDocumentKey } from '../../../domain/types';
 
 @injectable()
 export class ResubmitDocumentsUseCase {
   constructor(
     @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository
   ) {}
+
+  private isCompanyDocumentKey(key: string): key is CompanyDocumentKey {
+    return key === 'COMPANY_REGISTRATION_DOCUMENT' || key === 'COMPANY_VERIFICATION_DOCUMENT';
+  }
 
   async execute(input: ResubmitDocumentsInput): Promise<ResubmitDocumentsOutput> {
     // 1. Verify company profile exists
@@ -39,8 +44,13 @@ export class ResubmitDocumentsUseCase {
     }
     
     // Check that all submitted document keys are in the reupload request
-    const submittedKeys = Object.keys(input.documents) as Array<keyof typeof input.documents>;
-    const invalidKeys = submittedKeys.filter(key => !requestedDocumentKeys.includes(key as any));
+    const submittedKeys = Object.keys(input.documents);
+    const invalidKeys = submittedKeys.filter(key => {
+      if (!this.isCompanyDocumentKey(key)) {
+        return true; // Invalid key type
+      }
+      return !requestedDocumentKeys.includes(key);
+    });
     
     if (invalidKeys.length > 0) {
       throw new ValidationError(`Documents being resubmitted (${invalidKeys.join(', ')}) do not match the requested documents`);

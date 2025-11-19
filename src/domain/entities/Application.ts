@@ -11,7 +11,12 @@ export type ApplicationStatus =
 export type ShortlistMethod = 'auto' | 'manual';
 
 export type InterviewRoundStatus = 'pending' | 'scheduled' | 'completed' | 'cancelled';
-export type InterviewRoundResult = 'pass' | 'fail' | 'on-hold';
+
+export enum InterviewRoundResult {
+  PASS = 'pass',
+  FAIL = 'fail',
+  ON_HOLD = 'on-hold'
+}
 
 export interface InterviewRound {
   roundName: string;

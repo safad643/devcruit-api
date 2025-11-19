@@ -1,8 +1,15 @@
 import { Type, Static } from '@sinclair/typebox';
+import { config } from '../../config';
+
+// Helper function to generate OTP pattern based on configured length
+function getOTPPattern(): string {
+  return `^[0-9]{${config.otp.length}}$`;
+}
 
 // Register
 export const RegisterUserSchema = Type.Object({
   email: Type.String({ format: 'email', minLength: 5, maxLength: 100 }),
+  name: Type.String({ minLength: 1, maxLength: 100 }),
   password: Type.String({ 
     minLength: 6, 
     maxLength: 100,
@@ -18,7 +25,7 @@ export const RegisterUserSchema = Type.Object({
 // Verify Email
 export const VerifyEmailSchema = Type.Object({
   email: Type.String({ format: 'email' }),
-  otpCode: Type.String({ pattern: '^[0-9]{6}$' })
+  otpCode: Type.String({ pattern: getOTPPattern() })
 });
 
 // Login
@@ -44,7 +51,7 @@ export const ForgotPasswordSchema = Type.Object({
 // Reset Password
 export const ResetPasswordSchema = Type.Object({
   email: Type.String({ format: 'email' }),
-  otpCode: Type.String({ pattern: '^[0-9]{6}$' }),
+  otpCode: Type.String({ pattern: getOTPPattern() }),
   newPassword: Type.String({ 
     minLength: 6, 
     maxLength: 100,

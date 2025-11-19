@@ -1,19 +1,7 @@
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { IPaymentService } from '../../services';
-import { PlanTier } from '../../../domain/entities/CompanyProfile';
-
-export interface CreateCheckoutSessionInput {
-  plan: PlanTier;
-  userId: string;
-  successUrl: string;
-  cancelUrl: string;
-}
-
-export interface CreateCheckoutSessionOutput {
-  sessionId: string;
-  url: string;
-}
+import { CreateCheckoutSessionInput, CreateCheckoutSessionOutput } from '../../dtos/payment.dto';
 
 @injectable()
 export class CreateCheckoutSessionUseCase {
@@ -27,7 +15,6 @@ export class CreateCheckoutSessionUseCase {
       userId: input.userId,
       successUrl: input.successUrl,
       cancelUrl: input.cancelUrl,
-      currency: 'inr',
     });
 
     return { sessionId: result.sessionId, url: result.url };

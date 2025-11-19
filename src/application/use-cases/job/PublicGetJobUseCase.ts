@@ -1,15 +1,15 @@
-import { IJobRepository } from '../../../domain/repositories';
+import { IJobRepository, ICompanyProfileRepository } from '../../../domain/repositories';
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { PublicJobDetail } from '../../dtos/job.dto';
 import { NotFoundError } from '../../../domain/errors';
-import { getMongoDb } from '../../../infrastructure/database/mongodb/client';
 import { IPublicGetJobUseCase } from './interfaces';
 
 @injectable()
 export class PublicGetJobUseCase implements IPublicGetJobUseCase {
   constructor(
-    @inject(TYPES.JobRepository) private jobRepository: IJobRepository
+    @inject(TYPES.JobRepository) private jobRepository: IJobRepository,
+    @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository
   ) {}
 
   async execute(id: string): Promise<PublicJobDetail> {
@@ -18,7 +18,7 @@ export class PublicGetJobUseCase implements IPublicGetJobUseCase {
       throw new NotFoundError('Job not found');
     }
 
-    const companyProfile = await getMongoDb().collection('company_profiles').findOne({ userId: job.companyId });
+    const companyProfile = await this.companyProfileRepository.findByUserId(job.companyId);
 
     return {
       id: job.id,
@@ -26,7 +26,7 @@ export class PublicGetJobUseCase implements IPublicGetJobUseCase {
       company: {
         id: job.companyId,
         name: companyProfile?.companyName ?? 'Unknown Company',
-        logoUrl: companyProfile?.employmentVerificationUrl,
+        logoUrl: companyProfile?.logoUrl,
       },
       category: job.category,
       experienceLevel: job.experienceLevel,

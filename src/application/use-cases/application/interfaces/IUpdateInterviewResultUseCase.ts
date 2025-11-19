@@ -1,7 +1,9 @@
+import { InterviewRoundResult } from '../../../domain/entities/Application';
+
 export interface UpdateInterviewResultInput {
   applicationId: string;
   roundName: string;
-  result: 'pass' | 'fail' | 'on-hold';
+  result: InterviewRoundResult;
   feedback?: string;
 }
 

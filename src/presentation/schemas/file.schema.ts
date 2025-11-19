@@ -7,7 +7,8 @@ export const GenerateSignatureSchema = Type.Object({
     Type.Literal('DEGREE_CERTIFICATE'),
     Type.Literal('CV'),
     Type.Literal('COMPANY_REGISTRATION_DOCUMENT'),
-    Type.Literal('COMPANY_VERIFICATION_DOCUMENT')
+    Type.Literal('COMPANY_VERIFICATION_DOCUMENT'),
+    Type.Literal('COMPANY_LOGO')
   ])
 });
 

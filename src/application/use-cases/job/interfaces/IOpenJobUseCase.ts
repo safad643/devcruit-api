@@ -1,4 +1,6 @@
+import { OpenJobInput, OpenJobOutput } from '../../dtos/job.dto';
+
 export interface IOpenJobUseCase {
-  execute(input: { jobId: string; companyId: string }): Promise<{ message: string }>;
+  execute(input: OpenJobInput): Promise<OpenJobOutput>;
 }
 

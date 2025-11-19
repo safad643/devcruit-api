@@ -42,6 +42,7 @@ export class CreateCompanyProfileUseCase {
       businessAddress: input.businessAddress,
       businessRegistrationProofUrl: input.businessRegistrationProofUrl,
       employmentVerificationUrl: input.employmentVerificationUrl,
+      logoUrl: input.logoUrl,
     });
 
     // 5. Save to database

@@ -8,7 +8,7 @@ import {
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { NotFoundError, ForbiddenError, ValidationError } from '../../../domain/errors';
-import { ApplicationStatus, StatusNotes } from '../../../domain/entities/Application';
+import { ApplicationStatus, StatusNotes, ApplicationProps } from '../../../domain/entities/Application';
 import { RejectApplicationInput, RejectApplicationOutput } from '../../dtos/application.dto';
 import { IEmailService } from '../../services';
 import { IRejectApplicationUseCase } from './interfaces';
@@ -50,7 +50,7 @@ export class RejectApplicationUseCase implements IRejectApplicationUseCase {
 
     // 5. Prepare update data
     const now = new Date();
-    const updateData: any = {
+    const updateData: Partial<ApplicationProps> = {
       status: 'rejected' as ApplicationStatus,
       rejectedAt: now,
       lastUpdatedAt: now,

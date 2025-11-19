@@ -38,6 +38,7 @@ export class UserRepository implements IUserRepository {
     try {
       const result = await this.collection.insertOne({
         email: user.email,
+        name: user.name,
         password: user.password,
         role: user.role,
         isBlocked: user.isBlocked,
@@ -188,6 +189,7 @@ export class UserRepository implements IUserRepository {
     return new User({
       id: doc._id.toString(),
       email: doc.email,
+      name: doc.name || doc.email?.split('@')[0] || 'User',  // Fallback to email prefix for old records
       password: doc.password,
       role: doc.role,
       isBlocked: doc.isBlocked,

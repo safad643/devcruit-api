@@ -10,7 +10,7 @@ import { CompanyTeamMemberDTO, IInviteCompanyTeamMemberUseCase, InviteCompanyTea
 import { ForbiddenError, NotFoundError, ValidationError, ConflictError } from '../../../domain/errors';
 import { User } from '../../../domain/entities/User';
 import { HRProfile } from '../../../domain/entities/HRProfile';
-import { IHashService, IEmailService } from '../../services';
+import { IHashService, IEmailService, ICryptographicService } from '../../services';
 
 @injectable()
 export class InviteCompanyTeamMemberUseCase implements IInviteCompanyTeamMemberUseCase {
@@ -19,7 +19,8 @@ export class InviteCompanyTeamMemberUseCase implements IInviteCompanyTeamMemberU
     @inject(TYPES.CompanyTeamRepository) private companyTeamRepository: ICompanyTeamRepository,
     @inject(TYPES.UserRepository) private userRepository: IUserRepository,
     @inject(TYPES.HashService) private hashService: IHashService,
-    @inject(TYPES.EmailService) private emailService: IEmailService
+    @inject(TYPES.EmailService) private emailService: IEmailService,
+    @inject(TYPES.CryptographicService) private cryptographicService: ICryptographicService
   ) {}
 
   async execute(input: InviteCompanyTeamMemberInput): Promise<CompanyTeamMemberDTO> {
@@ -52,11 +53,12 @@ export class InviteCompanyTeamMemberUseCase implements IInviteCompanyTeamMemberU
       throw new ConflictError('This email has already been invited to your team');
     }
 
-    const tempPassword = this.generateTemporaryPassword();
+    const tempPassword = this.cryptographicService.generateTemporaryPassword();
     const hashedPassword = await this.hashService.hash(tempPassword);
 
     const userProps = User.create({
       email: normalizedEmail,
+      name: input.fullName || normalizedEmail.split('@')[0], // Use fullName if provided, otherwise fallback to email prefix
       password: hashedPassword,
       role: input.role,
       authProviders: ['local'],
@@ -81,29 +83,19 @@ export class InviteCompanyTeamMemberUseCase implements IInviteCompanyTeamMemberU
       input.role
     );
 
-    return this.toDTO(teamMember);
+    return this.toDTO(teamMember, input.role);
   }
 
-  private toDTO(member: CompanyTeamMember): CompanyTeamMemberDTO {
+  private toDTO(member: CompanyTeamMember,role: 'hr' | 'interviewer'): CompanyTeamMemberDTO {
     return {
       id: member.id,
       email: member.email,
       fullName: member.fullName,
-      role: member instanceof HRProfile ? 'hr' : 'interviewer',
+      role: role,
       status: member.status,
       invitedAt: member.invitedAt,
       activatedAt: member.activatedAt,
     };
-  }
-
-  private generateTemporaryPassword(): string {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%^&*';
-    let password = '';
-    for (let i = 0; i < 12; i += 1) {
-      const index = Math.floor(Math.random() * chars.length);
-      password += chars[index];
-    }
-    return password;
   }
 }
 

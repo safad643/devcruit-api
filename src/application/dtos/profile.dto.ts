@@ -79,6 +79,7 @@ export interface CreateCompanyProfileInput {
   businessAddress: string;
   businessRegistrationProofUrl: string;
   employmentVerificationUrl: string;
+  logoUrl?: string;
 }
 
 export interface CreateCompanyProfileOutput {
@@ -126,6 +127,7 @@ export interface GetCompanyProfileOutput {
   businessAddress: string;
   businessRegistrationProofUrl: string;
   employmentVerificationUrl: string;
+  logoUrl?: string;
   status: CompanyProfileStatus;
   planHistory: PlanHistoryItem[];
   documentReuploadRequests: DocumentReuploadRequest[];
@@ -137,6 +139,7 @@ export interface UpdateCompanyProfileInput {
   companyName?: string;
   companyWebsite?: string;
   businessAddress?: string;
+  logoUrl?: string;
 }
 
 export interface UpdateCompanyProfileOutput {

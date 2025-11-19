@@ -2,6 +2,7 @@ import { Collection, ObjectId } from 'mongodb';
 import { injectable } from 'inversify';
 import {
   CompanyTeamMember,
+  CompanyTeamMemberWithRole,
   ICompanyTeamRepository,
   InviteCompanyTeamMemberInput
 } from '../../../domain/repositories';
@@ -90,13 +91,16 @@ export class CompanyTeamRepository implements ICompanyTeamRepository {
     }
   }
 
-  async listMembers(companyId: string): Promise<CompanyTeamMember[]> {
+  async listMembers(companyId: string): Promise<CompanyTeamMemberWithRole[]> {
     try {
       const docs = await this.collection
         .find({ companyId })
         .sort({ createdAt: -1 })
         .toArray();
-      return docs.map((doc) => this.mapToEntity(doc));
+      return docs.map((doc) => ({
+        member: this.mapToEntity(doc),
+        role: doc.role,
+      }));
     } catch (error) {
       throw new InternalError('Failed to list company team members', error as Error);
     }

@@ -1,5 +1,5 @@
 import { IUserRepository, IPendingUserRepository, IOTPRepository } from '../../../domain/repositories';
-import { IHashService, IEmailService } from '../../services';
+import { IHashService, IEmailService, ICryptographicService } from '../../services';
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { RegisterUserInput, RegisterUserOutput } from '../../dtos/auth.dto';
@@ -15,7 +15,8 @@ export class RegisterUserUseCase implements IRegisterUserUseCase {
     @inject(TYPES.PendingUserRepository) private pendingUserRepository: IPendingUserRepository,
     @inject(TYPES.OTPRepository) private otpRepository: IOTPRepository,
     @inject(TYPES.HashService) private hashService: IHashService,
-    @inject(TYPES.EmailService) private emailService: IEmailService
+    @inject(TYPES.EmailService) private emailService: IEmailService,
+    @inject(TYPES.CryptographicService) private cryptographicService: ICryptographicService
   ) {}
 
   async execute(input: RegisterUserInput): Promise<RegisterUserOutput> {
@@ -36,6 +37,7 @@ export class RegisterUserUseCase implements IRegisterUserUseCase {
       input.email,
       {
         email: input.email,
+        name: input.name,
         password: hashedPassword,
         role: input.role,
       },
@@ -43,7 +45,7 @@ export class RegisterUserUseCase implements IRegisterUserUseCase {
     );
 
     // 5. Generate OTP
-    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpCode = this.cryptographicService.generateOTP();
 
     // 6. Save OTP to Redis
     await this.otpRepository.save(input.email, otpCode, 'register', config.otp.ttl);

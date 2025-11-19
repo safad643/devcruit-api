@@ -110,7 +110,8 @@ export const CreateCompanyProfileSchema = Type.Object({
   businessRegistrationNumber: Type.String({ minLength: 1, maxLength: 100 }),
   businessAddress: Type.String({ minLength: 1, maxLength: 500 }),
   businessRegistrationProofUrl: Type.String({ format: 'uri' }),
-  employmentVerificationUrl: Type.String({ format: 'uri' })
+  employmentVerificationUrl: Type.String({ format: 'uri' }),
+  logoUrl: Type.Optional(Type.String({ format: 'uri' }))
 });
 
 // Update Developer Profile Schema (all fields optional except userId)
@@ -159,7 +160,8 @@ export const UpdateDeveloperProfileSchema = Type.Object({
 export const UpdateCompanyProfileSchema = Type.Object({
   companyName: Type.Optional(Type.String({ minLength: 1, maxLength: 200 })),
   companyWebsite: Type.Optional(Type.String({ format: 'uri' })),
-  businessAddress: Type.Optional(Type.String({ minLength: 1, maxLength: 500 }))
+  businessAddress: Type.Optional(Type.String({ minLength: 1, maxLength: 500 })),
+  logoUrl: Type.Optional(Type.String({ format: 'uri' }))
 });
 
 export const ResubmitDocumentsSchema = Type.Object({

@@ -8,7 +8,7 @@ import {
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { NotFoundError, ForbiddenError, ValidationError } from '../../../domain/errors';
-import { ApplicationStatus, StatusNotes } from '../../../domain/entities/Application';
+import { ApplicationStatus, StatusNotes, ApplicationProps } from '../../../domain/entities/Application';
 import { UpdateApplicationStatusInput, UpdateApplicationStatusOutput } from '../../dtos/application.dto';
 import { IEmailService } from '../../services';
 import { IShortlistApplicationUseCase } from './interfaces';
@@ -48,7 +48,7 @@ export class ShortlistApplicationUseCase implements IShortlistApplicationUseCase
     }
 
     // 5. Prepare update data - only shortlisting logic
-    const updateData: any = {
+    const updateData: Partial<ApplicationProps> = {
       status: 'shortlisted' as ApplicationStatus,
       lastUpdatedAt: new Date(),
     };

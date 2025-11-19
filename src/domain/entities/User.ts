@@ -5,18 +5,20 @@ export type AuthProvider = 'local' | 'google';
 export interface UserProps {
   id: string;
   email: string;
-  password: string | null;  // Changed: now nullable
+  name: string; 
+  password: string | null; 
   role: UserRole;
   isBlocked: boolean;
-  isProfileCompleted: boolean;  // New: indicates if user has completed their profile
-  authProviders: AuthProvider[];  // New: tracks all login methods
-  googleId?: string;  // New: Google's unique user ID
+  isProfileCompleted: boolean; 
+  authProviders: AuthProvider[]; 
+  googleId?: string; 
   createdAt: Date;
 }
 
 export class User {
   public readonly id: string;
   public readonly email: string;
+  public readonly name: string;
   public readonly password: string | null;
   public readonly role: UserRole;
   public readonly isBlocked: boolean;
@@ -28,6 +30,7 @@ export class User {
   constructor(props: UserProps) {
     this.id = props.id;
     this.email = props.email;
+    this.name = props.name;
     this.password = props.password;
     this.role = props.role;
     this.isBlocked = props.isBlocked;
@@ -41,7 +44,7 @@ export class User {
     return {
       ...props,
       isBlocked: false,
-      isProfileCompleted: false, // Default to false for new users
+      isProfileCompleted: false,
       createdAt: new Date(),
     };
   }

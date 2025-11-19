@@ -2,8 +2,9 @@ import { IJobRepository, IUserRepository } from '../../../domain/repositories';
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { NotFoundError, ValidationError } from '../../../domain/errors';
-import { Job } from '../../../domain/entities/Job';
+import { Job, Compensation } from '../../../domain/entities/Job';
 import { ICreateJobUseCase } from './interfaces';
+import { CreateJobInput, CreateJobOutput, CreateJobCompensationInput } from '../../dtos/job.dto';
 
 @injectable()
 export class CreateJobUseCase implements ICreateJobUseCase {
@@ -12,34 +13,40 @@ export class CreateJobUseCase implements ICreateJobUseCase {
     @inject(TYPES.UserRepository) private userRepository: IUserRepository
   ) {}
 
-  async execute(input: {
-    companyId: string;
-    title: string;
-    description: string;
-    category: string;
-    requiredTech: string[];
-    requiredSkills: string[];
-    interviewRounds: string[];
-    experienceLevel: 'junior' | 'mid' | 'senior' | 'lead';
-    minYears: number;
-    niceTech: string[];
-    niceSkills: string[];
-    jobType: 'full-time' | 'part-time' | 'contract' | 'freelance';
-    workArrangement: 'remote' | 'hybrid' | 'on-site';
-    location?: string;
-    relocation: boolean;
-    compensation: {} | { min: number; max: number; currency: string };
-    benefits?: string;
-    validUntil: string;
-    autoShortlist: boolean;
-    status: 'draft' | 'open';
-  }): Promise<{
-    id: string;
-    companyId: string;
-    title: string;
-    status: 'draft' | 'open' | 'closed';
-    message: string;
-  }> {
+  /**
+   * Type guard to check if compensation is a range type
+   */
+  private isRangeCompensation(compensation: CreateJobCompensationInput): compensation is { min: number; max: number; currency: string } {
+    return (
+      typeof compensation === 'object' &&
+      compensation !== null &&
+      'min' in compensation &&
+      'max' in compensation &&
+      'currency' in compensation &&
+      typeof (compensation as { min?: unknown }).min === 'number' &&
+      typeof (compensation as { max?: unknown }).max === 'number' &&
+      typeof (compensation as { currency?: unknown }).currency === 'string'
+    );
+  }
+
+  /**
+   * Transform input compensation to domain compensation format
+   */
+  private transformCompensation(inputCompensation: CreateJobCompensationInput): Compensation {
+    if (this.isRangeCompensation(inputCompensation)) {
+      return {
+        mode: 'range',
+        min: inputCompensation.min,
+        max: inputCompensation.max,
+        currency: inputCompensation.currency,
+      };
+    }
+    return {
+      mode: 'hidden',
+    };
+  }
+
+  async execute(input: CreateJobInput): Promise<CreateJobOutput> {
     // 1. Verify user exists
     const user = await this.userRepository.findById(input.companyId);
     if (!user) {
@@ -62,19 +69,13 @@ export class CreateJobUseCase implements ICreateJobUseCase {
       throw new ValidationError('At least one interview round is required');
     }
 
-    // 5. Validate compensation structure (inferred)
-    const isRangeComp = (input.compensation as any).min !== undefined 
-      || (input.compensation as any).max !== undefined 
-      || (input.compensation as any).currency !== undefined;
-    if (isRangeComp) {
-      const { min, max, currency } = input.compensation as any;
-      if (min === undefined || max === undefined) {
-        throw new ValidationError('Minimum and maximum salary are required for range compensation');
-      }
+    // 5. Validate compensation structure
+    if (this.isRangeCompensation(input.compensation)) {
+      const { min, max, currency } = input.compensation;
       if (min > max) {
         throw new ValidationError('Minimum salary cannot be greater than maximum salary');
       }
-      if (!currency) {
+      if (!currency || currency.trim().length === 0) {
         throw new ValidationError('Currency is required for range compensation');
       }
     }
@@ -85,8 +86,11 @@ export class CreateJobUseCase implements ICreateJobUseCase {
       throw new ValidationError('Valid until date must be in the future');
     }
 
-    // 7. Create the job data with status from input
-    const jobData = {
+    // 7. Transform compensation to domain format
+    const domainCompensation = this.transformCompensation(input.compensation);
+
+    // 8. Create the job using the domain factory method
+    const jobDataWithDefaults = Job.create({
       companyId: input.companyId,
       title: input.title,
       description: input.description,
@@ -102,15 +106,22 @@ export class CreateJobUseCase implements ICreateJobUseCase {
       workArrangement: input.workArrangement,
       location: input.location,
       relocation: input.relocation,
-      compensation: input.compensation,
+      compensation: domainCompensation,
       benefits: input.benefits,
       validUntil: validUntilDate,
       autoShortlist: input.autoShortlist,
+    });
+
+    // Extract only the fields needed by the repository (omit createdAt, updatedAt as repository sets them)
+    // and override status from input (Job.create defaults to 'draft')
+    const { createdAt, updatedAt, ...jobDataWithoutTimestamps } = jobDataWithDefaults;
+    const jobDataForRepository = {
+      ...jobDataWithoutTimestamps,
       status: input.status,
     };
 
-    // 8. Save to database
-    const createdJob = await this.jobRepository.create(jobData);
+    // 9. Save to database
+    const createdJob = await this.jobRepository.create(jobDataForRepository);
 
     return {
       id: createdJob.id,

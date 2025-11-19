@@ -10,10 +10,12 @@ export const TYPES = {
     RefreshTokenRepository: Symbol.for('RefreshTokenRepository'),
     HashService: Symbol.for('HashService'),
     TokenService: Symbol.for('TokenService'),
+    AuthTokenService: Symbol.for('AuthTokenService'),
     GoogleAuthService: Symbol.for('GoogleAuthService'),
     EmailService: Symbol.for('EmailService'),
     FileService: Symbol.for('FileService'),
     PaymentService: Symbol.for('PaymentService'),
+    CryptographicService: Symbol.for('CryptographicService'),
   
     // Auth module
     RegisterUserUseCase: Symbol.for('RegisterUserUseCase'),

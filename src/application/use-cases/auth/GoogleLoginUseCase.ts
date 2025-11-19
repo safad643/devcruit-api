@@ -1,31 +1,9 @@
 import { inject, injectable } from 'inversify';
 import { TYPES } from '../../../di/types';
-import { IUserRepository, IRefreshTokenRepository, ICompanyProfileRepository } from '../../../domain/repositories';
-import { IGoogleAuthService, ITokenService } from '../../services';
+import { IUserRepository } from '../../../domain/repositories';
+import { IGoogleAuthService, IAuthTokenService } from '../../services';
 import { UnauthorizedError, ForbiddenError } from '../../../domain/errors';
-import { CompanyDocumentKey } from '../../../domain/types';
-import { config } from '../../../config';
-
-export interface GoogleLoginInput {
-  code: string;
-}
-
-export interface GoogleLoginOutput {
-  accessToken: string;
-  refreshToken: string;
-  user: {
-    id: string;
-    email: string;
-    role: string;
-    isProfileCompleted: boolean;
-    status?: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid';
-    neededDocuments?: Array<{
-      documentKey: CompanyDocumentKey;
-      note?: string;
-    }>;
-  };
-}
-
+import { GoogleLoginInput, GoogleLoginOutput } from '../../dtos/auth.dto';
 import { IGoogleLoginUseCase } from './interfaces';
 
 @injectable()
@@ -33,9 +11,7 @@ export class GoogleLoginUseCase implements IGoogleLoginUseCase {
   constructor(
     @inject(TYPES.GoogleAuthService) private googleAuthService: IGoogleAuthService,
     @inject(TYPES.UserRepository) private userRepository: IUserRepository,
-    @inject(TYPES.RefreshTokenRepository) private refreshTokenRepository: IRefreshTokenRepository,
-    @inject(TYPES.TokenService) private tokenService: ITokenService,
-    @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository
+    @inject(TYPES.AuthTokenService) private authTokenService: IAuthTokenService
   ) {}
 
   async execute(input: GoogleLoginInput): Promise<GoogleLoginOutput> {
@@ -69,51 +45,7 @@ export class GoogleLoginUseCase implements IGoogleLoginUseCase {
       }
     }
 
-    // 6. Generate tokens
-    const accessToken = this.tokenService.generateAccessToken({
-      userId: user.id,
-      role: user.role,
-    });
-
-    const { token: refreshToken, tokenId } = this.tokenService.generateRefreshToken({
-      userId: user.id,
-      role: user.role,
-    });
-
-    // 7. Save refresh token to Redis (7 days in seconds)
-    await this.refreshTokenRepository.save(
-      tokenId,
-      user.id,
-      config.jwt.refreshTokenExpiry
-    );
-
-    // 8. Get company profile status if user is a company
-    let status: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid' | undefined;
-    let neededDocuments: Array<{ documentKey: CompanyDocumentKey; note?: string }> | undefined;
-    if (user.role === 'company') {
-      const companyProfile = await this.companyProfileRepository.findByUserId(user.id);
-      if (companyProfile) {
-        status = companyProfile.status;
-        // If company is rejected, include the needed documents from the latest reupload request
-        if (status === 'rejected' && companyProfile.documentReuploadRequests.length > 0) {
-          const latestRequest = companyProfile.documentReuploadRequests[companyProfile.documentReuploadRequests.length - 1];
-          neededDocuments = latestRequest.documents;
-        }
-      }
-    }
-
-    // 9. Return tokens and user data
-    return {
-      accessToken,
-      refreshToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        isProfileCompleted: user.isProfileCompleted,
-        ...(status && { status }),
-        ...(neededDocuments && { neededDocuments }),
-      },
-    };
+    // 6. Generate tokens and build auth response
+    return await this.authTokenService.generateAuthResponse(user);
   }
 }

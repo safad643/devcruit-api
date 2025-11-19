@@ -9,9 +9,12 @@ import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { NotFoundError, ValidationError } from '../../../domain/errors';
 import { Application, InterviewRound } from '../../../domain/entities/Application';
+import { Job } from '../../../domain/entities/Job';
+import { DeveloperProfile } from '../../../domain/entities/DeveloperProfile';
 import { CreateApplicationInput, CreateApplicationOutput } from '../../dtos/application.dto';
 import { IEmailService } from '../../services';
 import { ICreateApplicationUseCase } from './interfaces';
+import { getExperienceLevelValue } from '../../../domain/constants/experienceLevel';
 
 @injectable()
 export class CreateApplicationUseCase implements ICreateApplicationUseCase {
@@ -129,7 +132,7 @@ export class CreateApplicationUseCase implements ICreateApplicationUseCase {
     };
   }
 
-  private checkProfileMatch(job: any, developerProfile: any): boolean {
+  private checkProfileMatch(job: Job, developerProfile: DeveloperProfile): boolean {
     // Check required tech match
     const requiredTechMatch = job.requiredTech.every((tech: string) => 
       developerProfile.techs.some((devTech: string) => 
@@ -158,15 +161,8 @@ export class CreateApplicationUseCase implements ICreateApplicationUseCase {
   }
 
   private checkExperienceLevelMatch(jobLevel: string, developerLevel: string): boolean {
-    const levelHierarchy: Record<string, number> = {
-      'junior': 1,
-      'mid': 2,
-      'senior': 3,
-      'lead': 4,
-    };
-
-    const jobLevelNum = levelHierarchy[jobLevel.toLowerCase()] || 0;
-    const devLevelNum = levelHierarchy[developerLevel.toLowerCase()] || 0;
+    const jobLevelNum = getExperienceLevelValue(jobLevel);
+    const devLevelNum = getExperienceLevelValue(developerLevel);
 
     // Developer level should be at least equal to job level
     return devLevelNum >= jobLevelNum;

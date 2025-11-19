@@ -1,4 +1,11 @@
-import { JobType, WorkArrangement, ExperienceLevel, Compensation, JobStatus } from '../../domain/entities/Job';
+import { JobType, WorkArrangement, ExperienceLevel, Compensation, JobStatus, JobProps } from '../../domain/entities/Job';
+
+// Input compensation type matching the API schema
+// - Hidden: empty object {}
+// - Range: { min, max, currency }
+export type CreateJobCompensationInput = 
+  | {}
+  | { min: number; max: number; currency: string };
 
 export interface CreateJobInput {
   companyId: string;
@@ -16,7 +23,7 @@ export interface CreateJobInput {
   workArrangement: WorkArrangement;
   location?: string;
   relocation: boolean;
-  compensation: Compensation;
+  compensation: CreateJobCompensationInput;
   benefits?: string;
   validUntil: string; // ISO date string
   autoShortlist: boolean;
@@ -68,8 +75,22 @@ export interface JobListItem {
   applicationCount: number;
 }
 
+// Lightweight DTO for job list view (only fields used in list)
+export interface JobListSummary {
+  id: string;
+  title: string;
+  category: string;
+  jobType: JobType;
+  workArrangement: WorkArrangement;
+  experienceLevel: ExperienceLevel;
+  status: JobStatus;
+  createdAt: Date;
+  validUntil: Date;
+  applicationCount: number;
+}
+
 export interface ListJobsOutput {
-  jobs: JobListItem[];
+  jobs: JobListSummary[];
   total: number;
   page: number;
   limit: number;
@@ -129,5 +150,43 @@ export interface PublicJobDetail extends Omit<PublicJobSummary, 'tags'> {
   interviewRounds: string[];
   relocation: boolean;
   autoShortlist: boolean;
+}
+
+export interface OpenJobInput {
+  jobId: string;
+  companyId: string;
+}
+
+export interface OpenJobOutput {
+  message: string;
+}
+
+export interface CloseJobInput {
+  jobId: string;
+  companyId: string;
+}
+
+export interface CloseJobOutput {
+  message: string;
+}
+
+export interface DeleteJobInput {
+  jobId: string;
+  companyId: string;
+}
+
+export interface DeleteJobOutput {
+  message: string;
+}
+
+export interface UpdateJobInput {
+  jobId: string;
+  companyId: string;
+  updates: Partial<Omit<JobProps, 'id' | 'companyId' | 'createdAt' | 'updatedAt' | 'status'>>;
+}
+
+export interface UpdateJobOutput {
+  id: string;
+  message: string;
 }
 

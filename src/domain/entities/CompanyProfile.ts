@@ -34,6 +34,7 @@ export interface CompanyProfileProps {
   businessAddress: string;
   businessRegistrationProofUrl: string;
   employmentVerificationUrl: string;
+  logoUrl?: string;
   // Profile verification status
   status: CompanyProfileStatus;
   // Historical subscription plan records
@@ -56,6 +57,7 @@ export class CompanyProfile {
   public readonly businessAddress: string;
   public readonly businessRegistrationProofUrl: string;
   public readonly employmentVerificationUrl: string;
+  public readonly logoUrl?: string;
   public readonly status: CompanyProfileStatus;
   public readonly planHistory: PlanHistoryItem[];
   public readonly documentReuploadRequests: DocumentReuploadRequest[];
@@ -74,6 +76,7 @@ export class CompanyProfile {
     this.businessAddress = props.businessAddress;
     this.businessRegistrationProofUrl = props.businessRegistrationProofUrl;
     this.employmentVerificationUrl = props.employmentVerificationUrl;
+    this.logoUrl = props.logoUrl;
     this.status = props.status;
     this.planHistory = props.planHistory;
     this.documentReuploadRequests = props.documentReuploadRequests;

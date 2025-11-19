@@ -14,7 +14,7 @@ import {
   IApplicationRepository
 } from '../../domain/repositories';
 
-import { IHashService, ITokenService, IEmailService, IGoogleAuthService, IFileService, IPaymentService } from '../../application/services';
+import { IHashService, ITokenService, IAuthTokenService, IEmailService, IGoogleAuthService, IFileService, IPaymentService, ICryptographicService } from '../../application/services';
 
 import { UserRepository } from '../../infrastructure/database/mongodb/UserRepository';
 import { AdminRepository } from '../../infrastructure/database/mongodb/AdminRepository';
@@ -28,6 +28,8 @@ import { OTPRepository } from '../../infrastructure/database/redis/OTPRepository
 import { RefreshTokenRepository } from '../../infrastructure/database/redis/RefreshTokenRepository';
 import { HashService } from '../../infrastructure/security/HashService';
 import { TokenService } from '../../infrastructure/security/TokenService';
+import { AuthTokenService } from '../../infrastructure/security/AuthTokenService';
+import { CryptographicService } from '../../infrastructure/security/CryptographicService';
 import { EmailService } from '../../infrastructure/email/EmailService';
 import { GoogleAuthService } from '../../infrastructure/security/GoogleAuthService';
 import { CloudinaryService } from '../../infrastructure/storage/CloudinaryService';
@@ -51,6 +53,8 @@ export const infrastructureModule = new ContainerModule((bind) => {
   bind<IGoogleAuthService>(TYPES.GoogleAuthService).to(GoogleAuthService).inSingletonScope();
   bind<IHashService>(TYPES.HashService).to(HashService).inSingletonScope();
   bind<ITokenService>(TYPES.TokenService).to(TokenService).inSingletonScope();
+  bind<IAuthTokenService>(TYPES.AuthTokenService).to(AuthTokenService).inSingletonScope();
+  bind<ICryptographicService>(TYPES.CryptographicService).to(CryptographicService).inSingletonScope();
   bind<IEmailService>(TYPES.EmailService).to(EmailService).inSingletonScope();
   bind<IFileService>(TYPES.FileService).to(CloudinaryService).inSingletonScope();
   bind<IPaymentService>(TYPES.PaymentService).to(StripePaymentService).inSingletonScope();

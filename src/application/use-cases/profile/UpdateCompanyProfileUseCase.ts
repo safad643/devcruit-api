@@ -24,6 +24,7 @@ export class UpdateCompanyProfileUseCase {
     if (input.companyName !== undefined) updateData.companyName = input.companyName;
     if (input.companyWebsite !== undefined) updateData.companyWebsite = input.companyWebsite;
     if (input.businessAddress !== undefined) updateData.businessAddress = input.businessAddress;
+    if (input.logoUrl !== undefined) updateData.logoUrl = input.logoUrl;
     
     // 3. Update the profile
     const updatedProfile = await this.profileRepository.update(userId, updateData);

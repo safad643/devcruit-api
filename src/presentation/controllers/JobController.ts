@@ -75,8 +75,8 @@ export class JobController {
     const companyContext = (request as any).companyContext;
     const companyId = companyContext?.companyUserId ?? (request.user?.id as string);
     const jobId = request.params.id;
-    await this.deleteJobUseCase.execute({ jobId, companyId });
-    reply.status(HttpStatus.OK).send(wrapSuccess({ message: 'Job deleted successfully' }));
+    const result = await this.deleteJobUseCase.execute({ jobId, companyId });
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
   closeJob = async (
@@ -123,10 +123,18 @@ export class JobController {
     const companyContext = (request as any).companyContext;
     const companyId = companyContext?.companyUserId ?? (request.user?.id as string);
     const jobId = request.params.id;
+    
+    // Convert validUntil from string to Date if provided
+    // The schema provides validUntil as a string, but the use case expects a Date
+    const updates: any = { ...request.body };
+    if (updates.validUntil !== undefined && typeof updates.validUntil === 'string') {
+      updates.validUntil = new Date(updates.validUntil);
+    }
+    
     const result = await this.updateJobUseCase.execute({
       jobId,
       companyId,
-      updates: request.body
+      updates
     });
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };

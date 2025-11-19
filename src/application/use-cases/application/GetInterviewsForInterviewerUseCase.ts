@@ -31,7 +31,7 @@ export class GetInterviewsForInterviewerUseCase implements IGetInterviewsForInte
       let developerEmail: string | undefined;
       if (developerProfile) {
         const developerUser = await this.userRepository.findById(developerProfile.userId);
-        developerName = developerUser?.email?.split('@')[0];
+        developerName = developerUser?.name;
         developerEmail = developerUser?.email;
       }
 

@@ -1,4 +1,5 @@
 import { Type, Static } from '@sinclair/typebox';
+import { InterviewRoundResult } from '../../domain/entities/Application';
 
 // Create Application Schema
 export const CreateApplicationSchema = Type.Object({
@@ -112,9 +113,9 @@ export type ScheduleInterviewRoundInput = Static<typeof ScheduleInterviewRoundSc
 export const UpdateInterviewResultSchema = Type.Object({
   roundName: Type.String({ minLength: 1 }),
   result: Type.Union([
-    Type.Literal('pass'),
-    Type.Literal('fail'),
-    Type.Literal('on-hold')
+    Type.Literal(InterviewRoundResult.PASS),
+    Type.Literal(InterviewRoundResult.FAIL),
+    Type.Literal(InterviewRoundResult.ON_HOLD)
   ]),
   feedback: Type.Optional(Type.String({ maxLength: 2000 }))
 });

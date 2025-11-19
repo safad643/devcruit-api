@@ -47,7 +47,7 @@ export class GetApplicationDetailsUseCase implements IGetApplicationDetailsUseCa
     let developerEmail: string | undefined;
     if (developerProfile) {
       const developerUser = await this.userRepository.findById(developerProfile.userId);
-      developerName = developerUser?.email?.split('@')[0]; // Use email prefix as name fallback
+      developerName = developerUser?.name;
       developerEmail = developerUser?.email;
     }
 

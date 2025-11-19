@@ -2,7 +2,6 @@ import { inject, injectable } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { CompanyTeamMember, ICompanyTeamRepository } from '../../../domain/repositories';
 import { CompanyTeamMemberDTO, IListCompanyTeamMembersUseCase } from './interfaces/IListCompanyTeamMembersUseCase';
-import { HRProfile } from '../../../domain/entities/HRProfile';
 
 @injectable()
 export class ListCompanyTeamMembersUseCase implements IListCompanyTeamMembersUseCase {
@@ -11,17 +10,17 @@ export class ListCompanyTeamMembersUseCase implements IListCompanyTeamMembersUse
   ) {}
 
   async execute(companyUserId: string): Promise<CompanyTeamMemberDTO[]> {
-    const members = await this.companyTeamRepository.listMembers(companyUserId);
-    return members.map((member) => this.toDTO(member));
+    const membersWithRole = await this.companyTeamRepository.listMembers(companyUserId);
+    return membersWithRole.map(({ member, role }) => this.toDTO(member, role));
   }
 
-  private toDTO(member: CompanyTeamMember): CompanyTeamMemberDTO {
+  private toDTO(member: CompanyTeamMember, role: 'hr' | 'interviewer'): CompanyTeamMemberDTO {
     return {
       id: member.id,
       userId: member.userId,
       email: member.email,
       fullName: member.fullName,
-      role: member instanceof HRProfile ? 'hr' : 'interviewer',
+      role: role,
       status: member.status,
       invitedAt: member.invitedAt,
       activatedAt: member.activatedAt,
