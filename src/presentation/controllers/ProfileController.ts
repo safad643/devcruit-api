@@ -22,6 +22,7 @@ import {
 } from '../schemas/profile.schema';
 import { wrapSuccess } from '../../utils/response';
 import { HttpStatus } from '../../utils/statusCodes';
+import { ForbiddenError } from '../../domain/errors';
 
 @injectable()
 export class ProfileController {
@@ -43,7 +44,13 @@ export class ProfileController {
   ): Promise<void> => {
 
     const userId = request.user?.id as string; //wont reach here is req.user is not avaible so its fine to assert
-    const result = await this.createProfileUseCase.execute({ ...(request.body as any), userId });
+    const result = await this.createProfileUseCase.execute({ 
+      ...request.body, 
+      userId,
+      workHistory: request.body.workHistory ?? [],
+      education: request.body.education ?? [],
+      projects: request.body.projects ?? [],
+    });
     reply.status(HttpStatus.CREATED).send(wrapSuccess(result));
   };
 
@@ -77,14 +84,6 @@ export class ProfileController {
     reply: FastifyReply
   ): Promise<void> => {
     const userId = request.user?.id as string;
-    const role = request.user?.role;
-
-    if (role !== 'developer') {
-      reply
-        .status(HttpStatus.FORBIDDEN)
-        .send({ success: false, error: { message: 'Only developers can update developer profiles' } });
-      return;
-    }
 
     const result = await this.updateDeveloperProfileUseCase.execute(userId, request.body);
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
@@ -95,14 +94,6 @@ export class ProfileController {
     reply: FastifyReply
   ): Promise<void> => {
     const userId = request.user?.id as string;
-    const role = request.user?.role;
-
-    if (role !== 'company') {
-      reply
-        .status(HttpStatus.FORBIDDEN)
-        .send({ success: false, error: { message: 'Only companies can update company profiles' } });
-      return;
-    }
 
     const result = await this.updateCompanyProfileUseCase.execute(userId, request.body);
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
@@ -124,8 +115,8 @@ export class ProfileController {
     request: FastifyRequest,
     reply: FastifyReply
   ): Promise<void> => {
-    const companyContext = (request as any).companyContext;
-    const companyUserId = companyContext?.companyUserId ?? (request.user?.id as string);
+    const companyContext = this.getCompanyContext(request);
+    const companyUserId = companyContext.companyUserId;
     const result = await this.listCompanyTeamMembersUseCase.execute(companyUserId);
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
@@ -144,5 +135,13 @@ export class ProfileController {
     });
     reply.status(HttpStatus.CREATED).send(wrapSuccess(result));
   };
+
+  private getCompanyContext(request: FastifyRequest) {
+    const companyContext = request.companyContext;
+    if (!companyContext) {
+      throw new ForbiddenError('Company context missing. Ensure checkCompanyPaid middleware is applied.');
+    }
+    return companyContext;
+  }
 }
 

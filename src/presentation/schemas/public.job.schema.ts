@@ -1,14 +1,8 @@
 import { Type, Static } from '@sinclair/typebox';
 
 export const PublicListJobsQuerySchema = Type.Object({
-  page: Type.Optional(Type.Union([
-    Type.Integer({ minimum: 1 }),
-    Type.String({ pattern: '^[0-9]+$' })
-  ])),
-  limit: Type.Optional(Type.Union([
-    Type.Integer({ minimum: 1, maximum: 50 }),
-    Type.String({ pattern: '^[0-9]+$' })
-  ])),
+  page: Type.Optional(Type.Integer({ minimum: 1 })),
+  limit: Type.Optional(Type.Integer({ minimum: 1, maximum: 50 })),
   query: Type.Optional(Type.String({ minLength: 1 })),
   company: Type.Optional(Type.String({ minLength: 1 })),
   location: Type.Optional(Type.String({ minLength: 1 })),

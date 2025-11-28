@@ -43,13 +43,14 @@ export class PaymentController {
     }
 
     // Fastify rawBody not enabled globally; route will provide Buffer
-    const raw = (request as any).rawBody as Buffer | undefined;
+    const raw = request.rawBody;
     if (!raw) {
       throw new ValidationError('Raw body is required for Stripe webhook verification');
     }
+    const rawBuffer = Buffer.isBuffer(raw) ? raw : Buffer.from(raw);
 
     const verified = await this.handleStripeWebhookUseCase.execute({
-      rawBody: raw,
+      rawBody: rawBuffer,
       signature,
     });
 

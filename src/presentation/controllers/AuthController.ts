@@ -1,7 +1,6 @@
 import { injectable, inject } from 'inversify';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { TYPES } from '../../di/types';
-import { ValidationError } from '../../domain/errors';
 import {
   IRegisterUserUseCase,
   IVerifyEmailUseCase,
@@ -51,43 +50,17 @@ export class AuthController {
 
   verifyEmail = async (request: FastifyRequest<{ Body: VerifyEmailInput }>, reply: FastifyReply): Promise<void> => {
     const result = await this.verifyEmailUseCase.execute(request.body);
-    reply.setCookie('refreshToken', result.refreshToken, {
-      httpOnly: true,
-      secure: config.env.isProduction,
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: '/'
-    });
-    // Exclude refresh token from response body
-    const { refreshToken, ...responseData } = result;
-    reply.status(HttpStatus.OK).send(wrapSuccess(responseData));
+    this.handleAuthResponse(reply, result);
   };
 
   login = async (request: FastifyRequest<{ Body: LoginInput }>, reply: FastifyReply): Promise<void> => {
     const result = await this.loginUseCase.execute(request.body);
-    reply.setCookie('refreshToken', result.refreshToken, {
-      httpOnly: true,
-      secure: config.env.isProduction,
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: '/'
-    });
-    // Exclude refresh token from response body
-    const { refreshToken, ...responseData } = result;
-    reply.status(HttpStatus.OK).send(wrapSuccess(responseData));
+    this.handleAuthResponse(reply, result);
   };
 
   adminLogin = async (request: FastifyRequest<{ Body: LoginInput }>, reply: FastifyReply): Promise<void> => {
     const result = await this.adminLoginUseCase.execute(request.body);
-    reply.setCookie('refreshToken', result.refreshToken, {
-      httpOnly: true,
-      secure: config.env.isProduction,
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: '/'
-    });
-    const { refreshToken, ...responseData } = result;
-    reply.status(HttpStatus.OK).send(wrapSuccess(responseData));
+    this.handleAuthResponse(reply, result);
   };
 
   resendOTP = async (request: FastifyRequest<{ Body: ResendOTPInput }>, reply: FastifyReply): Promise<void> => {
@@ -105,24 +78,11 @@ export class AuthController {
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
-  refreshToken = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => { 
-    const oldrefreshToken = request.cookies.refreshToken;
-  
-  if (!oldrefreshToken) {
-    throw new ValidationError('Refresh token not found');
-  }const result = await this.refreshTokenUseCase.execute({ refreshToken:oldrefreshToken});
+  refreshToken = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+    const oldRefreshToken = request.cookies.refreshToken;
 
-
-    reply.setCookie('refreshToken', result.refreshToken, {
-      httpOnly: true,
-      secure: config.env.isProduction,
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: '/'
-    });
-    // Exclude refresh token from response body
-    const { refreshToken, ...responseData } = result;
-    reply.status(HttpStatus.OK).send(wrapSuccess(responseData));
+    const result = await this.refreshTokenUseCase.execute({ refreshToken: oldRefreshToken });
+    this.handleAuthResponse(reply, result);
   };
 
   googleLogin = async (
@@ -130,18 +90,7 @@ export class AuthController {
     reply: FastifyReply
   ): Promise<void> => {
     const result = await this.googleLoginUseCase.execute(request.body);
-    
-    reply.setCookie('refreshToken', result.refreshToken, {
-      httpOnly: true,
-      secure: config.env.isProduction,
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: '/'
-    });
-  
-    // Exclude refresh token from response body
-    const { refreshToken, ...responseData } = result;
-    reply.status(HttpStatus.OK).send(wrapSuccess(responseData));
+    this.handleAuthResponse(reply, result);
   };
   
   googleRegister = async (
@@ -149,32 +98,28 @@ export class AuthController {
     reply: FastifyReply
   ): Promise<void> => {
     const result = await this.googleRegisterUseCase.execute(request.body);
-    
-    reply.setCookie('refreshToken', result.refreshToken, {
-      httpOnly: true,
-      secure: config.env.isProduction,
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: '/'
-    });
-  
-    // Exclude refresh token from response body
-    const { refreshToken, ...responseData } = result;
-    reply.status(HttpStatus.OK).send(wrapSuccess(responseData));
+    this.handleAuthResponse(reply, result);
   };
   
 
   logout = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
-    // Get refresh token from cookies
     const refreshToken = request.cookies.refreshToken;
-    
-    // Check if refresh token exists in cookies
-    if (!refreshToken) {
-      throw new ValidationError('Refresh token not found in cookies');
-    }
 
     const result = await this.logoutUseCase.execute({ refreshToken });
     reply.clearCookie('refreshToken', { path: '/' });
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
+
+  private handleAuthResponse(reply: FastifyReply, result: { refreshToken: string; [key: string]:any }): void {
+    reply.setCookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: config.env.isProduction,
+      sameSite: 'strict',
+      maxAge: config.security.refreshTokenMaxAgeMs,
+      path: '/'
+    });
+
+    const { refreshToken, ...responseData } = result;
+    reply.status(HttpStatus.OK).send(wrapSuccess(responseData));
+  }
 }

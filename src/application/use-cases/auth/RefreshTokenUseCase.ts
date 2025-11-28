@@ -15,6 +15,10 @@ export class RefreshTokenUseCase implements IRefreshTokenUseCase {
   ) {}
 
   async execute(input: RefreshTokenInput): Promise<RefreshTokenOutput> {
+    if (!input.refreshToken) {
+      throw new UnauthorizedError('Refresh token not found');
+    }
+
     // 1. Verify and decode refresh token JWT
     const decoded = this.tokenService.verifyRefreshToken(input.refreshToken);
 

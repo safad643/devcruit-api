@@ -53,16 +53,9 @@ export const CreateJobSchema = Type.Object({
 });
 
 // List Jobs Query Schema
-// Query parameters come as strings, so we accept strings and convert in controller
 export const ListJobsQuerySchema = Type.Object({
-  page: Type.Optional(Type.Union([
-    Type.Integer({ minimum: 1 }),
-    Type.String({ pattern: '^[0-9]+$' })
-  ])),
-  limit: Type.Optional(Type.Union([
-    Type.Integer({ minimum: 1, maximum: 100 }),
-    Type.String({ pattern: '^[0-9]+$' })
-  ])),
+  page: Type.Optional(Type.Integer({ minimum: 1 })),
+  limit: Type.Optional(Type.Integer({ minimum: 1, maximum: 100 })),
   search: Type.Optional(Type.String({ minLength: 1 })),
   status: Type.Optional(Type.Union([
     Type.Literal('draft'),

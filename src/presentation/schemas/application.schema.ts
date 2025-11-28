@@ -22,14 +22,8 @@ export const ListApplicationsForCompanyQuerySchema = Type.Object({
     Type.Literal('offer_declined'),
     Type.Literal('withdrawn')
   ])),
-  page: Type.Optional(Type.Union([
-    Type.Integer({ minimum: 1 }),
-    Type.String({ pattern: '^[0-9]+$' })
-  ])),
-  limit: Type.Optional(Type.Union([
-    Type.Integer({ minimum: 1, maximum: 100 }),
-    Type.String({ pattern: '^[0-9]+$' })
-  ])),
+  page: Type.Optional(Type.Integer({ minimum: 1 })),
+  limit: Type.Optional(Type.Integer({ minimum: 1, maximum: 100 })),
   sortBy: Type.Optional(Type.Union([
     Type.Literal('appliedAt'),
     Type.Literal('lastUpdatedAt')
@@ -44,6 +38,7 @@ export type ListApplicationsForCompanyQueryInput = Static<typeof ListApplication
 
 // List Applications for Developer Query Schema
 export const ListApplicationsForDeveloperQuerySchema = Type.Object({
+  jobId: Type.Optional(Type.String({ minLength: 1 })),
   status: Type.Optional(Type.Union([
     Type.Literal('applied'),
     Type.Literal('shortlisted'),
@@ -54,14 +49,8 @@ export const ListApplicationsForDeveloperQuerySchema = Type.Object({
     Type.Literal('offer_declined'),
     Type.Literal('withdrawn')
   ])),
-  page: Type.Optional(Type.Union([
-    Type.Integer({ minimum: 1 }),
-    Type.String({ pattern: '^[0-9]+$' })
-  ])),
-  limit: Type.Optional(Type.Union([
-    Type.Integer({ minimum: 1, maximum: 100 }),
-    Type.String({ pattern: '^[0-9]+$' })
-  ])),
+  page: Type.Optional(Type.Integer({ minimum: 1 })),
+  limit: Type.Optional(Type.Integer({ minimum: 1, maximum: 100 })),
   sortBy: Type.Optional(Type.Union([
     Type.Literal('appliedAt'),
     Type.Literal('lastUpdatedAt')

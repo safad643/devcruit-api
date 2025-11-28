@@ -33,8 +33,8 @@ export class JobController {
     reply: FastifyReply
   ): Promise<void> => {
     this.ensureJobManagementPermission(request);
-    const companyContext = (request as any).companyContext;
-    const companyId = companyContext?.companyUserId ?? (request.user?.id as string);
+    const companyContext = this.getCompanyContext(request);
+    const companyId = companyContext.companyUserId;
     const result = await this.createJobUseCase.execute({ ...request.body, companyId });
     reply.status(HttpStatus.CREATED).send(wrapSuccess(result));
   };
@@ -43,13 +43,11 @@ export class JobController {
     request: FastifyRequest<{ Querystring: ListJobsQueryInput }>,
     reply: FastifyReply
   ): Promise<void> => {
-    const companyContext = (request as any).companyContext;
-    const companyId = companyContext?.companyUserId ?? (request.user?.id as string);
+    const companyContext = this.getCompanyContext(request);
+    const companyId = companyContext.companyUserId;
     const query = request.query;
-    
-    // Convert string query parameters to integers
-    const page = query.page ? (typeof query.page === 'string' ? parseInt(query.page, 10) : query.page) : 1;
-    const limit = query.limit ? (typeof query.limit === 'string' ? parseInt(query.limit, 10) : query.limit) : 25;
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 25;
     
     // Default status to 'open' if not provided
     const status = query.status === undefined ? 'open' : query.status;
@@ -72,8 +70,8 @@ export class JobController {
     reply: FastifyReply
   ): Promise<void> => {
     this.ensureJobManagementPermission(request);
-    const companyContext = (request as any).companyContext;
-    const companyId = companyContext?.companyUserId ?? (request.user?.id as string);
+    const companyContext = this.getCompanyContext(request);
+    const companyId = companyContext.companyUserId;
     const jobId = request.params.id;
     const result = await this.deleteJobUseCase.execute({ jobId, companyId });
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
@@ -84,8 +82,8 @@ export class JobController {
     reply: FastifyReply
   ): Promise<void> => {
     this.ensureJobManagementPermission(request);
-    const companyContext = (request as any).companyContext;
-    const companyId = companyContext?.companyUserId ?? (request.user?.id as string);
+    const companyContext = this.getCompanyContext(request);
+    const companyId = companyContext.companyUserId;
     const jobId = request.params.id;
     const result = await this.closeJobUseCase.execute({ jobId, companyId });
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
@@ -96,8 +94,8 @@ export class JobController {
     reply: FastifyReply
   ): Promise<void> => {
     this.ensureJobManagementPermission(request);
-    const companyContext = (request as any).companyContext;
-    const companyId = companyContext?.companyUserId ?? (request.user?.id as string);
+    const companyContext = this.getCompanyContext(request);
+    const companyId = companyContext.companyUserId;
     const jobId = request.params.id;
     const result = await this.openJobUseCase.execute({ jobId, companyId });
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
@@ -106,12 +104,12 @@ export class JobController {
     request: FastifyRequest<{ Params: { id: string } }>,
     reply: FastifyReply
   ): Promise<void> => {
-    const companyContext = (request as any).companyContext;
-    const companyId = companyContext?.companyUserId ?? (request.user?.id as string);
-    const job = await this.getJobUseCase.execute(request.params.id);
-    if (job.companyId !== companyId) {
-      throw new ForbiddenError('You do not have access to this job');
-    }
+    const companyContext = this.getCompanyContext(request);
+    const companyId = companyContext.companyUserId;
+    const job = await this.getJobUseCase.execute({
+      jobId: request.params.id,
+      companyId,
+    });
     reply.status(HttpStatus.OK).send(wrapSuccess(job));
   };
 
@@ -120,8 +118,8 @@ export class JobController {
     reply: FastifyReply
   ): Promise<void> => {
     this.ensureJobManagementPermission(request);
-    const companyContext = (request as any).companyContext;
-    const companyId = companyContext?.companyUserId ?? (request.user?.id as string);
+    const companyContext = this.getCompanyContext(request);
+    const companyId = companyContext.companyUserId;
     const jobId = request.params.id;
     
     // Convert validUntil from string to Date if provided
@@ -144,8 +142,8 @@ export class JobController {
       return;
     }
 
-    const companyContext = (request as any).companyContext;
-    const teamMember = companyContext?.teamMember;
+    const companyContext = this.getCompanyContext(request);
+    const teamMember = companyContext.teamMember;
 
     if (!teamMember || !(teamMember instanceof HRProfile)) {
       throw new ForbiddenError('Only HR team members can manage jobs.');
@@ -154,6 +152,14 @@ export class JobController {
     if (!teamMember.permissions.manageApplications) {
       throw new ForbiddenError('You do not have permission to manage jobs.');
     }
+  }
+
+  private getCompanyContext(request: FastifyRequest) {
+    const companyContext = request.companyContext;
+    if (!companyContext) {
+      throw new ForbiddenError('Company context missing. Ensure checkCompanyPaid middleware is applied.');
+    }
+    return companyContext;
   }
 }
 

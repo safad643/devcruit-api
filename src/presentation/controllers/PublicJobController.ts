@@ -19,8 +19,8 @@ export class PublicJobController {
     reply: FastifyReply
   ): Promise<void> => {
     const q = request.query;
-    const page = q.page ? (typeof q.page === 'string' ? parseInt(q.page, 10) : q.page) : 1;
-    const limit = q.limit ? (typeof q.limit === 'string' ? parseInt(q.limit, 10) : q.limit) : 20;
+    const page = q.page ?? 1;
+    const limit = q.limit ?? 20;
 
     const result = await this.listUseCase.execute({
       page,

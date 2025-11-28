@@ -54,6 +54,8 @@ export interface ListApplicationsForCompanyOutput {
 
 // List Applications for Developer
 export interface ListApplicationsForDeveloperInput {
+  // Optional: filter by specific job for this developer
+  jobId?: string;
   status?: ApplicationStatus;
   page: number;
   limit: number;

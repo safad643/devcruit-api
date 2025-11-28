@@ -1,8 +1,9 @@
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { IJobRepository } from '../../../domain/repositories';
-import { NotFoundError } from '../../../domain/errors';
+import { ForbiddenError, NotFoundError } from '../../../domain/errors';
 import { IGetJobUseCase } from './interfaces';
+import { GetJobInput } from '../../dtos/job.dto';
 
 @injectable()
 export class GetJobUseCase implements IGetJobUseCase {
@@ -10,9 +11,14 @@ export class GetJobUseCase implements IGetJobUseCase {
     @inject(TYPES.JobRepository) private jobRepository: IJobRepository
   ) {}
 
-  async execute(jobId: string) {
-    const job = await this.jobRepository.findById(jobId);
-    if (!job) throw new NotFoundError('Job not found');
+  async execute(input: GetJobInput) {
+    const job = await this.jobRepository.findById(input.jobId);
+    if (!job) {
+      throw new NotFoundError('Job not found');
+    }
+    if (job.companyId !== input.companyId) {
+      throw new ForbiddenError('You do not have access to this job');
+    }
     return job;
   }
 }

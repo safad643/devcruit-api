@@ -30,6 +30,7 @@ export class ListApplicationsForDeveloperUseCase implements IListApplicationsFor
     // Build filters
     const filters = {
       developerId: developerProfile.id, // Use profile ID, not userId
+      jobId: input.jobId,
       status: input.status,
       page: input.page,
       limit: input.limit,

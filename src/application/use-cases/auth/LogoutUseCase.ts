@@ -4,6 +4,7 @@ import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { LogoutInput, LogoutOutput } from '../../dtos/auth.dto';
 import { ILogoutUseCase } from './interfaces';
+import { UnauthorizedError } from '../../../domain/errors';
 
 @injectable()
 export class LogoutUseCase implements ILogoutUseCase {
@@ -13,6 +14,10 @@ export class LogoutUseCase implements ILogoutUseCase {
   ) {}
 
   async execute(input: LogoutInput): Promise<LogoutOutput> {
+    if (!input.refreshToken) {
+      throw new UnauthorizedError('Refresh token not found');
+    }
+
     // 1. Verify and decode refresh token
     const decoded = this.tokenService.verifyRefreshToken(input.refreshToken);
 

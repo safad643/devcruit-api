@@ -10,6 +10,7 @@ declare module 'fastify' {
       id: string;
       role: UserRole;
     };
+    rawBody?: Buffer;
     companyContext?: {
       companyProfile: CompanyProfile;
       companyUserId: string;

@@ -44,6 +44,7 @@ export async function profileRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.patch(
     '/developer',
     {
+      preHandler: [authorize('developer')],
       schema: { body: UpdateDeveloperProfileSchema }
     },
     profileController.updateDeveloperProfile
@@ -53,6 +54,7 @@ export async function profileRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.patch(
     '/company',
     {
+      preHandler: [authorize('company')],
       schema: { body: UpdateCompanyProfileSchema }
     },
     profileController.updateCompanyProfile

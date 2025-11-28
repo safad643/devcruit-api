@@ -14,3 +14,10 @@ export interface IRejectApplicationUseCase {
 
 
 
+
+
+
+
+
+
+

@@ -69,7 +69,7 @@ export interface ResetPasswordOutput {
 }
 
 export interface RefreshTokenInput {
-  refreshToken: string;
+  refreshToken?: string;
 }
 
 export interface RefreshTokenOutput {
@@ -79,7 +79,7 @@ export interface RefreshTokenOutput {
 
 
 export interface LogoutInput {
-  refreshToken: string;
+  refreshToken?: string;
 }
 
 export interface LogoutOutput {

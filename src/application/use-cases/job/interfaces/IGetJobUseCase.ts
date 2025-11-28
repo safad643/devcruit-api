@@ -1,6 +1,7 @@
 import { Job } from '../../../../domain/entities/Job';
+import { GetJobInput } from '../../../dtos/job.dto';
 
 export interface IGetJobUseCase {
-  execute(jobId: string): Promise<Job>;
+  execute(input: GetJobInput): Promise<Job>;
 }
 

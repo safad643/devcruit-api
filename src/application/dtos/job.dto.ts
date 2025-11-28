@@ -179,6 +179,11 @@ export interface DeleteJobOutput {
   message: string;
 }
 
+export interface GetJobInput {
+  jobId: string;
+  companyId: string;
+}
+
 export interface UpdateJobInput {
   jobId: string;
   companyId: string;

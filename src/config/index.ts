@@ -86,6 +86,16 @@ export const config = {
     webhookSecret: getRequiredEnv('STRIPE_WEBHOOK_SECRET'),
     currency: 'inr' as const
   },
+  security: {
+    refreshTokenMaxAgeMs: parseInt(
+      getOptionalEnv('AUTH_REFRESH_TOKEN_MAX_AGE_MS', String(7 * 24 * 60 * 60 * 1000)),
+      10
+    ),
+    signatureTimestampMaxAgeSeconds: parseInt(
+      getOptionalEnv('SIGNATURE_TIMESTAMP_MAX_AGE_SECONDS', '3600'),
+      10
+    )
+  },
   webApp: {
     url: getOptionalEnv('WEB_APP_URL', 'http://localhost:3000')
   }

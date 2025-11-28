@@ -36,7 +36,7 @@ const server = Fastify({
   ajv: {
     customOptions: {
       removeAdditional: 'all',
-      coerceTypes: false,
+      coerceTypes: true,
       useDefaults: true,
       allErrors: true
     },

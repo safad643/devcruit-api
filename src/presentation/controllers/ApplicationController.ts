@@ -25,6 +25,7 @@ import {
 } from '../schemas/application.schema';
 import { wrapSuccess } from '../../utils/response';
 import { HttpStatus } from '../../utils/statusCodes';
+import { ForbiddenError } from '../../domain/errors';
 
 @injectable()
 export class ApplicationController {
@@ -60,13 +61,11 @@ export class ApplicationController {
     request: FastifyRequest<{ Querystring: ListApplicationsForCompanyQueryInput }>,
     reply: FastifyReply
   ): Promise<void> => {
-    const companyContext = (request as any).companyContext;
-    const companyId = companyContext?.companyUserId ?? (request.user?.id as string);
+    const companyContext = this.getCompanyContext(request);
+    const companyId = companyContext.companyUserId;
     const query = request.query;
-    
-    // Convert string query parameters to integers
-    const page = query.page ? (typeof query.page === 'string' ? parseInt(query.page, 10) : query.page) : 1;
-    const limit = query.limit ? (typeof query.limit === 'string' ? parseInt(query.limit, 10) : query.limit) : 25;
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 25;
     
     const result = await this.listApplicationsForCompanyUseCase.execute({
       companyId,
@@ -86,8 +85,8 @@ export class ApplicationController {
     request: FastifyRequest<{ Params: { id: string } }>,
     reply: FastifyReply
   ): Promise<void> => {
-    const companyContext = (request as any).companyContext;
-    const companyId = companyContext?.companyUserId ?? (request.user?.id as string);
+    const companyContext = this.getCompanyContext(request);
+    const companyId = companyContext.companyUserId;
     const applicationId = request.params.id;
     const result = await this.getApplicationDetailsUseCase.execute(applicationId, companyId);
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
@@ -100,13 +99,12 @@ export class ApplicationController {
   ): Promise<void> => {
     const developerId = request.user?.id as string;
     const query = request.query;
-    
-    // Convert string query parameters to integers
-    const page = query.page ? (typeof query.page === 'string' ? parseInt(query.page, 10) : query.page) : 1;
-    const limit = query.limit ? (typeof query.limit === 'string' ? parseInt(query.limit, 10) : query.limit) : 25;
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 25;
     
     const result = await this.listApplicationsForDeveloperUseCase.execute({
       developerId,
+      jobId: query.jobId,
       status: query.status,
       page,
       limit,
@@ -135,8 +133,8 @@ export class ApplicationController {
     request: FastifyRequest<{ Params: { jobId: string } }>,
     reply: FastifyReply
   ): Promise<void> => {
-    const companyContext = (request as any).companyContext;
-    const companyId = companyContext?.companyUserId ?? (request.user?.id as string);
+    const companyContext = this.getCompanyContext(request);
+    const companyId = companyContext.companyUserId;
     const jobId = request.params.jobId;
     const result = await this.getApplicationMetricsUseCase.execute(jobId, companyId);
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
@@ -147,8 +145,8 @@ export class ApplicationController {
     request: FastifyRequest<{ Params: { id: string }; Body?: { note?: string } }>,
     reply: FastifyReply
   ): Promise<void> => {
-    const companyContext = (request as any).companyContext;
-    const companyId = companyContext?.companyUserId ?? (request.user?.id as string);
+    const companyContext = this.getCompanyContext(request);
+    const companyId = companyContext.companyUserId;
     const applicationId = request.params.id;
     const note = request.body?.note?.trim() || undefined;
     const result = await this.shortlistApplicationUseCase.execute({
@@ -164,8 +162,8 @@ export class ApplicationController {
     request: FastifyRequest<{ Params: { id: string }; Body?: RejectApplicationInput }>,
     reply: FastifyReply
   ): Promise<void> => {
-    const companyContext = (request as any).companyContext;
-    const companyId = companyContext?.companyUserId ?? (request.user?.id as string);
+    const companyContext = this.getCompanyContext(request);
+    const companyId = companyContext.companyUserId;
     const applicationId = request.params.id;
     const note = request.body?.note?.trim() || undefined;
     const result = await this.rejectApplicationUseCase.execute({
@@ -181,8 +179,8 @@ export class ApplicationController {
     request: FastifyRequest<{ Params: { id: string }; Body: ScheduleInterviewRoundInput }>,
     reply: FastifyReply
   ): Promise<void> => {
-    const companyContext = (request as any).companyContext;
-    const companyId = companyContext?.companyUserId ?? (request.user?.id as string);
+    const companyContext = this.getCompanyContext(request);
+    const companyId = companyContext.companyUserId;
     const applicationId = request.params.id;
     const result = await this.scheduleInterviewRoundUseCase.execute({
       applicationId,
@@ -216,5 +214,13 @@ export class ApplicationController {
     const result = await this.getInterviewsForInterviewerUseCase.execute(interviewerId);
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
+
+  private getCompanyContext(request: FastifyRequest) {
+    const companyContext = request.companyContext;
+    if (!companyContext) {
+      throw new ForbiddenError('Company context missing. Ensure checkCompanyPaid middleware is applied.');
+    }
+    return companyContext;
+  }
 }
 
