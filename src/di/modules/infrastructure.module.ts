@@ -7,6 +7,8 @@ import {
   IDeveloperProfileRepository, 
   ICompanyProfileRepository,
   ICompanyTeamRepository,
+  IConversationRepository,
+  IMessageRepository,
   IPendingUserRepository, 
   IOTPRepository, 
   IRefreshTokenRepository,
@@ -23,6 +25,8 @@ import { CompanyProfileRepository } from '../../infrastructure/database/mongodb/
 import { CompanyTeamRepository } from '../../infrastructure/database/mongodb/CompanyTeamRepository';
 import { JobRepository } from '../../infrastructure/database/mongodb/JobRepository';
 import { ApplicationRepository } from '../../infrastructure/database/mongodb/ApplicationRepository';
+import { ConversationRepository } from '../../infrastructure/database/mongodb/ConversationRepository';
+import { MessageRepository } from '../../infrastructure/database/mongodb/MessageRepository';
 import { PendingUserRepository } from '../../infrastructure/database/redis/PendingUserRepository';
 import { OTPRepository } from '../../infrastructure/database/redis/OTPRepository';
 import { RefreshTokenRepository } from '../../infrastructure/database/redis/RefreshTokenRepository';
@@ -43,6 +47,8 @@ export const infrastructureModule = new ContainerModule((bind) => {
   bind<IDeveloperProfileRepository>(TYPES.DeveloperProfileRepository).to(DeveloperProfileRepository).inSingletonScope();
   bind<ICompanyProfileRepository>(TYPES.CompanyProfileRepository).to(CompanyProfileRepository).inSingletonScope();
   bind<ICompanyTeamRepository>(TYPES.CompanyTeamRepository).to(CompanyTeamRepository).inSingletonScope();
+  bind<IConversationRepository>(TYPES.ConversationRepository).to(ConversationRepository).inSingletonScope();
+  bind<IMessageRepository>(TYPES.MessageRepository).to(MessageRepository).inSingletonScope();
   bind<IJobRepository>(TYPES.JobRepository).to(JobRepository).inSingletonScope();
   bind<IApplicationRepository>(TYPES.ApplicationRepository).to(ApplicationRepository).inSingletonScope();
   bind<IPendingUserRepository>(TYPES.PendingUserRepository).to(PendingUserRepository).inSingletonScope();

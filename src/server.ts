@@ -13,6 +13,7 @@ import { paymentRoutes } from './presentation/routes/payment.routes';
 import { jobRoutes } from './presentation/routes/job.routes';
 import { publicJobRoutes } from './presentation/routes/public.jobs.routes';
 import { applicationRoutes } from './presentation/routes/application.routes';
+import { chatRoutes } from './presentation/routes/chat.routes';
 import fastifyRawBody from 'fastify-raw-body';
 import { globalErrorHandler } from './presentation/middleware/errorHandler';
 import { config } from './config';
@@ -95,6 +96,7 @@ export async function buildServer() {
   await server.register(jobRoutes, { prefix: '/api/company' });
   await server.register(publicJobRoutes, { prefix: '/api/jobs' });
   await server.register(applicationRoutes, { prefix: '/api' });
+  await server.register(chatRoutes, { prefix: '/api/chat' });
 
  
   return server;

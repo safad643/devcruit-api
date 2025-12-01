@@ -5,6 +5,8 @@ export const TYPES = {
     DeveloperProfileRepository: Symbol.for('DeveloperProfileRepository'),
     CompanyProfileRepository: Symbol.for('CompanyProfileRepository'),
     CompanyTeamRepository: Symbol.for('CompanyTeamRepository'),
+    ConversationRepository: Symbol.for('ConversationRepository'),
+    MessageRepository: Symbol.for('MessageRepository'),
     PendingUserRepository: Symbol.for('PendingUserRepository'),
     OTPRepository: Symbol.for('OTPRepository'),
     RefreshTokenRepository: Symbol.for('RefreshTokenRepository'),
@@ -93,5 +95,15 @@ export const TYPES = {
     PublicListJobsUseCase: Symbol.for('PublicListJobsUseCase'),
     PublicGetJobUseCase: Symbol.for('PublicGetJobUseCase'),
     PublicJobController: Symbol.for('PublicJobController'),
+
+    // Chat module
+    CheckCanMessageUseCase: Symbol.for('CheckCanMessageUseCase'),
+    SendMessageUseCase: Symbol.for('SendMessageUseCase'),
+    GetConversationsUseCase: Symbol.for('GetConversationsUseCase'),
+    GetMessagesUseCase: Symbol.for('GetMessagesUseCase'),
+    MarkMessageAsReadUseCase: Symbol.for('MarkMessageAsReadUseCase'),
+    GetConversationUseCase: Symbol.for('GetConversationUseCase'),
+    ValidateConversationParticipantUseCase: Symbol.for('ValidateConversationParticipantUseCase'),
+    ChatController: Symbol.for('ChatController'),
   };
   
