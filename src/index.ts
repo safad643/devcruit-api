@@ -3,6 +3,8 @@ import { buildServer } from './server';
 import { connectMongoDB, disconnectMongoDB } from './infrastructure/database/mongodb/client';
 import { connectRedis, disconnectRedis } from './infrastructure/database/redis/client';
 import { config } from './config';
+import { initializeSocketIO, closeSocketIO } from './infrastructure/socket/socketServer';
+import { setupChatSocket } from './presentation/socket/chat.socket';
 
 async function start() {
   try {
@@ -20,7 +22,13 @@ async function start() {
       host: config.host
     });
 
+    // Initialize Socket.IO after server is listening
+    const httpServer = server.server;
+    const io = initializeSocketIO(httpServer);
+    setupChatSocket(io);
+
     console.log(`Server running at http://${config.host}:${config.port}`);
+    console.log(`Socket.IO server initialized`);
     console.log(`Environment: ${config.nodeEnv}`);
 
     // Graceful shutdown
@@ -29,6 +37,7 @@ async function start() {
       process.on(signal, async () => {
         console.log(`\nReceived ${signal}, shutting down gracefully...`);
         
+        closeSocketIO();
         await server.close();
         await disconnectMongoDB();
         await disconnectRedis();

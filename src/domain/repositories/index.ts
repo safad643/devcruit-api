@@ -8,5 +8,7 @@ export * from './ICompanyTeamRepository';
 export * from './IAdminRepository';
 export * from './IJobRepository';
 export * from './IApplicationRepository';
+export * from './IConversationRepository';
+export * from './IMessageRepository';
 
 
