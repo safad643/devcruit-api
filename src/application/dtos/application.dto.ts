@@ -30,6 +30,7 @@ export interface ApplicationListItem {
   id: string;
   jobId: string;
   developerId: string;
+  developerUserId?: string;
   companyId: string;
   status: ApplicationStatus;
   shortlistMethod?: ShortlistMethod;

@@ -17,7 +17,7 @@ export class CheckCanMessageUseCase implements ICheckCanMessageUseCase {
   ) {}
 
   async execute(input: CheckCanMessageInput): Promise<CheckCanMessageOutput> {
-    if (input.requesterRole === 'hr') {
+    if (input.requesterRole === 'hr' || input.requesterRole === 'company') {
       return { canMessage: true };
     }
 
@@ -43,11 +43,12 @@ export class CheckCanMessageUseCase implements ICheckCanMessageUseCase {
       }
 
       const applications = await this.applicationRepository.findByDeveloperId(developerProfile.id);
-      
-      const hasShortlistedApplication = applications.some(app => 
-        app.companyId === companyId &&
-        ['shortlisted', 'interviewing', 'offer_extended', 'offer_accepted', 'offer_declined'].includes(app.status) &&
-        !['rejected', 'withdrawn'].includes(app.status)
+
+      const hasShortlistedApplication = applications.some(
+        (app) =>
+          app.companyId === companyId &&
+          ['shortlisted', 'interviewing', 'offer_extended', 'offer_accepted', 'offer_declined'].includes(app.status) &&
+          !['rejected', 'withdrawn'].includes(app.status)
       );
 
       return { canMessage: hasShortlistedApplication };

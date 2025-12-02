@@ -2,7 +2,11 @@ import { Server as SocketIOServer, Socket } from 'socket.io';
 import { container } from '../../di/container';
 import { TYPES } from '../../di/types';
 import { ITokenService } from '../../application/services';
-import { IValidateConversationParticipantUseCase } from '../../application/use-cases/chat/interfaces/IValidateConversationParticipantUseCase';
+import {
+  IValidateConversationParticipantUseCase,
+  ISendMessageUseCase,
+  IMarkMessageAsReadUseCase,
+} from '../../application/use-cases/chat';
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
@@ -12,6 +16,8 @@ interface AuthenticatedSocket extends Socket {
 export function setupChatSocket(io: SocketIOServer): void {
   const tokenService = container.get<ITokenService>(TYPES.TokenService);
   const validateParticipantUseCase = container.get<IValidateConversationParticipantUseCase>(TYPES.ValidateConversationParticipantUseCase);
+  const sendMessageUseCase = container.get<ISendMessageUseCase>(TYPES.SendMessageUseCase);
+  const markMessageAsReadUseCase = container.get<IMarkMessageAsReadUseCase>(TYPES.MarkMessageAsReadUseCase);
 
   // Authentication middleware for Socket.IO
   io.use(async (socket: AuthenticatedSocket, next) => {
@@ -57,6 +63,79 @@ export function setupChatSocket(io: SocketIOServer): void {
         console.log(`User ${userId} joined conversation ${conversationId}`);
       } catch (error) {
         socket.emit('error', { message: 'Failed to join conversation' });
+      }
+    });
+
+    socket.on('send-message', async (payload: { receiverId: string; message: string }, callback?: (err?: string) => void) => {
+      try {
+        if (!payload?.receiverId || !payload?.message) {
+          throw new Error('receiverId and message are required');
+        }
+
+        const result = await sendMessageUseCase.execute({
+          senderId: userId,
+          senderRole: userRole,
+          receiverId: payload.receiverId,
+          message: payload.message,
+        });
+
+        const conversationRoom = `conversation:${result.conversation.id}`;
+        socket.join(conversationRoom);
+
+        const messagePayload = {
+          id: result.message.id,
+          conversationId: result.message.conversationId,
+          senderId: result.message.senderId,
+          message: result.message.message,
+          readAt: result.message.readAt,
+          createdAt: result.message.createdAt,
+          conversation: {
+            id: result.conversation.id,
+            participant1Id: result.conversation.participant1Id,
+            participant2Id: result.conversation.participant2Id,
+            companyId: result.conversation.companyId,
+            lastMessage: result.conversation.lastMessage,
+            lastMessageAt: result.conversation.lastMessageAt,
+            createdAt: result.conversation.createdAt,
+            updatedAt: result.conversation.updatedAt,
+          },
+        };
+
+        io.to(conversationRoom).emit('message:new', messagePayload);
+        io.to(`user:${payload.receiverId}`).emit('conversation:updated', messagePayload.conversation);
+        io.to(`user:${userId}`).emit('conversation:updated', messagePayload.conversation);
+
+        callback?.();
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to send message';
+        callback?.(message);
+        socket.emit('error', { message });
+      }
+    });
+
+    socket.on('mark-messages-read', async (payload: { conversationId: string; messageIds?: string[] }, callback?: (err?: string) => void) => {
+      try {
+        if (!payload?.conversationId) {
+          throw new Error('conversationId is required');
+        }
+
+        await markMessageAsReadUseCase.execute({
+          conversationId: payload.conversationId,
+          messageIds: payload.messageIds,
+          userId,
+        });
+
+        io.to(`conversation:${payload.conversationId}`).emit('messages:read', {
+          conversationId: payload.conversationId,
+          userId,
+          messageIds: payload.messageIds,
+        });
+
+        callback?.();
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to mark messages as read';
+        callback?.(message);
+        socket.emit('error', { message });
       }
     });
 

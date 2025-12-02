@@ -46,10 +46,12 @@ export class ListApplicationsForCompanyUseCase implements IListApplicationsForCo
         // Get developer user information
         let developerName: string | undefined;
         let developerEmail: string | undefined;
+        let developerUserId: string | undefined;
         if (developerProfile) {
           const developerUser = await this.userRepository.findById(developerProfile.userId);
           developerName = developerUser?.name;
           developerEmail = developerUser?.email;
+          developerUserId = developerUser?.id;
         }
 
         // Verify the job belongs to the company (security check)
@@ -73,6 +75,7 @@ export class ListApplicationsForCompanyUseCase implements IListApplicationsForCo
           jobTitle: job?.title,
           developerName,
           developerEmail,
+          developerUserId,
         };
       })
     );

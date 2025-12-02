@@ -25,7 +25,7 @@ export class ValidateConversationParticipantUseCase implements IValidateConversa
 
     const targetUserId = conversation.getOtherParticipantId(requesterUserId);
 
-    if (requesterRole === 'hr') {
+    if (requesterRole === 'hr' || requesterRole === 'company') {
       return true;
     }
 
