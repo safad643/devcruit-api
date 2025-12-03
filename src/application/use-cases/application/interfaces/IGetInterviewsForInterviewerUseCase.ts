@@ -14,6 +14,8 @@ export interface InterviewForInterviewer {
   status: string;
   result?: string;
   feedback?: string;
+  videoCallId?: string;
+  videoCallStatus?: string;
 }
 
 export interface GetInterviewsForInterviewerOutput {

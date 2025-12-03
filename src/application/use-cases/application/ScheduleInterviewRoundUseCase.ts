@@ -4,6 +4,7 @@ import { IApplicationRepository, IJobRepository, ICompanyTeamRepository } from '
 import { NotFoundError, ForbiddenError, ValidationError } from '../../../domain/errors';
 import { IScheduleInterviewRoundUseCase, ScheduleInterviewRoundInput, ScheduleInterviewRoundOutput } from './interfaces';
 import { InterviewerProfile } from '../../../domain/entities/InterviewerProfile';
+import { HRProfile } from '../../../domain/entities/HRProfile';
 
 @injectable()
 export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUseCase {
@@ -40,12 +41,19 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
       throw new ValidationError(`Interview round "${input.roundName}" does not exist for this job`);
     }
 
-    // 5. Validate interviewer IDs belong to the company
-    if (input.interviewerIds.length === 0) {
-      throw new ValidationError('At least one interviewer must be selected');
+    // 5. Validate interviewer belongs to the company (exactly one interviewer per round)
+    if (!input.interviewerId) {
+      throw new ValidationError('An interviewer must be selected');
     }
 
-    for (const interviewerId of input.interviewerIds) {
+    const interviewerIds = [input.interviewerId];
+
+    for (const interviewerId of interviewerIds) {
+      // Allow assigning the company owner (CEO) directly using the company user ID
+      if (interviewerId === input.companyId) {
+        continue;
+      }
+
       const teamMember = await this.companyTeamRepository.findByUserId(interviewerId);
       if (!teamMember || teamMember.companyId !== input.companyId) {
         throw new ValidationError(`Interviewer ${interviewerId} is not part of your company team`);
@@ -53,8 +61,9 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
       if (teamMember.status !== 'active') {
         throw new ValidationError(`Interviewer ${interviewerId} is not active`);
       }
-      if (!(teamMember instanceof InterviewerProfile)) {
-        throw new ValidationError('Only interviewer accounts can be assigned to interview rounds');
+      // Allow both Interviewer and HR accounts to be assigned
+      if (!(teamMember instanceof InterviewerProfile) && !(teamMember instanceof HRProfile)) {
+        throw new ValidationError('Only interviewer or HR accounts can be assigned to interview rounds');
       }
     }
 
@@ -77,7 +86,7 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
         ...updatedRounds[roundIndex],
         status: 'scheduled',
         scheduledAt,
-        interviewerIds: input.interviewerIds,
+        interviewerIds,
       };
     } else {
       // Create new round
@@ -85,7 +94,7 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
         roundName: input.roundName,
         status: 'scheduled',
         scheduledAt,
-        interviewerIds: input.interviewerIds,
+        interviewerIds,
       });
     }
 

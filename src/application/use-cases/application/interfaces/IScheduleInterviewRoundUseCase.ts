@@ -1,7 +1,7 @@
 export interface ScheduleInterviewRoundInput {
   applicationId: string;
   roundName: string;
-  interviewerIds: string[];
+  interviewerId: string;
   scheduledAt: string; // ISO date string
 }
 

@@ -92,7 +92,7 @@ export type RejectApplicationInput = Static<typeof RejectApplicationSchema>;
 // Schedule Interview Round Schema
 export const ScheduleInterviewRoundSchema = Type.Object({
   roundName: Type.String({ minLength: 1 }),
-  interviewerIds: Type.Array(Type.String({ minLength: 1 }), { minItems: 1 }),
+  interviewerId: Type.String({ minLength: 1 }),
   scheduledAt: Type.String({ format: 'date-time' })
 });
 

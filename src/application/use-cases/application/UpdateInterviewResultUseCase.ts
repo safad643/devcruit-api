@@ -34,13 +34,18 @@ export class UpdateInterviewResultUseCase implements IUpdateInterviewResultUseCa
       throw new ValidationError(`Interview round "${input.roundName}" is not scheduled`);
     }
 
-    // 4. Validate result
+    // 4. Hard rule: video call must be completed before submitting result/feedback
+    if (round.videoCallStatus !== 'ended') {
+      throw new ValidationError('Cannot submit interview result before the video call is completed');
+    }
+
+    // 5. Validate result
     const validResults = Object.values(InterviewRoundResult);
     if (!validResults.includes(input.result as InterviewRoundResult)) {
       throw new ValidationError(`Result must be one of: ${validResults.join(', ')}`);
     }
 
-    // 5. Update the interview round
+    // 6. Update the interview round
     const updatedRounds = application.interviewRounds.map(r => {
       if (r.roundName === input.roundName) {
         return {
@@ -54,7 +59,7 @@ export class UpdateInterviewResultUseCase implements IUpdateInterviewResultUseCa
       return r;
     });
 
-    // 6. Update application
+    // 7. Update application
     const updatedApplication = await this.applicationRepository.update(input.applicationId, {
       interviewRounds: updatedRounds,
     });

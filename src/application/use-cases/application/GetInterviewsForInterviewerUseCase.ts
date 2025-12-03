@@ -56,6 +56,8 @@ export class GetInterviewsForInterviewerUseCase implements IGetInterviewsForInte
             status: round.status,
             result: round.result,
             feedback: round.feedback,
+            videoCallId: round.videoCallId,
+            videoCallStatus: round.videoCallStatus,
           });
         }
       }
