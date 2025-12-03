@@ -67,6 +67,7 @@ export interface GetConversationInput {
 }
 
 export interface GetConversationOutput {
-  conversation: Conversation | null;
+  conversation: Conversation;
+  isNew: boolean;
 }
 

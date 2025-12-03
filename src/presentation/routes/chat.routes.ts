@@ -4,7 +4,6 @@ import { TYPES } from '../../di/types';
 import { ChatController } from '../controllers/ChatController';
 import { authenticate } from '../middleware/authenticate';
 import {
-  SendMessageSchema,
   ConversationIdParamsSchema,
   GetMessagesQuerySchema,
   MarkMessagesAsReadSchema,
@@ -13,17 +12,6 @@ import {
 
 export async function chatRoutes(fastify: FastifyInstance): Promise<void> {
   const chatController = container.get<ChatController>(TYPES.ChatController);
-
-  fastify.post(
-    '/messages',
-    {
-      preHandler: [authenticate],
-      schema: {
-        body: SendMessageSchema,
-      },
-    },
-    chatController.sendMessage
-  );
 
   fastify.get(
     '/conversations',

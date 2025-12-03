@@ -1,11 +1,5 @@
 import { Type, Static } from '@sinclair/typebox';
 
-export const SendMessageSchema = Type.Object({
-  receiverId: Type.String({ minLength: 1 }),
-  message: Type.String({ minLength: 1, maxLength: 2000 }),
-});
-export type SendMessageInput = Static<typeof SendMessageSchema>;
-
 export const ConversationIdParamsSchema = Type.Object({
   conversationId: Type.String({ minLength: 1 }),
 });

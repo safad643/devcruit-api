@@ -1,7 +1,7 @@
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { IConversationRepository } from '../../../domain/repositories/IConversationRepository';
-import { ICompanyTeamRepository } from '../../../domain/repositories/ICompanyTeamRepository';
+import { ICompanyTeamRepository, ICompanyProfileRepository } from '../../../domain/repositories';
 import { IValidateConversationParticipantUseCase } from './interfaces/IValidateConversationParticipantUseCase';
 import { NotFoundError } from '../../../domain/errors';
 
@@ -9,7 +9,8 @@ import { NotFoundError } from '../../../domain/errors';
 export class ValidateConversationParticipantUseCase implements IValidateConversationParticipantUseCase {
   constructor(
     @inject(TYPES.ConversationRepository) private conversationRepository: IConversationRepository,
-    @inject(TYPES.CompanyTeamRepository) private companyTeamRepository: ICompanyTeamRepository
+    @inject(TYPES.CompanyTeamRepository) private companyTeamRepository: ICompanyTeamRepository,
+    @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository
   ) {}
 
   async execute(conversationId: string, requesterUserId: string, requesterRole: string): Promise<boolean> {
@@ -30,6 +31,13 @@ export class ValidateConversationParticipantUseCase implements IValidateConversa
     }
 
     if (requesterRole === 'developer') {
+      // Check if target user is a company user
+      const companyProfile = await this.companyProfileRepository.findByUserId(targetUserId);
+      if (companyProfile) {
+        return true;
+      }
+
+      // Check if target user is an active HR team member
       const hrTeamMember = await this.companyTeamRepository.findByUserId(targetUserId);
       if (!hrTeamMember || hrTeamMember.status !== 'active') {
         return false;

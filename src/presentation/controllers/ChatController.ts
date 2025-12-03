@@ -2,7 +2,6 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../di/types';
 import {
-  ISendMessageUseCase,
   IGetConversationsUseCase,
   IGetMessagesUseCase,
   IMarkMessageAsReadUseCase,
@@ -11,41 +10,17 @@ import {
 } from '../../application/use-cases/chat';
 import { wrapSuccess } from '../../utils/response';
 import { HttpStatus } from '../../utils/statusCodes';
-import {
-  SendMessageInput,
-  ConversationIdParams,
-  GetMessagesQuery,
-  MarkMessagesAsReadInput,
-  UserIdParams,
-} from '../schemas/chat.schema';
+import { ConversationIdParams, GetMessagesQuery, MarkMessagesAsReadInput, UserIdParams } from '../schemas/chat.schema';
 
 @injectable()
 export class ChatController {
   constructor(
-    @inject(TYPES.SendMessageUseCase) private sendMessageUseCase: ISendMessageUseCase,
     @inject(TYPES.GetConversationsUseCase) private getConversationsUseCase: IGetConversationsUseCase,
     @inject(TYPES.GetMessagesUseCase) private getMessagesUseCase: IGetMessagesUseCase,
     @inject(TYPES.MarkMessageAsReadUseCase) private markMessageAsReadUseCase: IMarkMessageAsReadUseCase,
     @inject(TYPES.CheckCanMessageUseCase) private checkCanMessageUseCase: ICheckCanMessageUseCase,
     @inject(TYPES.GetConversationUseCase) private getConversationUseCase: IGetConversationUseCase
   ) {}
-
-  sendMessage = async (
-    request: FastifyRequest<{ Body: SendMessageInput }>,
-    reply: FastifyReply
-  ): Promise<void> => {
-    const senderId = request.user?.id as string;
-    const senderRole = request.user?.role as string;
-
-    const result = await this.sendMessageUseCase.execute({
-      senderId,
-      senderRole,
-      receiverId: request.body.receiverId,
-      message: request.body.message,
-    });
-
-    reply.status(HttpStatus.CREATED).send(wrapSuccess(result));
-  };
 
   getConversations = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     const userId = request.user?.id as string;

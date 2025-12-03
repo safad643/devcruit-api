@@ -3,6 +3,7 @@ import { TYPES } from '../../../di/types';
 import { IConversationRepository } from '../../../domain/repositories/IConversationRepository';
 import { IGetConversationUseCase } from './interfaces/IGetConversationUseCase';
 import { GetConversationInput, GetConversationOutput } from '../../dtos/chat.dto';
+import { Conversation } from '../../../domain/entities/Conversation';
 
 @injectable()
 export class GetConversationUseCase implements IGetConversationUseCase {
@@ -11,13 +12,28 @@ export class GetConversationUseCase implements IGetConversationUseCase {
   ) {}
 
   async execute(input: GetConversationInput): Promise<GetConversationOutput> {
-    const conversation = await this.conversationRepository.findByParticipants(
+    let conversation = await this.conversationRepository.findByParticipants(
       input.participant1Id,
       input.participant2Id
     );
 
+    let isNew = false;
+
+    // If no conversation exists, create one
+    if (!conversation) {
+      const conversationData = Conversation.create({
+        participant1Id: input.participant1Id,
+        participant2Id: input.participant2Id,
+        lastMessage: '',
+        lastMessageAt: new Date(),
+      });
+      conversation = await this.conversationRepository.create(conversationData);
+      isNew = true;
+    }
+
     return {
       conversation,
+      isNew,
     };
   }
 }
