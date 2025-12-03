@@ -111,3 +111,11 @@ export const UpdateInterviewResultSchema = Type.Object({
 
 export type UpdateInterviewResultInput = Static<typeof UpdateInterviewResultSchema>;
 
+// Application + Interview Round params (for video call endpoints)
+export const ApplicationInterviewRoundParamsSchema = Type.Object({
+  id: Type.String({ minLength: 1 }),
+  roundName: Type.String({ minLength: 1 }),
+});
+
+export type ApplicationInterviewRoundParamsInput = Static<typeof ApplicationInterviewRoundParamsSchema>;
+

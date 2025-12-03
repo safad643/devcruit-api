@@ -12,8 +12,11 @@ import {
   IRejectApplicationUseCase,
   IScheduleInterviewRoundUseCase,
   IUpdateInterviewResultUseCase,
-  IGetInterviewsForInterviewerUseCase
-} from '../../application/use-cases/application/interfaces';
+  IGetInterviewsForInterviewerUseCase,
+  IGetOrCreateVideoCallUseCase,
+  IStartVideoCallUseCase,
+  IEndVideoCallUseCase
+} from '../../application/use-cases/video-call/interfaces';
 import { 
   CreateApplicationInput, 
   ListApplicationsForCompanyQueryInput,
@@ -40,7 +43,10 @@ export class ApplicationController {
     @inject(TYPES.RejectApplicationUseCase) private rejectApplicationUseCase: IRejectApplicationUseCase,
     @inject(TYPES.ScheduleInterviewRoundUseCase) private scheduleInterviewRoundUseCase: IScheduleInterviewRoundUseCase,
     @inject(TYPES.UpdateInterviewResultUseCase) private updateInterviewResultUseCase: IUpdateInterviewResultUseCase,
-    @inject(TYPES.GetInterviewsForInterviewerUseCase) private getInterviewsForInterviewerUseCase: IGetInterviewsForInterviewerUseCase
+    @inject(TYPES.GetInterviewsForInterviewerUseCase) private getInterviewsForInterviewerUseCase: IGetInterviewsForInterviewerUseCase,
+    @inject(TYPES.GetOrCreateVideoCallUseCase) private getOrCreateVideoCallUseCase: IGetOrCreateVideoCallUseCase,
+    @inject(TYPES.StartVideoCallUseCase) private startVideoCallUseCase: IStartVideoCallUseCase,
+    @inject(TYPES.EndVideoCallUseCase) private endVideoCallUseCase: IEndVideoCallUseCase
   ) {}
 
   // Developer endpoint: Apply to a job
@@ -212,6 +218,60 @@ export class ApplicationController {
   ): Promise<void> => {
     const interviewerId = request.user?.id as string;
     const result = await this.getInterviewsForInterviewerUseCase.execute(interviewerId);
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
+  };
+
+  // Developer/Interviewer/HR/Company endpoint: Get or create video call for an interview round
+  getOrCreateVideoCall = async (
+    request: FastifyRequest<{ Params: { id: string; roundName: string } }>,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const userId = request.user?.id as string;
+    const applicationId = request.params.id;
+    const { roundName } = request.params;
+
+    const result = await this.getOrCreateVideoCallUseCase.execute({
+      applicationId,
+      roundName,
+      userId,
+    });
+
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
+  };
+
+  // Interviewer/HR/Company endpoint: Mark video call as started
+  startVideoCall = async (
+    request: FastifyRequest<{ Params: { id: string; roundName: string } }>,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const userId = request.user?.id as string;
+    const applicationId = request.params.id;
+    const { roundName } = request.params;
+
+    const result = await this.startVideoCallUseCase.execute({
+      applicationId,
+      roundName,
+      userId,
+    });
+
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
+  };
+
+  // Interviewer/HR/Company endpoint: Mark video call as ended
+  endVideoCall = async (
+    request: FastifyRequest<{ Params: { id: string; roundName: string } }>,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const userId = request.user?.id as string;
+    const applicationId = request.params.id;
+    const { roundName } = request.params;
+
+    const result = await this.endVideoCallUseCase.execute({
+      applicationId,
+      roundName,
+      userId,
+    });
+
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 

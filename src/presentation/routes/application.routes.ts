@@ -15,7 +15,8 @@ import {
   UpdateApplicationStatusSchema,
   RejectApplicationSchema,
   ScheduleInterviewRoundSchema,
-  UpdateInterviewResultSchema
+  UpdateInterviewResultSchema,
+  ApplicationInterviewRoundParamsSchema
 } from '../schemas/application.schema';
 
 export async function applicationRoutes(fastify: FastifyInstance): Promise<void> {
@@ -133,6 +134,40 @@ export async function applicationRoutes(fastify: FastifyInstance): Promise<void>
       }
     },
     applicationController.updateInterviewResult
+  );
+
+  // Video call routes (shared between developer/interviewer/hr/company as appropriate)
+  fastify.post(
+    '/applications/:id/interview-rounds/:roundName/video-call',
+    {
+      preHandler: [authenticate, authorize('developer', 'interviewer', 'hr', 'company')],
+      schema: {
+        params: ApplicationInterviewRoundParamsSchema,
+      },
+    },
+    applicationController.getOrCreateVideoCall,
+  );
+
+  fastify.post(
+    '/applications/:id/interview-rounds/:roundName/video-call/start',
+    {
+      preHandler: [authenticate, authorize('interviewer', 'hr', 'company')],
+      schema: {
+        params: ApplicationInterviewRoundParamsSchema,
+      },
+    },
+    applicationController.startVideoCall,
+  );
+
+  fastify.post(
+    '/applications/:id/interview-rounds/:roundName/video-call/end',
+    {
+      preHandler: [authenticate, authorize('interviewer', 'hr', 'company')],
+      schema: {
+        params: ApplicationInterviewRoundParamsSchema,
+      },
+    },
+    applicationController.endVideoCall,
   );
 }
 

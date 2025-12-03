@@ -89,6 +89,9 @@ export const TYPES = {
     ScheduleInterviewRoundUseCase: Symbol.for('ScheduleInterviewRoundUseCase'),
     UpdateInterviewResultUseCase: Symbol.for('UpdateInterviewResultUseCase'),
     GetInterviewsForInterviewerUseCase: Symbol.for('GetInterviewsForInterviewerUseCase'),
+    GetOrCreateVideoCallUseCase: Symbol.for('GetOrCreateVideoCallUseCase'),
+    StartVideoCallUseCase: Symbol.for('StartVideoCallUseCase'),
+    EndVideoCallUseCase: Symbol.for('EndVideoCallUseCase'),
     ApplicationController: Symbol.for('ApplicationController'),
     
     // Public Job module
