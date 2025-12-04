@@ -1,15 +1,16 @@
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
-import { IApplicationRepository, ICompanyTeamRepository } from '../../../domain/repositories';
+import { IApplicationRepository, ICompanyTeamRepository, IJobRepository } from '../../../domain/repositories';
 import { NotFoundError, ForbiddenError, ValidationError } from '../../../domain/errors';
-import { InterviewRoundResult, InterviewRoundStatus } from '../../../domain/entities/Application';
+import { InterviewRoundResult, InterviewRoundStatus, StatusNotes, ApplicationStatus } from '../../../domain/entities/Application';
 import { IUpdateInterviewResultUseCase, UpdateInterviewResultInput, UpdateInterviewResultOutput } from './interfaces';
 
 @injectable()
 export class UpdateInterviewResultUseCase implements IUpdateInterviewResultUseCase {
   constructor(
     @inject(TYPES.ApplicationRepository) private applicationRepository: IApplicationRepository,
-    @inject(TYPES.CompanyTeamRepository) private companyTeamRepository: ICompanyTeamRepository
+    @inject(TYPES.CompanyTeamRepository) private companyTeamRepository: ICompanyTeamRepository,
+    @inject(TYPES.JobRepository) private jobRepository: IJobRepository
   ) {}
 
   async execute(input: UpdateInterviewResultInput & { interviewerId: string }): Promise<UpdateInterviewResultOutput> {
@@ -59,9 +60,47 @@ export class UpdateInterviewResultUseCase implements IUpdateInterviewResultUseCa
       return r;
     });
 
-    // 7. Update application
+    // 7. Determine application status update based on result
+    const job = await this.jobRepository.findById(application.jobId);
+    if (!job) {
+      throw new NotFoundError('Job not found');
+    }
+
+    let statusUpdate: Partial<{ status: ApplicationStatus; rejectedAt: Date; rejectedAtStage: string; statusNotes: StatusNotes }> = {};
+
+    // If result is fail, reject the application
+    if (input.result === InterviewRoundResult.FAIL) {
+      const now = new Date();
+      statusUpdate = {
+        status: 'rejected' as ApplicationStatus,
+        rejectedAt: now,
+        rejectedAtStage: input.roundName,
+      };
+      
+      // Add feedback to statusNotes if provided
+      if (input.feedback) {
+        const statusNotes: StatusNotes = {
+          ...application.statusNotes,
+          rejected: input.feedback.trim(),
+        };
+        statusUpdate.statusNotes = statusNotes;
+      }
+    } 
+    // If result is pass and this is the last round, mark as interview_completed
+    else if (input.result === InterviewRoundResult.PASS) {
+      const isLastRound = job.interviewRounds.length > 0 && 
+        job.interviewRounds[job.interviewRounds.length - 1] === input.roundName;
+      if (isLastRound) {
+        statusUpdate = {
+          status: 'interview_completed' as ApplicationStatus,
+        };
+      }
+    }
+
+    // 8. Update application
     const updatedApplication = await this.applicationRepository.update(input.applicationId, {
       interviewRounds: updatedRounds,
+      ...statusUpdate,
     });
 
     return {

@@ -34,7 +34,6 @@ export class EndVideoCallUseCase implements IEndVideoCallUseCase {
     if (!isInterviewer) {
       throw new ForbiddenError('Only the assigned interviewer can end the video call');
     }
-
     if (round.videoCallStatus !== 'in-progress') {
       throw new ValidationError('Video call is not in progress');
     }

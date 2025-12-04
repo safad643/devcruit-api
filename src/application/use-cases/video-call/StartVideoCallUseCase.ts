@@ -40,9 +40,9 @@ export class StartVideoCallUseCase implements IStartVideoCallUseCase {
     }
 
     const now = new Date();
-    if (round.scheduledAt > now) {
-      throw new ValidationError('Cannot start video call before the scheduled time');
-    }
+    // if (round.scheduledAt > now) {
+    //   throw new ValidationError('Cannot start video call before the scheduled time');
+    // }
 
     if (round.videoCallStatus === 'ended') {
       throw new ValidationError('Video call has already ended');

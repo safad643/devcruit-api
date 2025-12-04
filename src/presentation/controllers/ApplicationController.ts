@@ -13,6 +13,8 @@ import {
   IScheduleInterviewRoundUseCase,
   IUpdateInterviewResultUseCase,
   IGetInterviewsForInterviewerUseCase,
+} from '../../application/use-cases/application/interfaces';
+import {
   IGetOrCreateVideoCallUseCase,
   IStartVideoCallUseCase,
   IEndVideoCallUseCase
@@ -86,15 +88,25 @@ export class ApplicationController {
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
-  // Company endpoint: Get application details
+  // Company/HR/Interviewer endpoint: Get application details
   getApplicationDetails = async (
     request: FastifyRequest<{ Params: { id: string } }>,
     reply: FastifyReply
   ): Promise<void> => {
-    const companyContext = this.getCompanyContext(request);
-    const companyId = companyContext.companyUserId;
     const applicationId = request.params.id;
-    const result = await this.getApplicationDetailsUseCase.execute(applicationId, companyId);
+    const userRole = request.user?.role;
+    
+    let companyId: string | undefined;
+    let interviewerId: string | undefined;
+    
+    if (userRole === 'company' || userRole === 'hr') {
+      const companyContext = this.getCompanyContext(request);
+      companyId = companyContext.companyUserId;
+    } else if (userRole === 'interviewer') {
+      interviewerId = request.user?.id as string;
+    }
+    
+    const result = await this.getApplicationDetailsUseCase.execute(applicationId, companyId, interviewerId);
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 

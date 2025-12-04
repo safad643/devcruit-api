@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { container } from '../../di/container';
 import { TYPES } from '../../di/types';
 import { ApplicationController } from '../controllers/ApplicationController';
@@ -60,10 +60,17 @@ export async function applicationRoutes(fastify: FastifyInstance): Promise<void>
     applicationController.listApplicationsForCompany
   );
 
+  // Conditional middleware: only checkCompanyPaid for company/hr, not for interviewers
+  const checkCompanyPaidIfNeeded = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+    if (request.user?.role === 'company' || request.user?.role === 'hr') {
+      await checkCompanyPaid(request, reply);
+    }
+  };
+
   fastify.get(
     '/company/applications/:id',
     {
-      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
+      preHandler: [authenticate, authorize('company', 'hr', 'interviewer'), checkCompanyPaidIfNeeded],
       schema: { params: ApplicationIdParamsSchema }
     },
     applicationController.getApplicationDetails

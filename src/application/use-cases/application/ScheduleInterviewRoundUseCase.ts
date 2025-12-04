@@ -1,17 +1,22 @@
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
-import { IApplicationRepository, IJobRepository, ICompanyTeamRepository } from '../../../domain/repositories';
+import { IApplicationRepository, IJobRepository, ICompanyTeamRepository, IUserRepository, ICompanyProfileRepository, IDeveloperProfileRepository } from '../../../domain/repositories';
 import { NotFoundError, ForbiddenError, ValidationError } from '../../../domain/errors';
 import { IScheduleInterviewRoundUseCase, ScheduleInterviewRoundInput, ScheduleInterviewRoundOutput } from './interfaces';
 import { InterviewerProfile } from '../../../domain/entities/InterviewerProfile';
 import { HRProfile } from '../../../domain/entities/HRProfile';
+import { IEmailService } from '../../services';
 
 @injectable()
 export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUseCase {
   constructor(
     @inject(TYPES.ApplicationRepository) private applicationRepository: IApplicationRepository,
     @inject(TYPES.JobRepository) private jobRepository: IJobRepository,
-    @inject(TYPES.CompanyTeamRepository) private companyTeamRepository: ICompanyTeamRepository
+    @inject(TYPES.CompanyTeamRepository) private companyTeamRepository: ICompanyTeamRepository,
+    @inject(TYPES.EmailService) private emailService: IEmailService,
+    @inject(TYPES.UserRepository) private userRepository: IUserRepository,
+    @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository,
+    @inject(TYPES.DeveloperProfileRepository) private developerProfileRepository: IDeveloperProfileRepository
   ) {}
 
   async execute(input: ScheduleInterviewRoundInput & { companyId: string }): Promise<ScheduleInterviewRoundOutput> {
@@ -106,6 +111,53 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
       interviewRounds: updatedRounds,
       status: newStatus,
     });
+
+    // 10. Send email notification to developer
+    try {
+      // Get developer profile and user
+      const developerProfile = await this.developerProfileRepository.findById(application.developerId);
+      if (developerProfile) {
+        const developerUser = await this.userRepository.findById(developerProfile.userId);
+        
+        if (developerUser?.email) {
+          // Get company profile for company name
+          const companyProfile = await this.companyProfileRepository.findByUserId(input.companyId);
+          const companyName = companyProfile?.companyName || 'the company';
+          
+          // Get interviewer name
+          let interviewerName = 'Interviewer';
+          if (input.interviewerId === input.companyId) {
+            // Company owner is the interviewer
+            const companyUser = await this.userRepository.findById(input.companyId);
+            interviewerName = companyUser?.name || companyProfile?.fullName || 'Company Representative';
+          } else {
+            // Team member is the interviewer
+            const teamMember = await this.companyTeamRepository.findByUserId(input.interviewerId);
+            if (teamMember instanceof InterviewerProfile || teamMember instanceof HRProfile) {
+              interviewerName = teamMember.fullName || teamMember.email || 'Interviewer';
+            }
+          }
+
+          // Get the scheduled date from the updated round
+          const scheduledRound = updatedRounds.find(r => r.roundName === input.roundName);
+          const scheduledDate = scheduledRound?.scheduledAt || scheduledAt;
+
+          // Send email
+          await this.emailService.sendInterviewScheduledNotification(
+            developerUser.email,
+            developerUser.name || 'Developer',
+            companyName,
+            job.title,
+            input.roundName,
+            scheduledDate,
+            interviewerName
+          );
+        }
+      }
+    } catch (error) {
+      // Log error but don't fail the interview scheduling
+      console.error('Failed to send interview scheduled notification email:', error);
+    }
 
     return {
       id: updatedApplication.id,

@@ -5,5 +5,14 @@ export interface IEmailService {
     sendShortlistNotification(email: string, companyName: string, jobTitle: string): Promise<void>;
     sendRejectionNotification(email: string, companyName: string, jobTitle: string, rejectionNote?: string): Promise<void>;
     sendTeamInvite(email: string, temporaryPassword: string, companyName: string, role: 'hr' | 'interviewer'): Promise<void>;
+    sendInterviewScheduledNotification(
+      email: string,
+      developerName: string,
+      companyName: string,
+      jobTitle: string,
+      roundName: string,
+      scheduledAt: Date,
+      interviewerName: string
+    ): Promise<void>;
   }
   
