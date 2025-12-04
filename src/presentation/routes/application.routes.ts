@@ -16,7 +16,10 @@ import {
   RejectApplicationSchema,
   ScheduleInterviewRoundSchema,
   UpdateInterviewResultSchema,
-  ApplicationInterviewRoundParamsSchema
+  ApplicationInterviewRoundParamsSchema,
+  ExtendOfferSchema,
+  AcceptOfferSchema,
+  DeclineOfferSchema
 } from '../schemas/application.schema';
 
 export async function applicationRoutes(fastify: FastifyInstance): Promise<void> {
@@ -175,6 +178,45 @@ export async function applicationRoutes(fastify: FastifyInstance): Promise<void>
       },
     },
     applicationController.endVideoCall,
+  );
+
+  // Company route: Extend offer
+  fastify.patch(
+    '/company/applications/:id/extend-offer',
+    {
+      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
+      schema: { 
+        params: ApplicationIdParamsSchema,
+        body: ExtendOfferSchema
+      }
+    },
+    applicationController.extendOffer
+  );
+
+  // Developer route: Accept offer
+  fastify.patch(
+    '/applications/:id/accept-offer',
+    {
+      preHandler: [authenticate, authorize('developer')],
+      schema: { 
+        params: ApplicationIdParamsSchema,
+        body: AcceptOfferSchema
+      }
+    },
+    applicationController.acceptOffer
+  );
+
+  // Developer route: Decline offer
+  fastify.patch(
+    '/applications/:id/decline-offer',
+    {
+      preHandler: [authenticate, authorize('developer')],
+      schema: { 
+        params: ApplicationIdParamsSchema,
+        body: DeclineOfferSchema
+      }
+    },
+    applicationController.declineOffer
   );
 }
 

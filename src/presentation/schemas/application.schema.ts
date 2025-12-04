@@ -121,3 +121,22 @@ export const ApplicationInterviewRoundParamsSchema = Type.Object({
 
 export type ApplicationInterviewRoundParamsInput = Static<typeof ApplicationInterviewRoundParamsSchema>;
 
+// Extend Offer Schema (Company)
+export const ExtendOfferSchema = Type.Object({
+  note: Type.Optional(Type.String({ maxLength: 500 }))
+});
+
+export type ExtendOfferInput = Static<typeof ExtendOfferSchema>;
+
+// Accept Offer Schema (Developer) - no body needed
+export const AcceptOfferSchema = Type.Object({});
+
+export type AcceptOfferInput = Static<typeof AcceptOfferSchema>;
+
+// Decline Offer Schema (Developer)
+export const DeclineOfferSchema = Type.Object({
+  note: Type.Optional(Type.String({ maxLength: 500 }))
+});
+
+export type DeclineOfferInput = Static<typeof DeclineOfferSchema>;
+

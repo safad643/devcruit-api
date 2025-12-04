@@ -9,4 +9,7 @@ export * from './IRejectApplicationUseCase';
 export * from './IScheduleInterviewRoundUseCase';
 export * from './IUpdateInterviewResultUseCase';
 export * from './IGetInterviewsForInterviewerUseCase';
+export * from './IExtendOfferUseCase';
+export * from './IAcceptOfferUseCase';
+export * from './IDeclineOfferUseCase';
 

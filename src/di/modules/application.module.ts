@@ -11,6 +11,9 @@ import { RejectApplicationUseCase } from '../../application/use-cases/applicatio
 import { ScheduleInterviewRoundUseCase } from '../../application/use-cases/application/ScheduleInterviewRoundUseCase';
 import { UpdateInterviewResultUseCase } from '../../application/use-cases/application/UpdateInterviewResultUseCase';
 import { GetInterviewsForInterviewerUseCase } from '../../application/use-cases/application/GetInterviewsForInterviewerUseCase';
+import { ExtendOfferUseCase } from '../../application/use-cases/application/ExtendOfferUseCase';
+import { AcceptOfferUseCase } from '../../application/use-cases/application/AcceptOfferUseCase';
+import { DeclineOfferUseCase } from '../../application/use-cases/application/DeclineOfferUseCase';
 import { GetOrCreateVideoCallUseCase } from '../../application/use-cases/video-call/GetOrCreateVideoCallUseCase';
 import { StartVideoCallUseCase } from '../../application/use-cases/video-call/StartVideoCallUseCase';
 import { EndVideoCallUseCase } from '../../application/use-cases/video-call/EndVideoCallUseCase';
@@ -27,6 +30,11 @@ import {
   IScheduleInterviewRoundUseCase,
   IUpdateInterviewResultUseCase,
   IGetInterviewsForInterviewerUseCase,
+  IExtendOfferUseCase,
+  IAcceptOfferUseCase,
+  IDeclineOfferUseCase,
+} from '../../application/use-cases/application/interfaces';
+import {
   IGetOrCreateVideoCallUseCase,
   IStartVideoCallUseCase,
   IEndVideoCallUseCase
@@ -44,6 +52,9 @@ export const applicationModule = new ContainerModule((bind) => {
   bind<IScheduleInterviewRoundUseCase>(TYPES.ScheduleInterviewRoundUseCase).to(ScheduleInterviewRoundUseCase);
   bind<IUpdateInterviewResultUseCase>(TYPES.UpdateInterviewResultUseCase).to(UpdateInterviewResultUseCase);
   bind<IGetInterviewsForInterviewerUseCase>(TYPES.GetInterviewsForInterviewerUseCase).to(GetInterviewsForInterviewerUseCase);
+  bind<IExtendOfferUseCase>(TYPES.ExtendOfferUseCase).to(ExtendOfferUseCase);
+  bind<IAcceptOfferUseCase>(TYPES.AcceptOfferUseCase).to(AcceptOfferUseCase);
+  bind<IDeclineOfferUseCase>(TYPES.DeclineOfferUseCase).to(DeclineOfferUseCase);
   bind<IGetOrCreateVideoCallUseCase>(TYPES.GetOrCreateVideoCallUseCase).to(GetOrCreateVideoCallUseCase);
   bind<IStartVideoCallUseCase>(TYPES.StartVideoCallUseCase).to(StartVideoCallUseCase);
   bind<IEndVideoCallUseCase>(TYPES.EndVideoCallUseCase).to(EndVideoCallUseCase);

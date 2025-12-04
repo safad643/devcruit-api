@@ -92,6 +92,9 @@ export const TYPES = {
     GetOrCreateVideoCallUseCase: Symbol.for('GetOrCreateVideoCallUseCase'),
     StartVideoCallUseCase: Symbol.for('StartVideoCallUseCase'),
     EndVideoCallUseCase: Symbol.for('EndVideoCallUseCase'),
+    ExtendOfferUseCase: Symbol.for('ExtendOfferUseCase'),
+    AcceptOfferUseCase: Symbol.for('AcceptOfferUseCase'),
+    DeclineOfferUseCase: Symbol.for('DeclineOfferUseCase'),
     ApplicationController: Symbol.for('ApplicationController'),
     
     // Public Job module

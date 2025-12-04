@@ -171,3 +171,41 @@ export interface RejectApplicationOutput {
   message: string;
 }
 
+// Extend Offer (Company)
+export interface ExtendOfferInput {
+  applicationId: string;
+  companyId: string;
+  note?: string;
+}
+
+export interface ExtendOfferOutput {
+  id: string;
+  status: ApplicationStatus;
+  message: string;
+}
+
+// Accept Offer (Developer)
+export interface AcceptOfferInput {
+  applicationId: string;
+  developerId: string;
+}
+
+export interface AcceptOfferOutput {
+  id: string;
+  status: ApplicationStatus;
+  message: string;
+}
+
+// Decline Offer (Developer)
+export interface DeclineOfferInput {
+  applicationId: string;
+  developerId: string;
+  note?: string;
+}
+
+export interface DeclineOfferOutput {
+  id: string;
+  status: ApplicationStatus;
+  message: string;
+}
+
