@@ -1,16 +1,22 @@
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
-import { IApplicationRepository, IJobRepository, ICompanyTeamRepository } from '../../../domain/repositories';
+import { IApplicationRepository, IJobRepository, ICompanyTeamRepository, IUserRepository, ICompanyProfileRepository, IDeveloperProfileRepository } from '../../../domain/repositories';
 import { NotFoundError, ForbiddenError, ValidationError } from '../../../domain/errors';
 import { IScheduleInterviewRoundUseCase, ScheduleInterviewRoundInput, ScheduleInterviewRoundOutput } from './interfaces';
 import { InterviewerProfile } from '../../../domain/entities/InterviewerProfile';
+import { HRProfile } from '../../../domain/entities/HRProfile';
+import { IEmailService } from '../../services';
 
 @injectable()
 export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUseCase {
   constructor(
     @inject(TYPES.ApplicationRepository) private applicationRepository: IApplicationRepository,
     @inject(TYPES.JobRepository) private jobRepository: IJobRepository,
-    @inject(TYPES.CompanyTeamRepository) private companyTeamRepository: ICompanyTeamRepository
+    @inject(TYPES.CompanyTeamRepository) private companyTeamRepository: ICompanyTeamRepository,
+    @inject(TYPES.EmailService) private emailService: IEmailService,
+    @inject(TYPES.UserRepository) private userRepository: IUserRepository,
+    @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository,
+    @inject(TYPES.DeveloperProfileRepository) private developerProfileRepository: IDeveloperProfileRepository
   ) {}
 
   async execute(input: ScheduleInterviewRoundInput & { companyId: string }): Promise<ScheduleInterviewRoundOutput> {
@@ -40,12 +46,19 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
       throw new ValidationError(`Interview round "${input.roundName}" does not exist for this job`);
     }
 
-    // 5. Validate interviewer IDs belong to the company
-    if (input.interviewerIds.length === 0) {
-      throw new ValidationError('At least one interviewer must be selected');
+    // 5. Validate interviewer belongs to the company (exactly one interviewer per round)
+    if (!input.interviewerId) {
+      throw new ValidationError('An interviewer must be selected');
     }
 
-    for (const interviewerId of input.interviewerIds) {
+    const interviewerIds = [input.interviewerId];
+
+    for (const interviewerId of interviewerIds) {
+      // Allow assigning the company owner (CEO) directly using the company user ID
+      if (interviewerId === input.companyId) {
+        continue;
+      }
+
       const teamMember = await this.companyTeamRepository.findByUserId(interviewerId);
       if (!teamMember || teamMember.companyId !== input.companyId) {
         throw new ValidationError(`Interviewer ${interviewerId} is not part of your company team`);
@@ -53,8 +66,9 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
       if (teamMember.status !== 'active') {
         throw new ValidationError(`Interviewer ${interviewerId} is not active`);
       }
-      if (!(teamMember instanceof InterviewerProfile)) {
-        throw new ValidationError('Only interviewer accounts can be assigned to interview rounds');
+      // Allow both Interviewer and HR accounts to be assigned
+      if (!(teamMember instanceof InterviewerProfile) && !(teamMember instanceof HRProfile)) {
+        throw new ValidationError('Only interviewer or HR accounts can be assigned to interview rounds');
       }
     }
 
@@ -77,7 +91,7 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
         ...updatedRounds[roundIndex],
         status: 'scheduled',
         scheduledAt,
-        interviewerIds: input.interviewerIds,
+        interviewerIds,
       };
     } else {
       // Create new round
@@ -85,7 +99,7 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
         roundName: input.roundName,
         status: 'scheduled',
         scheduledAt,
-        interviewerIds: input.interviewerIds,
+        interviewerIds,
       });
     }
 
@@ -97,6 +111,53 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
       interviewRounds: updatedRounds,
       status: newStatus,
     });
+
+    // 10. Send email notification to developer
+    try {
+      // Get developer profile and user
+      const developerProfile = await this.developerProfileRepository.findById(application.developerId);
+      if (developerProfile) {
+        const developerUser = await this.userRepository.findById(developerProfile.userId);
+        
+        if (developerUser?.email) {
+          // Get company profile for company name
+          const companyProfile = await this.companyProfileRepository.findByUserId(input.companyId);
+          const companyName = companyProfile?.companyName || 'the company';
+          
+          // Get interviewer name
+          let interviewerName = 'Interviewer';
+          if (input.interviewerId === input.companyId) {
+            // Company owner is the interviewer
+            const companyUser = await this.userRepository.findById(input.companyId);
+            interviewerName = companyUser?.name || companyProfile?.fullName || 'Company Representative';
+          } else {
+            // Team member is the interviewer
+            const teamMember = await this.companyTeamRepository.findByUserId(input.interviewerId);
+            if (teamMember instanceof InterviewerProfile || teamMember instanceof HRProfile) {
+              interviewerName = teamMember.fullName || teamMember.email || 'Interviewer';
+            }
+          }
+
+          // Get the scheduled date from the updated round
+          const scheduledRound = updatedRounds.find(r => r.roundName === input.roundName);
+          const scheduledDate = scheduledRound?.scheduledAt || scheduledAt;
+
+          // Send email
+          await this.emailService.sendInterviewScheduledNotification(
+            developerUser.email,
+            developerUser.name || 'Developer',
+            companyName,
+            job.title,
+            input.roundName,
+            scheduledDate,
+            interviewerName
+          );
+        }
+      }
+    } catch (error) {
+      // Log error but don't fail the interview scheduling
+      console.error('Failed to send interview scheduled notification email:', error);
+    }
 
     return {
       id: updatedApplication.id,

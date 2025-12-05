@@ -2,7 +2,7 @@ import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { IMessageRepository } from '../../../domain/repositories/IMessageRepository';
 import { IConversationRepository } from '../../../domain/repositories/IConversationRepository';
-import { IMarkMessageAsReadUseCase } from './interfaces/IMarkMessageAsReadUseCase';
+import { IMarkMessageAsReadUseCase } from './interfaces';
 import { MarkMessageAsReadInput, MarkMessageAsReadOutput } from '../../dtos/chat.dto';
 import { NotFoundError, ForbiddenError } from '../../../domain/errors';
 

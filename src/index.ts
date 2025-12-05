@@ -5,6 +5,7 @@ import { connectRedis, disconnectRedis } from './infrastructure/database/redis/c
 import { config } from './config';
 import { initializeSocketIO, closeSocketIO } from './infrastructure/socket/socketServer';
 import { setupChatSocket } from './presentation/socket/chat.socket';
+import { setupVideoSocket } from './presentation/socket/video.socket';
 
 async function start() {
   try {
@@ -26,6 +27,7 @@ async function start() {
     const httpServer = server.server;
     const io = initializeSocketIO(httpServer);
     setupChatSocket(io);
+    setupVideoSocket(io);
 
     console.log(`Server running at http://${config.host}:${config.port}`);
     console.log(`Socket.IO server initialized`);

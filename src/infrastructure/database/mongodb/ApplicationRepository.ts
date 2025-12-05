@@ -248,6 +248,8 @@ export class ApplicationRepository implements IApplicationRepository {
         result: round.result,
         feedback: round.feedback,
         interviewerIds: round.interviewerIds || [],
+        videoCallId: round.videoCallId,
+        videoCallStatus: round.videoCallStatus,
       }));
     };
 

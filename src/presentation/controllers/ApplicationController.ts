@@ -12,8 +12,16 @@ import {
   IRejectApplicationUseCase,
   IScheduleInterviewRoundUseCase,
   IUpdateInterviewResultUseCase,
-  IGetInterviewsForInterviewerUseCase
+  IGetInterviewsForInterviewerUseCase,
+  IExtendOfferUseCase,
+  IAcceptOfferUseCase,
+  IDeclineOfferUseCase,
 } from '../../application/use-cases/application/interfaces';
+import {
+  IGetOrCreateVideoCallUseCase,
+  IStartVideoCallUseCase,
+  IEndVideoCallUseCase
+} from '../../application/use-cases/video-call/interfaces';
 import { 
   CreateApplicationInput, 
   ListApplicationsForCompanyQueryInput,
@@ -21,7 +29,10 @@ import {
   WithdrawApplicationInput,
   RejectApplicationInput,
   ScheduleInterviewRoundInput,
-  UpdateInterviewResultInput
+  UpdateInterviewResultInput,
+  ExtendOfferInput,
+  AcceptOfferInput,
+  DeclineOfferInput
 } from '../schemas/application.schema';
 import { wrapSuccess } from '../../utils/response';
 import { HttpStatus } from '../../utils/statusCodes';
@@ -40,7 +51,13 @@ export class ApplicationController {
     @inject(TYPES.RejectApplicationUseCase) private rejectApplicationUseCase: IRejectApplicationUseCase,
     @inject(TYPES.ScheduleInterviewRoundUseCase) private scheduleInterviewRoundUseCase: IScheduleInterviewRoundUseCase,
     @inject(TYPES.UpdateInterviewResultUseCase) private updateInterviewResultUseCase: IUpdateInterviewResultUseCase,
-    @inject(TYPES.GetInterviewsForInterviewerUseCase) private getInterviewsForInterviewerUseCase: IGetInterviewsForInterviewerUseCase
+    @inject(TYPES.GetInterviewsForInterviewerUseCase) private getInterviewsForInterviewerUseCase: IGetInterviewsForInterviewerUseCase,
+    @inject(TYPES.GetOrCreateVideoCallUseCase) private getOrCreateVideoCallUseCase: IGetOrCreateVideoCallUseCase,
+    @inject(TYPES.StartVideoCallUseCase) private startVideoCallUseCase: IStartVideoCallUseCase,
+    @inject(TYPES.EndVideoCallUseCase) private endVideoCallUseCase: IEndVideoCallUseCase,
+    @inject(TYPES.ExtendOfferUseCase) private extendOfferUseCase: IExtendOfferUseCase,
+    @inject(TYPES.AcceptOfferUseCase) private acceptOfferUseCase: IAcceptOfferUseCase,
+    @inject(TYPES.DeclineOfferUseCase) private declineOfferUseCase: IDeclineOfferUseCase
   ) {}
 
   // Developer endpoint: Apply to a job
@@ -80,15 +97,25 @@ export class ApplicationController {
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
-  // Company endpoint: Get application details
+  // Company/HR/Interviewer endpoint: Get application details
   getApplicationDetails = async (
     request: FastifyRequest<{ Params: { id: string } }>,
     reply: FastifyReply
   ): Promise<void> => {
-    const companyContext = this.getCompanyContext(request);
-    const companyId = companyContext.companyUserId;
     const applicationId = request.params.id;
-    const result = await this.getApplicationDetailsUseCase.execute(applicationId, companyId);
+    const userRole = request.user?.role;
+    
+    let companyId: string | undefined;
+    let interviewerId: string | undefined;
+    
+    if (userRole === 'company' || userRole === 'hr') {
+      const companyContext = this.getCompanyContext(request);
+      companyId = companyContext.companyUserId;
+    } else if (userRole === 'interviewer') {
+      interviewerId = request.user?.id as string;
+    }
+    
+    const result = await this.getApplicationDetailsUseCase.execute(applicationId, companyId, interviewerId);
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
@@ -212,6 +239,107 @@ export class ApplicationController {
   ): Promise<void> => {
     const interviewerId = request.user?.id as string;
     const result = await this.getInterviewsForInterviewerUseCase.execute(interviewerId);
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
+  };
+
+  // Developer/Interviewer/HR/Company endpoint: Get or create video call for an interview round
+  getOrCreateVideoCall = async (
+    request: FastifyRequest<{ Params: { id: string; roundName: string } }>,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const userId = request.user?.id as string;
+    const applicationId = request.params.id;
+    const { roundName } = request.params;
+
+    const result = await this.getOrCreateVideoCallUseCase.execute({
+      applicationId,
+      roundName,
+      userId,
+    });
+
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
+  };
+
+  // Interviewer/HR/Company endpoint: Mark video call as started
+  startVideoCall = async (
+    request: FastifyRequest<{ Params: { id: string; roundName: string } }>,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const userId = request.user?.id as string;
+    const applicationId = request.params.id;
+    const { roundName } = request.params;
+
+    const result = await this.startVideoCallUseCase.execute({
+      applicationId,
+      roundName,
+      userId,
+    });
+
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
+  };
+
+  // Interviewer/HR/Company endpoint: Mark video call as ended
+  endVideoCall = async (
+    request: FastifyRequest<{ Params: { id: string; roundName: string } }>,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const userId = request.user?.id as string;
+    const applicationId = request.params.id;
+    const { roundName } = request.params;
+
+    const result = await this.endVideoCallUseCase.execute({
+      applicationId,
+      roundName,
+      userId,
+    });
+
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
+  };
+
+  // Company endpoint: Extend offer
+  extendOffer = async (
+    request: FastifyRequest<{ Params: { id: string }; Body?: ExtendOfferInput }>,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const companyContext = this.getCompanyContext(request);
+    const companyId = companyContext.companyUserId;
+    const applicationId = request.params.id;
+    const note = request.body?.note?.trim() || undefined;
+    const result = await this.extendOfferUseCase.execute({
+      applicationId,
+      companyId,
+      note,
+    });
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
+  };
+
+  // Developer endpoint: Accept offer
+  acceptOffer = async (
+    request: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const developerId = request.user?.id as string;
+    const applicationId = request.params.id;
+    const result = await this.acceptOfferUseCase.execute({
+      applicationId,
+      developerId,
+    });
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
+  };
+
+  // Developer endpoint: Decline offer
+  declineOffer = async (
+    request: FastifyRequest<{ Params: { id: string }; Body?: DeclineOfferInput }>,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const developerId = request.user?.id as string;
+    const applicationId = request.params.id;
+    const note = request.body?.note?.trim() || undefined;
+    const result = await this.declineOfferUseCase.execute({
+      applicationId,
+      developerId,
+      note,
+    });
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 

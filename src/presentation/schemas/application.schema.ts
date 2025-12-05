@@ -16,6 +16,7 @@ export const ListApplicationsForCompanyQuerySchema = Type.Object({
     Type.Literal('applied'),
     Type.Literal('shortlisted'),
     Type.Literal('interviewing'),
+    Type.Literal('interview_completed'),
     Type.Literal('rejected'),
     Type.Literal('offer_extended'),
     Type.Literal('offer_accepted'),
@@ -43,6 +44,7 @@ export const ListApplicationsForDeveloperQuerySchema = Type.Object({
     Type.Literal('applied'),
     Type.Literal('shortlisted'),
     Type.Literal('interviewing'),
+    Type.Literal('interview_completed'),
     Type.Literal('rejected'),
     Type.Literal('offer_extended'),
     Type.Literal('offer_accepted'),
@@ -92,7 +94,7 @@ export type RejectApplicationInput = Static<typeof RejectApplicationSchema>;
 // Schedule Interview Round Schema
 export const ScheduleInterviewRoundSchema = Type.Object({
   roundName: Type.String({ minLength: 1 }),
-  interviewerIds: Type.Array(Type.String({ minLength: 1 }), { minItems: 1 }),
+  interviewerId: Type.String({ minLength: 1 }),
   scheduledAt: Type.String({ format: 'date-time' })
 });
 
@@ -110,4 +112,31 @@ export const UpdateInterviewResultSchema = Type.Object({
 });
 
 export type UpdateInterviewResultInput = Static<typeof UpdateInterviewResultSchema>;
+
+// Application + Interview Round params (for video call endpoints)
+export const ApplicationInterviewRoundParamsSchema = Type.Object({
+  id: Type.String({ minLength: 1 }),
+  roundName: Type.String({ minLength: 1 }),
+});
+
+export type ApplicationInterviewRoundParamsInput = Static<typeof ApplicationInterviewRoundParamsSchema>;
+
+// Extend Offer Schema (Company)
+export const ExtendOfferSchema = Type.Object({
+  note: Type.Optional(Type.String({ maxLength: 500 }))
+});
+
+export type ExtendOfferInput = Static<typeof ExtendOfferSchema>;
+
+// Accept Offer Schema (Developer) - no body needed
+export const AcceptOfferSchema = Type.Object({});
+
+export type AcceptOfferInput = Static<typeof AcceptOfferSchema>;
+
+// Decline Offer Schema (Developer)
+export const DeclineOfferSchema = Type.Object({
+  note: Type.Optional(Type.String({ maxLength: 500 }))
+});
+
+export type DeclineOfferInput = Static<typeof DeclineOfferSchema>;
 

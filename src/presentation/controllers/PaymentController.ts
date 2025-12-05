@@ -1,7 +1,11 @@
 import { injectable, inject } from 'inversify';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { TYPES } from '../../di/types';
-import { CreateCheckoutSessionUseCase, HandleStripeWebhookUseCase, CompletePaymentUseCase } from '../../application/use-cases/payment';
+import {
+  ICreateCheckoutSessionUseCase,
+  IHandleStripeWebhookUseCase,
+  ICompletePaymentUseCase,
+} from '../../application/use-cases/payment/interfaces';
 import { ValidationError } from '../../domain/errors';
 import { CreateCheckoutInput } from '../schemas/payment.schema';
 import { wrapSuccess } from '../../utils/response';
@@ -10,10 +14,10 @@ import { HttpStatus } from '../../utils/statusCodes';
 @injectable()
 export class PaymentController {
   constructor(
-    @inject(TYPES.CreateCheckoutSessionUseCase) private createCheckoutSessionUseCase: CreateCheckoutSessionUseCase,
-    @inject(TYPES.HandleStripeWebhookUseCase) private handleStripeWebhookUseCase: HandleStripeWebhookUseCase,
-    @inject(TYPES.CompletePaymentUseCase) private completePaymentUseCase: CompletePaymentUseCase
-  ) {}
+    @inject(TYPES.CreateCheckoutSessionUseCase) private createCheckoutSessionUseCase: ICreateCheckoutSessionUseCase,
+    @inject(TYPES.HandleStripeWebhookUseCase) private handleStripeWebhookUseCase: IHandleStripeWebhookUseCase,
+    @inject(TYPES.CompletePaymentUseCase) private completePaymentUseCase: ICompletePaymentUseCase
+  ) { }
 
   checkout = async (
     request: FastifyRequest<{ Body: CreateCheckoutInput }>,

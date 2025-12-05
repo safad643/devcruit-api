@@ -21,16 +21,29 @@ export class GetApplicationDetailsUseCase implements IGetApplicationDetailsUseCa
     @inject(TYPES.UserRepository) private userRepository: IUserRepository
   ) {}
 
-  async execute(applicationId: string, companyId: string): Promise<GetApplicationDetailsOutput> {
+  async execute(applicationId: string, companyId?: string, interviewerId?: string): Promise<GetApplicationDetailsOutput> {
     // Get application
     const application = await this.applicationRepository.findById(applicationId);
     if (!application) {
       throw new NotFoundError('Application not found');
     }
 
-    // Verify the application belongs to the company
-    if (application.companyId !== companyId) {
-      throw new ForbiddenError('You do not have access to this application');
+    // Verify access: either companyId matches OR interviewer is assigned to at least one round
+    if (companyId) {
+      // Company/HR access: verify the application belongs to the company
+      if (application.companyId !== companyId) {
+        throw new ForbiddenError('You do not have access to this application');
+      }
+    } else if (interviewerId) {
+      // Interviewer access: verify they're assigned to at least one interview round
+      const isAssigned = application.interviewRounds.some(round => 
+        round.interviewerIds.includes(interviewerId)
+      );
+      if (!isAssigned) {
+        throw new ForbiddenError('You are not assigned to any interview round for this application');
+      }
+    } else {
+      throw new ForbiddenError('Access denied');
     }
 
     // Get job information

@@ -3,7 +3,7 @@ import { TYPES } from '../../../di/types';
 import { IConversationRepository } from '../../../domain/repositories/IConversationRepository';
 import { IMessageRepository } from '../../../domain/repositories/IMessageRepository';
 import { IUserRepository } from '../../../domain/repositories/IUserRepository';
-import { IGetConversationsUseCase } from './interfaces/IGetConversationsUseCase';
+import { IGetConversationsUseCase } from './interfaces';
 import { GetConversationsInput, GetConversationsOutput, ConversationListItem } from '../../dtos/chat.dto';
 
 @injectable()

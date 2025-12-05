@@ -71,7 +71,8 @@ export async function profileRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get(
     '/company/team',
     {
-      preHandler: [authorize('company'), checkCompanyPaid],
+      // Company owners and HR can view the team list
+      preHandler: [authorize('company', 'hr'), checkCompanyPaid],
     },
     profileController.listCompanyTeam
   );

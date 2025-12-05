@@ -1,17 +1,17 @@
 import { injectable, inject } from 'inversify';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { TYPES } from '../../di/types';
-import { 
-  CreateDeveloperProfileUseCase,
-  GetDeveloperProfileUseCase,
-  CreateCompanyProfileUseCase,
-  GetCompanyProfileUseCase,
-  UpdateDeveloperProfileUseCase,
-  UpdateCompanyProfileUseCase,
-  ResubmitDocumentsUseCase,
-  InviteCompanyTeamMemberUseCase,
-  ListCompanyTeamMembersUseCase
-} from '../../application/use-cases/profile';
+import {
+  ICreateDeveloperProfileUseCase,
+  IGetDeveloperProfileUseCase,
+  ICreateCompanyProfileUseCase,
+  IGetCompanyProfileUseCase,
+  IUpdateDeveloperProfileUseCase,
+  IUpdateCompanyProfileUseCase,
+  IResubmitDocumentsUseCase,
+  IInviteCompanyTeamMemberUseCase,
+  IListCompanyTeamMembersUseCase,
+} from '../../application/use-cases/profile/interfaces';
 import {
   CreateDeveloperProfileInput,
   CreateCompanyProfileInput,
@@ -27,25 +27,25 @@ import { ForbiddenError } from '../../domain/errors';
 @injectable()
 export class ProfileController {
   constructor(
-    @inject(TYPES.CreateDeveloperProfileUseCase) private createProfileUseCase: CreateDeveloperProfileUseCase,
-    @inject(TYPES.GetDeveloperProfileUseCase) private getDeveloperProfileUseCase: GetDeveloperProfileUseCase,
-    @inject(TYPES.GetCompanyProfileUseCase) private getCompanyProfileUseCase: GetCompanyProfileUseCase,
-    @inject(TYPES.CreateCompanyProfileUseCase) private createCompanyProfileUseCase: CreateCompanyProfileUseCase,
-    @inject(TYPES.UpdateDeveloperProfileUseCase) private updateDeveloperProfileUseCase: UpdateDeveloperProfileUseCase,
-    @inject(TYPES.UpdateCompanyProfileUseCase) private updateCompanyProfileUseCase: UpdateCompanyProfileUseCase,
-    @inject(TYPES.ResubmitDocumentsUseCase) private resubmitDocumentsUseCase: ResubmitDocumentsUseCase,
-    @inject(TYPES.InviteCompanyTeamMemberUseCase) private inviteCompanyTeamMemberUseCase: InviteCompanyTeamMemberUseCase,
-    @inject(TYPES.ListCompanyTeamMembersUseCase) private listCompanyTeamMembersUseCase: ListCompanyTeamMembersUseCase
-  ) {}
+    @inject(TYPES.CreateDeveloperProfileUseCase) private createProfileUseCase: ICreateDeveloperProfileUseCase,
+    @inject(TYPES.GetDeveloperProfileUseCase) private getDeveloperProfileUseCase: IGetDeveloperProfileUseCase,
+    @inject(TYPES.GetCompanyProfileUseCase) private getCompanyProfileUseCase: IGetCompanyProfileUseCase,
+    @inject(TYPES.CreateCompanyProfileUseCase) private createCompanyProfileUseCase: ICreateCompanyProfileUseCase,
+    @inject(TYPES.UpdateDeveloperProfileUseCase) private updateDeveloperProfileUseCase: IUpdateDeveloperProfileUseCase,
+    @inject(TYPES.UpdateCompanyProfileUseCase) private updateCompanyProfileUseCase: IUpdateCompanyProfileUseCase,
+    @inject(TYPES.ResubmitDocumentsUseCase) private resubmitDocumentsUseCase: IResubmitDocumentsUseCase,
+    @inject(TYPES.InviteCompanyTeamMemberUseCase) private inviteCompanyTeamMemberUseCase: IInviteCompanyTeamMemberUseCase,
+    @inject(TYPES.ListCompanyTeamMembersUseCase) private listCompanyTeamMembersUseCase: IListCompanyTeamMembersUseCase
+  ) { }
 
   createProfile = async (
-    request: FastifyRequest<{ Body: CreateDeveloperProfileInput }>, 
+    request: FastifyRequest<{ Body: CreateDeveloperProfileInput }>,
     reply: FastifyReply
   ): Promise<void> => {
 
     const userId = request.user?.id as string; //wont reach here is req.user is not avaible so its fine to assert
-    const result = await this.createProfileUseCase.execute({ 
-      ...request.body, 
+    const result = await this.createProfileUseCase.execute({
+      ...request.body,
       userId,
       workHistory: request.body.workHistory ?? [],
       education: request.body.education ?? [],
@@ -104,7 +104,7 @@ export class ProfileController {
     reply: FastifyReply
   ): Promise<void> => {
     const userId = request.user?.id as string;
-    const result = await this.resubmitDocumentsUseCase.execute({ 
+    const result = await this.resubmitDocumentsUseCase.execute({
       userId,
       documents: request.body.documents
     });

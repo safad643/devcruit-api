@@ -1,7 +1,7 @@
 import { injectable, inject } from 'inversify';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { TYPES } from '../../di/types';
-import { DeleteFileUseCase, GenerateSignatureUseCase } from '../../application/use-cases/file';
+import { IDeleteFileUseCase, IGenerateSignatureUseCase } from '../../application/use-cases/file/interfaces';
 import { DeleteFileInput, GenerateSignatureInput } from '../schemas/file.schema';
 import { wrapSuccess } from '../../utils/response';
 import { HttpStatus } from '../../utils/statusCodes';
@@ -9,8 +9,8 @@ import { HttpStatus } from '../../utils/statusCodes';
 @injectable()
 export class FileController {
   constructor(
-    @inject(TYPES.GenerateSignatureUseCase) private generateSignatureUseCase: GenerateSignatureUseCase,
-    @inject(TYPES.DeleteFileUseCase) private deleteFileUseCase: DeleteFileUseCase
+    @inject(TYPES.GenerateSignatureUseCase) private generateSignatureUseCase: IGenerateSignatureUseCase,
+    @inject(TYPES.DeleteFileUseCase) private deleteFileUseCase: IDeleteFileUseCase
   ) { }
 
   generateSignature = async (

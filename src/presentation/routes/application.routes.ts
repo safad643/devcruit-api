@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { container } from '../../di/container';
 import { TYPES } from '../../di/types';
 import { ApplicationController } from '../controllers/ApplicationController';
@@ -15,7 +15,11 @@ import {
   UpdateApplicationStatusSchema,
   RejectApplicationSchema,
   ScheduleInterviewRoundSchema,
-  UpdateInterviewResultSchema
+  UpdateInterviewResultSchema,
+  ApplicationInterviewRoundParamsSchema,
+  ExtendOfferSchema,
+  AcceptOfferSchema,
+  DeclineOfferSchema
 } from '../schemas/application.schema';
 
 export async function applicationRoutes(fastify: FastifyInstance): Promise<void> {
@@ -59,10 +63,17 @@ export async function applicationRoutes(fastify: FastifyInstance): Promise<void>
     applicationController.listApplicationsForCompany
   );
 
+  // Conditional middleware: only checkCompanyPaid for company/hr, not for interviewers
+  const checkCompanyPaidIfNeeded = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+    if (request.user?.role === 'company' || request.user?.role === 'hr') {
+      await checkCompanyPaid(request, reply);
+    }
+  };
+
   fastify.get(
     '/company/applications/:id',
     {
-      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
+      preHandler: [authenticate, authorize('company', 'hr', 'interviewer'), checkCompanyPaidIfNeeded],
       schema: { params: ApplicationIdParamsSchema }
     },
     applicationController.getApplicationDetails
@@ -133,6 +144,79 @@ export async function applicationRoutes(fastify: FastifyInstance): Promise<void>
       }
     },
     applicationController.updateInterviewResult
+  );
+
+  // Video call routes (shared between developer/interviewer/hr/company as appropriate)
+  fastify.post(
+    '/applications/:id/interview-rounds/:roundName/video-call',
+    {
+      preHandler: [authenticate, authorize('developer', 'interviewer', 'hr', 'company')],
+      schema: {
+        params: ApplicationInterviewRoundParamsSchema,
+      },
+    },
+    applicationController.getOrCreateVideoCall,
+  );
+
+  fastify.post(
+    '/applications/:id/interview-rounds/:roundName/video-call/start',
+    {
+      preHandler: [authenticate, authorize('interviewer', 'hr', 'company')],
+      schema: {
+        params: ApplicationInterviewRoundParamsSchema,
+      },
+    },
+    applicationController.startVideoCall,
+  );
+
+  fastify.post(
+    '/applications/:id/interview-rounds/:roundName/video-call/end',
+    {
+      preHandler: [authenticate, authorize('interviewer', 'hr', 'company')],
+      schema: {
+        params: ApplicationInterviewRoundParamsSchema,
+      },
+    },
+    applicationController.endVideoCall,
+  );
+
+  // Company route: Extend offer
+  fastify.patch(
+    '/company/applications/:id/extend-offer',
+    {
+      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
+      schema: { 
+        params: ApplicationIdParamsSchema,
+        body: ExtendOfferSchema
+      }
+    },
+    applicationController.extendOffer
+  );
+
+  // Developer route: Accept offer
+  fastify.patch(
+    '/applications/:id/accept-offer',
+    {
+      preHandler: [authenticate, authorize('developer')],
+      schema: { 
+        params: ApplicationIdParamsSchema,
+        body: AcceptOfferSchema
+      }
+    },
+    applicationController.acceptOffer
+  );
+
+  // Developer route: Decline offer
+  fastify.patch(
+    '/applications/:id/decline-offer',
+    {
+      preHandler: [authenticate, authorize('developer')],
+      schema: { 
+        params: ApplicationIdParamsSchema,
+        body: DeclineOfferSchema
+      }
+    },
+    applicationController.declineOffer
   );
 }
 

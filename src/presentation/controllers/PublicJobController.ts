@@ -1,8 +1,7 @@
 import { injectable, inject } from 'inversify';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { TYPES } from '../../di/types';
-import { PublicListJobsUseCase } from '../../application/use-cases/job/PublicListJobsUseCase';
-import { PublicGetJobUseCase } from '../../application/use-cases/job/PublicGetJobUseCase';
+import { IPublicListJobsUseCase, IPublicGetJobUseCase } from '../../application/use-cases/job/interfaces';
 import { PublicListJobsQueryInput } from '../schemas/public.job.schema';
 import { wrapSuccess } from '../../utils/response';
 import { HttpStatus } from '../../utils/statusCodes';
@@ -10,9 +9,9 @@ import { HttpStatus } from '../../utils/statusCodes';
 @injectable()
 export class PublicJobController {
   constructor(
-    @inject(TYPES.PublicListJobsUseCase) private listUseCase: PublicListJobsUseCase,
-    @inject(TYPES.PublicGetJobUseCase) private getUseCase: PublicGetJobUseCase
-  ) {}
+    @inject(TYPES.PublicListJobsUseCase) private listUseCase: IPublicListJobsUseCase,
+    @inject(TYPES.PublicGetJobUseCase) private getUseCase: IPublicGetJobUseCase
+  ) { }
 
   list = async (
     request: FastifyRequest<{ Querystring: PublicListJobsQueryInput }>,

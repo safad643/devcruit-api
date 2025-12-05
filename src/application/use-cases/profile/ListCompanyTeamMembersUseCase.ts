@@ -1,7 +1,7 @@
 import { inject, injectable } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { CompanyTeamMember, ICompanyTeamRepository } from '../../../domain/repositories';
-import { CompanyTeamMemberDTO, IListCompanyTeamMembersUseCase } from './interfaces/IListCompanyTeamMembersUseCase';
+import { CompanyTeamMemberDTO, IListCompanyTeamMembersUseCase } from './interfaces';
 
 @injectable()
 export class ListCompanyTeamMembersUseCase implements IListCompanyTeamMembersUseCase {

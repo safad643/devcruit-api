@@ -2,6 +2,7 @@ export type ApplicationStatus =
   | 'applied' 
   | 'shortlisted' 
   | 'interviewing' 
+  | 'interview_completed'
   | 'rejected' 
   | 'offer_extended' 
   | 'offer_accepted' 
@@ -18,6 +19,8 @@ export enum InterviewRoundResult {
   ON_HOLD = 'on-hold'
 }
 
+export type VideoCallStatus = 'not-started' | 'in-progress' | 'ended';
+
 export interface InterviewRound {
   roundName: string;
   status: InterviewRoundStatus;
@@ -26,6 +29,8 @@ export interface InterviewRound {
   result?: InterviewRoundResult;
   feedback?: string;
   interviewerIds: string[];
+  videoCallId?: string;
+  videoCallStatus?: VideoCallStatus;
 }
 
 export interface StatusNotes {
