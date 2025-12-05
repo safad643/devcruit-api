@@ -17,6 +17,7 @@ import { DeclineOfferUseCase } from '../../application/use-cases/application/Dec
 import { GetOrCreateVideoCallUseCase } from '../../application/use-cases/video-call/GetOrCreateVideoCallUseCase';
 import { StartVideoCallUseCase } from '../../application/use-cases/video-call/StartVideoCallUseCase';
 import { EndVideoCallUseCase } from '../../application/use-cases/video-call/EndVideoCallUseCase';
+import { VideoCallHelper } from '../../application/use-cases/video-call/VideoCallHelper';
 import { ApplicationController } from '../../presentation/controllers/ApplicationController';
 import {
   ICreateApplicationUseCase,
@@ -55,9 +56,9 @@ export const applicationModule = new ContainerModule((bind) => {
   bind<IExtendOfferUseCase>(TYPES.ExtendOfferUseCase).to(ExtendOfferUseCase);
   bind<IAcceptOfferUseCase>(TYPES.AcceptOfferUseCase).to(AcceptOfferUseCase);
   bind<IDeclineOfferUseCase>(TYPES.DeclineOfferUseCase).to(DeclineOfferUseCase);
+  bind<VideoCallHelper>(TYPES.VideoCallHelper).to(VideoCallHelper);
   bind<IGetOrCreateVideoCallUseCase>(TYPES.GetOrCreateVideoCallUseCase).to(GetOrCreateVideoCallUseCase);
   bind<IStartVideoCallUseCase>(TYPES.StartVideoCallUseCase).to(StartVideoCallUseCase);
   bind<IEndVideoCallUseCase>(TYPES.EndVideoCallUseCase).to(EndVideoCallUseCase);
   bind<ApplicationController>(TYPES.ApplicationController).to(ApplicationController);
 });
-

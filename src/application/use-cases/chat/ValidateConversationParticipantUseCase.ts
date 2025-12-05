@@ -2,7 +2,7 @@ import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { IConversationRepository } from '../../../domain/repositories/IConversationRepository';
 import { ICompanyTeamRepository, ICompanyProfileRepository } from '../../../domain/repositories';
-import { IValidateConversationParticipantUseCase } from './interfaces/IValidateConversationParticipantUseCase';
+import { IValidateConversationParticipantUseCase } from './interfaces';
 import { NotFoundError } from '../../../domain/errors';
 
 @injectable()

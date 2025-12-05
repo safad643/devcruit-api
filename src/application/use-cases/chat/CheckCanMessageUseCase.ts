@@ -4,7 +4,7 @@ import { IConversationRepository } from '../../../domain/repositories/IConversat
 import { IApplicationRepository } from '../../../domain/repositories/IApplicationRepository';
 import { ICompanyTeamRepository } from '../../../domain/repositories/ICompanyTeamRepository';
 import { IDeveloperProfileRepository } from '../../../domain/repositories/IDeveloperProfileRepository';
-import { ICheckCanMessageUseCase } from './interfaces/ICheckCanMessageUseCase';
+import { ICheckCanMessageUseCase } from './interfaces';
 import { CheckCanMessageInput, CheckCanMessageOutput } from '../../dtos/chat.dto';
 
 @injectable()

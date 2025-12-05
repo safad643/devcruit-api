@@ -1,7 +1,7 @@
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { IConversationRepository } from '../../../domain/repositories/IConversationRepository';
-import { IGetConversationUseCase } from './interfaces/IGetConversationUseCase';
+import { IGetConversationUseCase } from './interfaces';
 import { GetConversationInput, GetConversationOutput } from '../../dtos/chat.dto';
 import { Conversation } from '../../../domain/entities/Conversation';
 

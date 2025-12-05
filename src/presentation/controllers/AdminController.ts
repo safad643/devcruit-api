@@ -1,14 +1,14 @@
 import { injectable, inject } from 'inversify';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { TYPES } from '../../di/types';
-import { 
-  BlockUserUseCase,
-  UnblockUserUseCase,
-  ApproveCompanyUseCase,
-  RejectCompanyUseCase,
-  ListCompaniesUseCase,
-  ListDevelopersUseCase
-} from '../../application/use-cases/admin';
+import {
+  IBlockUserUseCase,
+  IUnblockUserUseCase,
+  IApproveCompanyUseCase,
+  IRejectCompanyUseCase,
+  IListCompaniesUseCase,
+  IListDevelopersUseCase,
+} from '../../application/use-cases/admin/interfaces';
 import {
   BlockUserInput,
   UnblockUserInput,
@@ -23,13 +23,13 @@ import { HttpStatus } from '../../utils/statusCodes';
 @injectable()
 export class AdminController {
   constructor(
-    @inject(TYPES.BlockUserUseCase) private blockUserUseCase: BlockUserUseCase,
-    @inject(TYPES.UnblockUserUseCase) private unblockUserUseCase: UnblockUserUseCase,
-    @inject(TYPES.ApproveCompanyUseCase) private approveCompanyUseCase: ApproveCompanyUseCase,
-    @inject(TYPES.RejectCompanyUseCase) private rejectCompanyUseCase: RejectCompanyUseCase,
-    @inject(TYPES.ListCompaniesUseCase) private listCompaniesUseCase: ListCompaniesUseCase,
-    @inject(TYPES.ListDevelopersUseCase) private listDevelopersUseCase: ListDevelopersUseCase
-  ) {}
+    @inject(TYPES.BlockUserUseCase) private blockUserUseCase: IBlockUserUseCase,
+    @inject(TYPES.UnblockUserUseCase) private unblockUserUseCase: IUnblockUserUseCase,
+    @inject(TYPES.ApproveCompanyUseCase) private approveCompanyUseCase: IApproveCompanyUseCase,
+    @inject(TYPES.RejectCompanyUseCase) private rejectCompanyUseCase: IRejectCompanyUseCase,
+    @inject(TYPES.ListCompaniesUseCase) private listCompaniesUseCase: IListCompaniesUseCase,
+    @inject(TYPES.ListDevelopersUseCase) private listDevelopersUseCase: IListDevelopersUseCase
+  ) { }
 
   blockUser = async (request: FastifyRequest<{ Body: BlockUserInput }>, reply: FastifyReply): Promise<void> => {
     const result = await this.blockUserUseCase.execute(request.body);

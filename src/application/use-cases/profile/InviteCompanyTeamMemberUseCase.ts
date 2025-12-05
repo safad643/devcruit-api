@@ -6,7 +6,7 @@ import {
   ICompanyTeamRepository,
   IUserRepository
 } from '../../../domain/repositories';
-import { CompanyTeamMemberDTO, IInviteCompanyTeamMemberUseCase, InviteCompanyTeamMemberInput } from './interfaces/IInviteCompanyTeamMemberUseCase';
+import { CompanyTeamMemberDTO, IInviteCompanyTeamMemberUseCase, InviteCompanyTeamMemberInput } from './interfaces';
 import { ForbiddenError, NotFoundError, ValidationError, ConflictError } from '../../../domain/errors';
 import { User } from '../../../domain/entities/User';
 import { HRProfile } from '../../../domain/entities/HRProfile';
