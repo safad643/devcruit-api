@@ -1,9 +1,17 @@
-import nodemailer, { Transporter } from 'nodemailer';
+import * as nodemailer from 'nodemailer';
+import { Transporter } from 'nodemailer';
 import { IEmailService } from '../../application/services';
 import { config } from '../../config';
 import { InternalError } from '../../domain/errors';
 import { injectable } from 'inversify';
 import { OTPType } from '../../domain/types';
+import { EmailTemplate } from './EmailTemplate';
+import { OTPEmailContentBuilder } from './templates/OTPEmailContentBuilder';
+import { AccountStatusEmailContentBuilder } from './templates/AccountStatusEmailContentBuilder';
+import { ApplicationStatusEmailContentBuilder } from './templates/ApplicationStatusEmailContentBuilder';
+import { TeamInviteEmailContentBuilder } from './templates/TeamInviteEmailContentBuilder';
+import { InterviewScheduledEmailContentBuilder } from './templates/InterviewScheduledEmailContentBuilder';
+import { IEmailContentBuilder } from './templates/IEmailContentBuilder';
 
 @injectable()
 export class EmailService implements IEmailService {
@@ -21,120 +29,16 @@ export class EmailService implements IEmailService {
     });
   }
 
-  private getEmailTemplate(
-    title: string,
-    heading: string,
-    message: string,
-    otpCode?: string
-  ): string {
-    return `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${title}</title>
-        <style>
-          @media screen and (max-width: 600px) {
-            .content {
-              width: 100% !important;
-              padding: 10px !important;
-            }
-            .header, .body, .footer {
-              padding: 20px !important;
-            }
-            .otp-code {
-              font-size: 28px !important;
-            }
-          }
-        </style>
-      </head>
-      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4;">
-        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f4f4f4; padding: 20px 0;">
-          <tr>
-            <td align="center">
-              <table class="content" width="600" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <!-- Header -->
-                <tr>
-                  <td class="header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
-                    <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">Devcruit</h1>
-                  </td>
-                </tr>
-                
-                <!-- Body -->
-                <tr>
-                  <td class="body" style="padding: 40px; color: #333333;">
-                    <h2 style="margin: 0 0 20px 0; color: #333333; font-size: 24px; font-weight: 600;">${heading}</h2>
-                    <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6; color: #666666;">
-                      ${message}
-                    </p>
-                    
-                    ${
-                      otpCode
-                        ? `
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 30px 0;">
-                      <tr>
-                        <td align="center" style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; border: 2px dashed #667eea;">
-                          <p style="margin: 0 0 10px 0; font-size: 14px; color: #666666; text-transform: uppercase; letter-spacing: 1px;">Your verification code</p>
-                          <p class="otp-code" style="margin: 0; font-size: 36px; font-weight: 700; color: #667eea; letter-spacing: 8px; font-family: 'Courier New', monospace;">
-                            ${otpCode}
-                          </p>
-                        </td>
-                      </tr>
-                    </table>
-                    
-                    <p style="margin: 20px 0 0 0; font-size: 14px; color: #999999; text-align: center;">
-                      ⏱️ This code expires in <strong>1 minute</strong>
-                    </p>
-                    `
-                        : ''
-                    }
-                  </td>
-                </tr>
-                
-                <!-- Footer -->
-                <tr>
-                  <td class="footer" style="background-color: #f8f9fa; padding: 30px; text-align: center; border-radius: 0 0 8px 8px; border-top: 1px solid #e9ecef;">
-                    <p style="margin: 0 0 10px 0; font-size: 14px; color: #666666;">
-                      This is an automated message, please do not reply.
-                    </p>
-                    <p style="margin: 0; font-size: 12px; color: #999999;">
-                      © ${new Date().getFullYear()} Devcruit. All rights reserved.
-                    </p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-      </html>
-    `;
-  }
-
-  async sendOTP(email: string, otpCode: string, type: OTPType): Promise<void> {
+  private async sendEmail(to: string, contentBuilder: IEmailContentBuilder): Promise<void> {
     try {
-      const isRegistration = type === 'register';
-      
-      const subject = isRegistration 
-        ? '🔐 Verify Your Email - Devcruit' 
-        : '🔑 Password Reset Code - Devcruit';
-
-      const heading = isRegistration 
-        ? 'Welcome to Devcruit!' 
-        : 'Password Reset Request';
-
-      const message = isRegistration
-        ? 'Thank you for signing up! To complete your registration and secure your account, please verify your email address using the code below:'
-        : 'We received a request to reset your password. Use the verification code below to proceed with resetting your password:';
-
-      const html = this.getEmailTemplate(subject, heading, message, otpCode);
+      const { subject, heading, htmlContent, textContent } = contentBuilder.build();
+      const html = EmailTemplate.build(subject, heading, htmlContent);
 
       await this.transporter.sendMail({
         from: `"Devcruit" <${config.email.from}>`,
-        to: email,
+        to,
         subject,
-        text: `${message}\n\nYour verification code: ${otpCode}\n\nThis code will expire in 1 minute.`,
+        text: textContent,
         html,
       });
     } catch (error) {
@@ -142,57 +46,22 @@ export class EmailService implements IEmailService {
     }
   }
 
+  async sendOTP(email: string, otpCode: string, type: OTPType): Promise<void> {
+    await this.sendEmail(email, new OTPEmailContentBuilder(otpCode, type));
+  }
+
   async sendUserBlocked(email: string): Promise<void> {
     try {
-      const subject = '⚠️ Account Status Update - Devcruit';
-      const heading = 'Account Access Suspended';
-      const message = `
-        Your Devcruit account has been temporarily suspended by our administration team.
-        <br><br>
-        If you believe this action was taken in error or would like to discuss this matter, 
-        please reach out to our support team at <a href="mailto:support@devcruit.com" style="color: #667eea; text-decoration: none;">support@devcruit.com</a>.
-        <br><br>
-        We're here to help resolve any issues.
-      `;
-  
-      const html = this.getEmailTemplate(subject, heading, message);
-  
-      await this.transporter.sendMail({
-        from: `"Devcruit" <${config.email.from}>`,
-        to: email,
-        subject,
-        text: 'Your account has been blocked by the administrator. If you believe this is a mistake, please contact support at support@devcruit.com',
-        html,
-      });
+      await this.sendEmail(email, new AccountStatusEmailContentBuilder('blocked'));
     } catch (error) {
       console.error('Failed to send block email to', email, error);
       // Silently fail - don't throw
     }
   }
-  
+
   async sendUserUnblocked(email: string): Promise<void> {
     try {
-      const subject = '✅ Account Access Restored - Devcruit';
-      const heading = 'Your Account Has Been Reactivated';
-      const message = `
-        Good news! Your Devcruit account has been unblocked and you now have full access again.
-        <br><br>
-        You can log in and resume using all features immediately. If you experience any issues 
-        or have questions, please contact our support team at 
-        <a href="mailto:support@devcruit.com" style="color: #667eea; text-decoration: none;">support@devcruit.com</a>.
-        <br><br>
-        Thank you for your patience.
-      `;
-  
-      const html = this.getEmailTemplate(subject, heading, message);
-  
-      await this.transporter.sendMail({
-        from: `"Devcruit" <${config.email.from}>`,
-        to: email,
-        subject,
-        text: 'Your account has been unblocked. You can now log in and access all features. Contact support@devcruit.com if you need assistance.',
-        html,
-      });
+      await this.sendEmail(email, new AccountStatusEmailContentBuilder('unblocked'));
     } catch (error) {
       console.error('Failed to send unblock email to', email, error);
       // Silently fail - don't throw
@@ -201,35 +70,10 @@ export class EmailService implements IEmailService {
 
   async sendShortlistNotification(email: string, companyName: string, jobTitle: string): Promise<void> {
     try {
-      const subject = '🎉 Congratulations! You\'ve Been Shortlisted - Devcruit';
-      const heading = 'Application Shortlisted';
-      const message = `
-        Great news! Your application has been shortlisted for the following position:
-        <br><br>
-        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea; margin: 20px 0;">
-          <p style="margin: 0 0 10px 0; font-size: 16px; font-weight: 600; color: #333333;">
-            <strong>Company:</strong> ${companyName}
-          </p>
-          <p style="margin: 0; font-size: 16px; font-weight: 600; color: #333333;">
-            <strong>Position:</strong> ${jobTitle}
-          </p>
-        </div>
-        <br>
-        The company will be in touch with you soon regarding the next steps in the interview process. 
-        Please keep an eye on your email and application dashboard for updates.
-        <br><br>
-        We wish you the best of luck with your application!
-      `;
-  
-      const html = this.getEmailTemplate(subject, heading, message);
-  
-      await this.transporter.sendMail({
-        from: `"Devcruit" <${config.email.from}>`,
-        to: email,
-        subject,
-        text: `Congratulations! Your application has been shortlisted for the position "${jobTitle}" at ${companyName}. The company will be in touch with you soon regarding the next steps.`,
-        html,
-      });
+      await this.sendEmail(
+        email,
+        new ApplicationStatusEmailContentBuilder('shortlisted', { companyName, jobTitle })
+      );
     } catch (error) {
       console.error('Failed to send shortlist notification email to', email, error);
       // Silently fail - don't throw to avoid breaking the application flow
@@ -238,105 +82,28 @@ export class EmailService implements IEmailService {
 
   async sendRejectionNotification(email: string, companyName: string, jobTitle: string, rejectionNote?: string): Promise<void> {
     try {
-      const subject = 'Application Status Update - Devcruit';
-      const heading = 'Application Status Update';
-      const rejectionNoteSection = rejectionNote 
-        ? `
-        <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107; margin: 20px 0;">
-          <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #856404; text-transform: uppercase; letter-spacing: 0.5px;">
-            Feedback from ${companyName}:
-          </p>
-          <p style="margin: 0; font-size: 15px; color: #856404; line-height: 1.5;">
-            ${rejectionNote}
-          </p>
-        </div>
-        `
-        : '';
-      
-      const message = `
-        Thank you for your interest in the position at ${companyName}. After careful consideration, we regret to inform you that your application for the following position has not been selected to move forward:
-        <br><br>
-        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #dc3545; margin: 20px 0;">
-          <p style="margin: 0 0 10px 0; font-size: 16px; font-weight: 600; color: #333333;">
-            <strong>Company:</strong> ${companyName}
-          </p>
-          <p style="margin: 0; font-size: 16px; font-weight: 600; color: #333333;">
-            <strong>Position:</strong> ${jobTitle}
-          </p>
-        </div>
-        ${rejectionNoteSection}
-        <br>
-        We appreciate the time and effort you invested in your application. This decision does not reflect on your qualifications, and we encourage you to continue exploring other opportunities on our platform.
-        <br><br>
-        We wish you the best of luck in your job search!
-      `;
-  
-      const html = this.getEmailTemplate(subject, heading, message);
-  
-      const textNote = rejectionNote ? `\n\nFeedback from ${companyName}: ${rejectionNote}` : '';
-      const textMessage = `Thank you for your interest. After careful consideration, we regret to inform you that your application for the position "${jobTitle}" at ${companyName} has not been selected to move forward.${textNote}\n\nWe appreciate the time and effort you invested in your application and wish you the best of luck in your job search.`;
-  
-      await this.transporter.sendMail({
-        from: `"Devcruit" <${config.email.from}>`,
-        to: email,
-        subject,
-        text: textMessage,
-        html,
-      });
+      await this.sendEmail(
+        email,
+        new ApplicationStatusEmailContentBuilder('rejected', { companyName, jobTitle, rejectionNote })
+      );
     } catch (error) {
       console.error('Failed to send rejection notification email to', email, error);
       // Silently fail - don't throw to avoid breaking the application flow
     }
   }
-  
+
   async sendTeamInvite(email: string, temporaryPassword: string, companyName: string, role: 'hr' | 'interviewer'): Promise<void> {
     try {
-      const roleLabel = role === 'hr' ? 'HR Manager' : 'Interviewer';
-      const subject = `You're invited to join ${companyName} on Devcruit`;
-      const heading = `Welcome to ${companyName}`;
-      const message = `
-        You've been invited to join <strong>${companyName}</strong> as an <strong>${roleLabel}</strong> on Devcruit.
-        <br><br>
-        <strong>How to get started:</strong>
-        <ol style="margin: 15px 0; padding-left: 20px; color: #333;">
-          <li style="margin-bottom: 10px;">Go to the <a href="${config.webApp.url}/login" style="color: #667eea; text-decoration: none; font-weight: 600;">Devcruit Login page</a></li>
-          <li style="margin-bottom: 10px;">Enter your email: <strong>${email}</strong></li>
-          <li style="margin-bottom: 10px;">Enter the temporary password shown below</li>
-          <li style="margin-bottom: 10px;">After logging in, you'll be able to change your password for security</li>
-        </ol>
-      `;
-
-      const html = this.getEmailTemplate(subject, heading, `${message}
-        <div style="margin: 25px 0; padding: 25px; border-radius: 8px; background-color: #f4f6fb; border: 2px dashed #667eea; text-align: center;">
-          <p style="margin: 0 0 12px 0; font-size: 13px; color: #666; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Your Temporary Password</p>
-          <p style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: 3px; font-family: 'Courier New', monospace; color: #667eea;">${temporaryPassword}</p>
-          <p style="margin: 12px 0 0 0; font-size: 12px; color: #999;">Keep this password secure and change it after first login</p>
-        </div>
-        <div style="text-align: center; margin-top: 25px;">
-          <a href="${config.webApp.url}/login" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 14px;">Go to Login Page</a>
-        </div>
-        <p style="font-size: 13px; color: #666; margin-top: 20px; text-align: center;">
-          If you have any questions, please contact your company administrator.
-        </p>
-      `);
-
-      await this.transporter.sendMail({
-        from: `"Devcruit" <${config.email.from}>`,
-        to: email,
-        subject,
-        text: `You've been invited to join ${companyName} as an ${roleLabel} on Devcruit.
-
-HOW TO LOG IN:
-1. Go to: ${config.webApp.url}/login
-2. Enter your email: ${email}
-3. Enter your temporary password: ${temporaryPassword}
-4. After logging in, change your password for security
-
-Your temporary password: ${temporaryPassword}
-
-If you have any questions, please contact your company administrator.`,
-        html,
-      });
+      await this.sendEmail(
+        email,
+        new TeamInviteEmailContentBuilder({
+          email,
+          temporaryPassword,
+          companyName,
+          role,
+          loginUrl: `${config.webApp.url}/login`
+        })
+      );
     } catch (error) {
       console.error('Failed to send team invite email to', email, error);
     }
@@ -352,100 +119,17 @@ If you have any questions, please contact your company administrator.`,
     interviewerName: string
   ): Promise<void> {
     try {
-      // Format the scheduled date and time
-      const scheduledDate = new Date(scheduledAt);
-      const dateOptions: Intl.DateTimeFormatOptions = { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      };
-      const timeOptions: Intl.DateTimeFormatOptions = { 
-        hour: '2-digit', 
-        minute: '2-digit',
-        hour12: true
-      };
-      const formattedDate = scheduledDate.toLocaleDateString('en-US', dateOptions);
-      const formattedTime = scheduledDate.toLocaleTimeString('en-US', timeOptions);
-      const formattedDateTime = `${formattedDate} at ${formattedTime}`;
-
-      const subject = '📅 Interview Scheduled - Devcruit';
-      const heading = 'Interview Scheduled Successfully';
-      const message = `
-        Hi ${developerName},
-        <br><br>
-        Great news! An interview has been scheduled for your application. We're excited to move forward with your candidacy.
-        <br><br>
-        <div style="background-color: #f8f9fa; padding: 25px; border-radius: 8px; border-left: 4px solid #667eea; margin: 20px 0;">
-          <p style="margin: 0 0 12px 0; font-size: 16px; font-weight: 600; color: #333333;">
-            <strong>Company:</strong> ${companyName}
-          </p>
-          <p style="margin: 0 0 12px 0; font-size: 16px; font-weight: 600; color: #333333;">
-            <strong>Position:</strong> ${jobTitle}
-          </p>
-          <p style="margin: 0 0 12px 0; font-size: 16px; font-weight: 600; color: #333333;">
-            <strong>Interview Round:</strong> ${roundName}
-          </p>
-          <p style="margin: 0 0 12px 0; font-size: 16px; font-weight: 600; color: #333333;">
-            <strong>Interviewer:</strong> ${interviewerName}
-          </p>
-          <p style="margin: 0; font-size: 16px; font-weight: 600; color: #333333;">
-            <strong>Date & Time:</strong> ${formattedDateTime}
-          </p>
-        </div>
-        <br>
-        <div style="background-color: #fff3cd; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107; margin: 20px 0;">
-          <p style="margin: 0 0 10px 0; font-size: 15px; font-weight: 600; color: #856404;">
-            📌 Important Reminders:
-          </p>
-          <ul style="margin: 10px 0; padding-left: 20px; color: #856404; line-height: 1.8;">
-            <li>Please mark this date and time in your calendar</li>
-            <li>Ensure you have a stable internet connection if it's a virtual interview</li>
-            <li>Review the job description and prepare questions about the role</li>
-            <li>Be ready 5-10 minutes before the scheduled time</li>
-          </ul>
-        </div>
-        <br>
-        You can view all your interview details and manage your applications by logging into your Devcruit dashboard.
-        <br><br>
-        We wish you the best of luck with your interview! If you have any questions or need to reschedule, please contact ${companyName} directly.
-        <br><br>
-        Best regards,<br>
-        The Devcruit Team
-      `;
-
-      const html = this.getEmailTemplate(subject, heading, message);
-
-      const textMessage = `Hi ${developerName},
-
-Great news! An interview has been scheduled for your application.
-
-Company: ${companyName}
-Position: ${jobTitle}
-Interview Round: ${roundName}
-Interviewer: ${interviewerName}
-Date & Time: ${formattedDateTime}
-
-Important Reminders:
-- Please mark this date and time in your calendar
-- Ensure you have a stable internet connection if it's a virtual interview
-- Review the job description and prepare questions about the role
-- Be ready 5-10 minutes before the scheduled time
-
-You can view all your interview details and manage your applications by logging into your Devcruit dashboard.
-
-We wish you the best of luck with your interview! If you have any questions or need to reschedule, please contact ${companyName} directly.
-
-Best regards,
-The Devcruit Team`;
-
-      await this.transporter.sendMail({
-        from: `"Devcruit" <${config.email.from}>`,
-        to: email,
-        subject,
-        text: textMessage,
-        html,
-      });
+      await this.sendEmail(
+        email,
+        new InterviewScheduledEmailContentBuilder({
+          developerName,
+          companyName,
+          jobTitle,
+          roundName,
+          scheduledAt,
+          interviewerName
+        })
+      );
     } catch (error) {
       console.error('Failed to send interview scheduled notification email to', email, error);
       // Silently fail - don't throw to avoid breaking the interview scheduling flow
