@@ -18,7 +18,8 @@ import fastifyRawBody from 'fastify-raw-body';
 import { globalErrorHandler } from './presentation/middleware/errorHandler';
 import { config } from './config';
 import ajvErrors from 'ajv-errors';
-import { HttpStatus } from './utils/statusCodes';  
+import { HttpStatus } from './utils/statusCodes';
+import { TooManyRequestsError } from './domain/errors';
 const server = Fastify({
   logger: {
     level: config.nodeEnv === 'production' ? 'info' : 'debug',
@@ -65,14 +66,14 @@ export async function buildServer() {
   await server.register(rateLimit, {
     max: 100,
     timeWindow: '15 minutes',
-    errorResponseBuilder: (req, context) => ({
-      success: false,
-      error: {
-        code: 'TOO_MANY_REQUESTS',
-        message: 'Rate limit exceeded. Please try again later.'
-      }
-    }),
-    statusCode: HttpStatus.TOO_MANY_REQUESTS
+    errorResponseBuilder: () => {
+      throw new TooManyRequestsError('Rate limit exceeded. Please try again later.');
+    },
+    addHeaders: {
+      'x-ratelimit-limit': true,
+      'x-ratelimit-remaining': true,
+      'x-ratelimit-reset': true
+    }
   });
 
   // Raw body plugin for Stripe webhooks (route-scoped)
@@ -98,7 +99,7 @@ export async function buildServer() {
   await server.register(applicationRoutes, { prefix: '/api' });
   await server.register(chatRoutes, { prefix: '/api/chat' });
 
- 
+
   return server;
 }
 

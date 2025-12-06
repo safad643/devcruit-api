@@ -1,10 +1,10 @@
 import { FastifyError, FastifyReply, FastifyRequest } from 'fastify';
-import { 
-  AppError, 
-  ValidationError, 
-  UnauthorizedError, 
-  ForbiddenError, 
-  NotFoundError, 
+import {
+  AppError,
+  ValidationError,
+  UnauthorizedError,
+  ForbiddenError,
+  NotFoundError,
   ConflictError,
   TooManyRequestsError
 } from '../../domain/errors';
@@ -12,8 +12,8 @@ import { HttpStatus } from '../../utils/statusCodes';
 
 // Map domain errors to HTTP status codes
 function getStatusCode(error: AppError): number {
-  
-  
+
+
   if (error instanceof ValidationError) return HttpStatus.BAD_REQUEST;
   if (error instanceof UnauthorizedError) return HttpStatus.UNAUTHORIZED;
   if (error instanceof ForbiddenError) return HttpStatus.FORBIDDEN;
@@ -28,23 +28,23 @@ export function globalErrorHandler(
   request: FastifyRequest,
   reply: FastifyReply
 ) {
- 
+
   console.log(error);
-  
+
   if (error instanceof AppError) {
     const statusCode = getStatusCode(error);
-    
+
     // Log non-operational errors with original error details
     if (!error.isOperational) {
       // Correct syntax: object first, message second
-        request.log.error({
-          message: error.message,
-          code: error.code,
-          stack: error.stack,
-          originalError: error.originalError?.stack,
-          url: request.url,
-          method: request.method,
-        }, 'Non-operational error');
+      request.log.error({
+        message: error.message,
+        code: error.code,
+        stack: error.stack,
+        originalError: error.originalError?.stack,
+        url: request.url,
+        method: request.method,
+      }, 'Non-operational error');
 
     }
 
@@ -84,7 +84,7 @@ export function globalErrorHandler(
     method: request.method,
   }, 'Unexpected error');
 
-  
+
 
   // Don't leak error details for programmer errors
   return reply.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
