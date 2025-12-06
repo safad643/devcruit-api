@@ -4,16 +4,17 @@ import { TYPES } from '../../../di/types';
 import { CreateDeveloperProfileInput, CreateDeveloperProfileOutput } from '../../dtos/profile.dto';
 import { NotFoundError, ValidationError } from '../../../domain/errors';
 import { DeveloperProfile } from '../../../domain/entities/DeveloperProfile';
+import { DateValidator } from '../../validators/date-validator';
 
 @injectable()
 export class CreateDeveloperProfileUseCase {
   constructor(
     @inject(TYPES.DeveloperProfileRepository) private profileRepository: IDeveloperProfileRepository,
     @inject(TYPES.UserRepository) private userRepository: IUserRepository
-  ) {}
+  ) { }
 
   async execute(input: CreateDeveloperProfileInput): Promise<CreateDeveloperProfileOutput> {
-    
+
     // 1. Verify user exists
     const user = await this.userRepository.findById(input.userId);
     if (!user) {
@@ -29,6 +30,11 @@ export class CreateDeveloperProfileUseCase {
     const existingProfile = await this.profileRepository.findByUserId(input.userId);
     if (existingProfile) {
       throw new ValidationError('A developer profile already exists for this user');
+    }
+
+    // 3.5. Validate work history dates
+    if (input.workHistory && input.workHistory.length > 0) {
+      DateValidator.validateWorkHistoryDates(input.workHistory);
     }
 
     // 4. Create the profile

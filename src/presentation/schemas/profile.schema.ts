@@ -6,9 +6,9 @@ const WorkHistorySchema = Type.Object({
   positionTitle: Type.String({ minLength: 1, maxLength: 200 }),
   startDate: Type.String({ format: 'date' }),
   endDate: Type.Union([Type.String({ format: 'date' }), Type.Null()]),
-  description: Type.String({ maxLength: 2000 }),
-  technologiesUsed: Type.Array(Type.String()),
-  achievements: Type.Array(Type.String())
+  description: Type.String({ minLength: 50, maxLength: 2000 }),
+  technologiesUsed: Type.Array(Type.String(), { minItems: 1 }),
+  achievements: Type.Array(Type.String(), { minItems: 1 })
 });
 
 // Education Schema
@@ -30,8 +30,8 @@ const CertificationSchema = Type.Object({
 // Project Schema
 const ProjectSchema = Type.Object({
   name: Type.String({ minLength: 1, maxLength: 200 }),
-  description: Type.String({ maxLength: 2000 }),
-  techStack: Type.Array(Type.String()),
+  description: Type.String({ minLength: 20, maxLength: 2000 }),
+  techStack: Type.Array(Type.String(), { minItems: 1 }),
   repositoryUrl: Type.Optional(Type.String({ format: 'uri' })),
   liveDemoUrl: Type.Optional(Type.String({ format: 'uri' })),
   roleInProject: Type.String({ minLength: 1, maxLength: 200 })
@@ -40,13 +40,13 @@ const ProjectSchema = Type.Object({
 // Create Developer Profile Schema
 export const CreateDeveloperProfileSchema = Type.Object({
   profilePhotoUrl: Type.String({ format: 'uri' }),
-  bio: Type.String({ minLength: 1, maxLength: 1000 }),
+  bio: Type.String({ minLength: 50, maxLength: 1000 }),
   skills: Type.Array(Type.String(), { minItems: 1 }),
   techs: Type.Array(Type.String(), { minItems: 1 }),
-  
+
   // ✅ Make these optional - can be omitted OR empty arrays
-  workHistory: Type.Optional(Type.Array(WorkHistorySchema, { minItems: 0 })),
-  
+  workHistory: Type.Array(WorkHistorySchema, { minItems: 1 }),
+
   employmentStatus: Type.Union([
     Type.Literal('employed'),
     Type.Literal('unemployed'),
@@ -54,17 +54,17 @@ export const CreateDeveloperProfileSchema = Type.Object({
     Type.Literal('student'),
     Type.Literal('looking')
   ]),
-  
+
   // ✅ Make these optional
-  education: Type.Optional(Type.Array(EducationSchema, { minItems: 0 })),
+  education: Type.Array(EducationSchema, { minItems: 1 }),
   certifications: Type.Array(CertificationSchema, { minItems: 0 }),
-  
+
   githubUrl: Type.String({ format: 'uri' }),
   portfolioUrl: Type.Optional(Type.String({ format: 'uri' })),
-  
+
   // ✅ Make these optional
-  projects: Type.Optional(Type.Array(ProjectSchema, { minItems: 0 })),
-  
+  projects: Type.Optional(Type.Array(ProjectSchema, { minItems: 1 })),
+
   linkedinUrl: Type.String({ format: 'uri' }),
   desiredSalary: Type.Optional(Type.Number({ minimum: 0 })),
   jobTypePreferences: Type.Array(Type.Union([
@@ -78,7 +78,7 @@ export const CreateDeveloperProfileSchema = Type.Object({
     Type.Literal('hybrid'),
     Type.Literal('on-site')
   ]), { minItems: 1 }),
-  yearsExperience: Type.Number({ minimum: 0, maximum: 100 }),
+  yearsExperience: Type.Number({ minimum: 0, maximum: 50 }),
   seniorityLevel: Type.Union([
     Type.Literal('junior'),
     Type.Literal('mid'),
@@ -117,9 +117,9 @@ export const CreateCompanyProfileSchema = Type.Object({
 // Update Developer Profile Schema (all fields optional except userId)
 export const UpdateDeveloperProfileSchema = Type.Object({
   profilePhotoUrl: Type.Optional(Type.String({ format: 'uri' })),
-  bio: Type.Optional(Type.String({ maxLength: 1000 })),
-  skills: Type.Optional(Type.Array(Type.String())),
-  techs: Type.Optional(Type.Array(Type.String())),
+  bio: Type.Optional(Type.String({ minLength: 50, maxLength: 1000 })),
+  skills: Type.Optional(Type.Array(Type.String(), { minItems: 1 })),
+  techs: Type.Optional(Type.Array(Type.String(), { minItems: 1 })),
   workHistory: Type.Optional(Type.Array(WorkHistorySchema)),
   employmentStatus: Type.Optional(Type.Union([
     Type.Literal('employed'),
@@ -140,13 +140,13 @@ export const UpdateDeveloperProfileSchema = Type.Object({
     Type.Literal('part-time'),
     Type.Literal('contract'),
     Type.Literal('freelance')
-  ]))),
+  ]), { minItems: 1 })),
   workArrangement: Type.Optional(Type.Array(Type.Union([
     Type.Literal('remote'),
     Type.Literal('hybrid'),
     Type.Literal('on-site')
-  ]))),
-  yearsExperience: Type.Optional(Type.Number({ minimum: 0, maximum: 100 })),
+  ]), { minItems: 1 })),
+  yearsExperience: Type.Optional(Type.Number({ minimum: 0, maximum: 50 })),
   seniorityLevel: Type.Optional(Type.Union([
     Type.Literal('junior'),
     Type.Literal('mid'),
