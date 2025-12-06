@@ -120,7 +120,7 @@ export const UpdateDeveloperProfileSchema = Type.Object({
   bio: Type.Optional(Type.String({ minLength: 50, maxLength: 1000 })),
   skills: Type.Optional(Type.Array(Type.String(), { minItems: 1 })),
   techs: Type.Optional(Type.Array(Type.String(), { minItems: 1 })),
-  workHistory: Type.Optional(Type.Array(WorkHistorySchema)),
+  workHistory: Type.Optional(Type.Array(WorkHistorySchema, { minItems: 1 })),
   employmentStatus: Type.Optional(Type.Union([
     Type.Literal('employed'),
     Type.Literal('unemployed'),
@@ -128,11 +128,11 @@ export const UpdateDeveloperProfileSchema = Type.Object({
     Type.Literal('student'),
     Type.Literal('looking')
   ])),
-  education: Type.Optional(Type.Array(EducationSchema)),
+  education: Type.Optional(Type.Array(EducationSchema, { minItems: 1 })),
   certifications: Type.Optional(Type.Array(CertificationSchema)),
   githubUrl: Type.Optional(Type.String({ format: 'uri' })),
   portfolioUrl: Type.Optional(Type.String({ format: 'uri' })),
-  projects: Type.Optional(Type.Array(ProjectSchema)),
+  projects: Type.Optional(Type.Array(ProjectSchema, { minItems: 1 })),
   linkedinUrl: Type.Optional(Type.String({ format: 'uri' })),
   desiredSalary: Type.Optional(Type.Number({ minimum: 0 })),
   jobTypePreferences: Type.Optional(Type.Array(Type.Union([
@@ -158,8 +158,11 @@ export const UpdateDeveloperProfileSchema = Type.Object({
 });
 
 export const UpdateCompanyProfileSchema = Type.Object({
+  fullName: Type.Optional(Type.String({ minLength: 1, maxLength: 200 })),
+  phoneNumber: Type.Optional(Type.String({ minLength: 1, maxLength: 20 })),
   companyName: Type.Optional(Type.String({ minLength: 1, maxLength: 200 })),
   companyWebsite: Type.Optional(Type.String({ format: 'uri' })),
+  companySize: Type.Optional(CompanySizeSchema),
   businessAddress: Type.Optional(Type.String({ minLength: 1, maxLength: 500 })),
   logoUrl: Type.Optional(Type.String({ format: 'uri' }))
 });

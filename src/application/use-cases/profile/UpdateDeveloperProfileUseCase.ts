@@ -24,10 +24,8 @@ export class UpdateDeveloperProfileUseCase {
       DateValidator.validateWorkHistoryDates(input.workHistory);
     }
 
-    // 2. Prepare update data - filter out undefined values
-    const updateData = Object.fromEntries(
-      Object.entries(input).filter(([_, value]) => value !== undefined)
-    ) as Partial<DeveloperProfileProps>;
+    // 2. Prepare update data
+    const updateData = { ...input } as Partial<DeveloperProfileProps>;
 
     // 3. Update the profile
     const updatedProfile = await this.profileRepository.update(userId, updateData);

@@ -9,7 +9,7 @@ import { CompanyProfileProps } from '../../../domain/entities/CompanyProfile';
 export class UpdateCompanyProfileUseCase {
   constructor(
     @inject(TYPES.CompanyProfileRepository) private profileRepository: ICompanyProfileRepository
-  ) {}
+  ) { }
 
   async execute(userId: string, input: UpdateCompanyProfileInput): Promise<UpdateCompanyProfileOutput> {
     // 1. Verify profile exists
@@ -18,14 +18,9 @@ export class UpdateCompanyProfileUseCase {
       throw new NotFoundError('Company profile not found');
     }
 
-    // 2. Prepare update data - only include fields that are provided
-    const updateData: Partial<CompanyProfileProps> = {};
-    
-    if (input.companyName !== undefined) updateData.companyName = input.companyName;
-    if (input.companyWebsite !== undefined) updateData.companyWebsite = input.companyWebsite;
-    if (input.businessAddress !== undefined) updateData.businessAddress = input.businessAddress;
-    if (input.logoUrl !== undefined) updateData.logoUrl = input.logoUrl;
-    
+    // 2. Prepare update data
+    const updateData = { ...input } as Partial<CompanyProfileProps>;
+
     // 3. Update the profile
     const updatedProfile = await this.profileRepository.update(userId, updateData);
 
