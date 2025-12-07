@@ -1,6 +1,6 @@
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
-import { IJobRepository, IApplicationRepository } from '../../../domain/repositories';
+import { IJobRepository, IApplicationRepository, IJobFieldRepository } from '../../../domain/repositories';
 import { ForbiddenError, NotFoundError, ValidationError } from '../../../domain/errors';
 import { JobProps } from '../../../domain/entities/Job';
 import { IUpdateJobUseCase } from './interfaces';
@@ -10,8 +10,9 @@ import { UpdateJobInput, UpdateJobOutput } from '../../dtos/job.dto';
 export class UpdateJobUseCase implements IUpdateJobUseCase {
   constructor(
     @inject(TYPES.JobRepository) private jobRepository: IJobRepository,
-    @inject(TYPES.ApplicationRepository) private applicationRepository: IApplicationRepository
-  ) {}
+    @inject(TYPES.ApplicationRepository) private applicationRepository: IApplicationRepository,
+    @inject(TYPES.JobFieldRepository) private jobFieldRepository: IJobFieldRepository
+  ) { }
 
   async execute(input: UpdateJobInput): Promise<UpdateJobOutput> {
     const job = await this.jobRepository.findById(input.jobId);
@@ -22,6 +23,28 @@ export class UpdateJobUseCase implements IUpdateJobUseCase {
     const applications = await this.applicationRepository.findByJobId(input.jobId);
     if (applications.length > 0) {
       throw new ValidationError('A job cannot be edited if someone has already applied to it');
+    }
+
+    // Validate job fields if provided
+    if (input.updates.category) {
+      const missingCategory = await this.jobFieldRepository.findMissingNames('category', [input.updates.category]);
+      if (missingCategory.length > 0) {
+        throw new ValidationError(`Invalid category: ${input.updates.category}`);
+      }
+    }
+
+    if (input.updates.requiredTech && input.updates.requiredTech.length > 0) {
+      const missingTech = await this.jobFieldRepository.findMissingNames('tech', input.updates.requiredTech);
+      if (missingTech.length > 0) {
+        throw new ValidationError(`Invalid tech: ${missingTech.join(', ')}`);
+      }
+    }
+
+    if (input.updates.requiredSkills && input.updates.requiredSkills.length > 0) {
+      const missingSkills = await this.jobFieldRepository.findMissingNames('skill', input.updates.requiredSkills);
+      if (missingSkills.length > 0) {
+        throw new ValidationError(`Invalid skills: ${missingSkills.join(', ')}`);
+      }
     }
 
     const updates: Partial<JobProps> = { ...input.updates };

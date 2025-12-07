@@ -1,4 +1,4 @@
-import { IJobRepository, IUserRepository } from '../../../domain/repositories';
+import { IJobRepository, IUserRepository, IJobFieldRepository } from '../../../domain/repositories';
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { NotFoundError, ValidationError } from '../../../domain/errors';
@@ -10,8 +10,9 @@ import { CreateJobInput, CreateJobOutput, CreateJobCompensationInput } from '../
 export class CreateJobUseCase implements ICreateJobUseCase {
   constructor(
     @inject(TYPES.JobRepository) private jobRepository: IJobRepository,
-    @inject(TYPES.UserRepository) private userRepository: IUserRepository
-  ) {}
+    @inject(TYPES.UserRepository) private userRepository: IUserRepository,
+    @inject(TYPES.JobFieldRepository) private jobFieldRepository: IJobFieldRepository
+  ) { }
 
   /**
    * Type guard to check if compensation is a range type
@@ -86,7 +87,23 @@ export class CreateJobUseCase implements ICreateJobUseCase {
       throw new ValidationError('Valid until date must be in the future');
     }
 
-    // 7. Transform compensation to domain format
+    // 7. Validate job fields (category, tech, skills) exist in database
+    const missingCategory = await this.jobFieldRepository.findMissingNames('category', [input.category]);
+    if (missingCategory.length > 0) {
+      throw new ValidationError(`Invalid category: ${input.category}`);
+    }
+
+    const missingTech = await this.jobFieldRepository.findMissingNames('tech', input.requiredTech);
+    if (missingTech.length > 0) {
+      throw new ValidationError(`Invalid tech: ${missingTech.join(', ')}`);
+    }
+
+    const missingSkills = await this.jobFieldRepository.findMissingNames('skill', input.requiredSkills);
+    if (missingSkills.length > 0) {
+      throw new ValidationError(`Invalid skills: ${missingSkills.join(', ')}`);
+    }
+
+    // 8. Transform compensation to domain format
     const domainCompensation = this.transformCompensation(input.compensation);
 
     // 8. Create the job using the domain factory method
@@ -128,8 +145,8 @@ export class CreateJobUseCase implements ICreateJobUseCase {
       companyId: createdJob.companyId,
       title: createdJob.title,
       status: createdJob.status,
-      message: input.status === 'draft' 
-        ? 'Job saved as draft successfully' 
+      message: input.status === 'draft'
+        ? 'Job saved as draft successfully'
         : 'Job posted successfully',
     };
   }

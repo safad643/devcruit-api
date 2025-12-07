@@ -65,6 +65,14 @@ export const TYPES = {
   ListDevelopersUseCase: Symbol.for('ListDevelopersUseCase'),
   AdminController: Symbol.for('AdminController'),
 
+  // Job Field module
+  JobFieldRepository: Symbol.for('JobFieldRepository'),
+  CreateJobFieldUseCase: Symbol.for('CreateJobFieldUseCase'),
+  GetJobFieldsUseCase: Symbol.for('GetJobFieldsUseCase'),
+  UpdateJobFieldUseCase: Symbol.for('UpdateJobFieldUseCase'),
+  DeleteJobFieldUseCase: Symbol.for('DeleteJobFieldUseCase'),
+  JobFieldController: Symbol.for('JobFieldController'),
+
   // Job module
   JobRepository: Symbol.for('JobRepository'),
   CreateJobUseCase: Symbol.for('CreateJobUseCase'),
