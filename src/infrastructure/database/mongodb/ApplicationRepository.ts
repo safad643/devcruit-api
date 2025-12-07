@@ -166,9 +166,9 @@ export class ApplicationRepository implements IApplicationRepository {
   async getMetricsByJobId(jobId: string, companyId: string): Promise<ApplicationMetrics> {
     try {
       // First verify the job belongs to the company
-      const job = await getMongoDb().collection('jobs').findOne({ 
+      const job = await getMongoDb().collection('jobs').findOne({
         _id: new ObjectId(jobId),
-        companyId: companyId 
+        companyId: companyId
       });
 
       if (!job) {
@@ -211,7 +211,7 @@ export class ApplicationRepository implements IApplicationRepository {
         const status = result._id;
         const count = result.count;
         metrics.total += count;
-        
+
         if (status in metrics) {
           (metrics as any)[status] = count;
         }
@@ -236,6 +236,35 @@ export class ApplicationRepository implements IApplicationRepository {
     }
   }
 
+  async findConflictingInterviews(interviewerId: string, scheduledAt: Date): Promise<Application[]> {
+    try {
+      // Calculate time window (1 hour before and after)
+      const oneHourBefore = new Date(scheduledAt.getTime() - 60 * 60 * 1000);
+      const oneHourAfter = new Date(scheduledAt.getTime() + 60 * 60 * 1000);
+
+      // Find applications where:
+      // 1. The interviewer is assigned to any round
+      // 2. The round is scheduled (not completed or cancelled)
+      // 3. The scheduled time overlaps with the proposed time (+/- 1 hour)
+      const docs = await this.collection.find({
+        'interviewRounds': {
+          $elemMatch: {
+            'interviewerIds': interviewerId,
+            'status': 'scheduled',
+            'scheduledAt': {
+              $gte: oneHourBefore,
+              $lte: oneHourAfter
+            }
+          }
+        }
+      }).toArray();
+
+      return docs.map(doc => this.mapToEntity(doc));
+    } catch (error) {
+      throw new InternalError('Failed to check for conflicting interviews', error as Error);
+    }
+  }
+
   private mapToEntity(doc: any): Application {
     // Helper to map interview rounds
     const mapInterviewRounds = (rounds: any[]): InterviewRound[] => {
@@ -255,7 +284,7 @@ export class ApplicationRepository implements IApplicationRepository {
 
     // Migrate old fields to statusNotes for backward compatibility
     let statusNotes: StatusNotes | undefined = doc.statusNotes;
-    
+
     // If statusNotes doesn't exist, create it from old fields
     if (!statusNotes && (doc.shortlistNote || doc.rejectionReason)) {
       statusNotes = {};

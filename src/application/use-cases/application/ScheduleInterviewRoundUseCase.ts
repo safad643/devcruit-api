@@ -17,7 +17,7 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
     @inject(TYPES.UserRepository) private userRepository: IUserRepository,
     @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository,
     @inject(TYPES.DeveloperProfileRepository) private developerProfileRepository: IDeveloperProfileRepository
-  ) {}
+  ) { }
 
   async execute(input: ScheduleInterviewRoundInput & { companyId: string }): Promise<ScheduleInterviewRoundOutput> {
     // 1. Get application
@@ -81,7 +81,25 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
       throw new ValidationError('Scheduled date must be in the future');
     }
 
-    // 7. Find or create the interview round
+    // 7. Check for scheduling conflicts
+    const conflicts = await this.applicationRepository.findConflictingInterviews(input.interviewerId, scheduledAt);
+    if (conflicts.length > 0) {
+      // Format the scheduled time for display
+      const timeStr = scheduledAt.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+
+      throw new ValidationError(
+        `This interviewer already has an interview scheduled around ${timeStr}. Please choose a different time or different interviewer.`
+      );
+    }
+
+    // 8. Find or create the interview round
     const updatedRounds = [...application.interviewRounds];
     const roundIndex = updatedRounds.findIndex(r => r.roundName === input.roundName);
 
@@ -103,61 +121,25 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
       });
     }
 
-    // 8. Update application status to 'interviewing' if not already
+    // 9. Update application status to 'interviewing' if not already
     const newStatus = application.status === 'shortlisted' ? 'interviewing' : application.status;
 
-    // 9. Update application
+    // 10. Update application
     const updatedApplication = await this.applicationRepository.update(input.applicationId, {
       interviewRounds: updatedRounds,
       status: newStatus,
     });
 
-    // 10. Send email notification to developer
-    try {
-      // Get developer profile and user
-      const developerProfile = await this.developerProfileRepository.findById(application.developerId);
-      if (developerProfile) {
-        const developerUser = await this.userRepository.findById(developerProfile.userId);
-        
-        if (developerUser?.email) {
-          // Get company profile for company name
-          const companyProfile = await this.companyProfileRepository.findByUserId(input.companyId);
-          const companyName = companyProfile?.companyName || 'the company';
-          
-          // Get interviewer name
-          let interviewerName = 'Interviewer';
-          if (input.interviewerId === input.companyId) {
-            // Company owner is the interviewer
-            const companyUser = await this.userRepository.findById(input.companyId);
-            interviewerName = companyUser?.name || companyProfile?.fullName || 'Company Representative';
-          } else {
-            // Team member is the interviewer
-            const teamMember = await this.companyTeamRepository.findByUserId(input.interviewerId);
-            if (teamMember instanceof InterviewerProfile || teamMember instanceof HRProfile) {
-              interviewerName = teamMember.fullName || teamMember.email || 'Interviewer';
-            }
-          }
-
-          // Get the scheduled date from the updated round
-          const scheduledRound = updatedRounds.find(r => r.roundName === input.roundName);
-          const scheduledDate = scheduledRound?.scheduledAt || scheduledAt;
-
-          // Send email
-          await this.emailService.sendInterviewScheduledNotification(
-            developerUser.email,
-            developerUser.name || 'Developer',
-            companyName,
-            job.title,
-            input.roundName,
-            scheduledDate,
-            interviewerName
-          );
-        }
-      }
-    } catch (error) {
-      // Log error but don't fail the interview scheduling
-      console.error('Failed to send interview scheduled notification email:', error);
-    }
+    // 11. Send email notification to developer
+    await this.sendInterviewScheduledEmail(
+      application.developerId,
+      input.companyId,
+      input.interviewerId,
+      job.title,
+      input.roundName,
+      scheduledAt,
+      updatedRounds
+    );
 
     return {
       id: updatedApplication.id,
@@ -170,6 +152,61 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
       })),
       message: `Interview round "${input.roundName}" scheduled successfully`,
     };
+  }
+
+  private async sendInterviewScheduledEmail(
+    developerId: string,
+    companyId: string,
+    interviewerId: string,
+    jobTitle: string,
+    roundName: string,
+    scheduledAt: Date,
+    updatedRounds: Array<{ roundName: string; scheduledAt?: Date }>
+  ): Promise<void> {
+    try {
+      // Get developer profile and user
+      const developerProfile = await this.developerProfileRepository.findById(developerId);
+      if (!developerProfile) return;
+
+      const developerUser = await this.userRepository.findById(developerProfile.userId);
+      if (!developerUser?.email) return;
+
+      // Get company profile for company name
+      const companyProfile = await this.companyProfileRepository.findByUserId(companyId);
+      const companyName = companyProfile?.companyName || 'the company';
+
+      // Get interviewer name
+      let interviewerName = 'Interviewer';
+      if (interviewerId === companyId) {
+        // Company owner is the interviewer
+        const companyUser = await this.userRepository.findById(companyId);
+        interviewerName = companyUser?.name || companyProfile?.fullName || 'Company Representative';
+      } else {
+        // Team member is the interviewer
+        const teamMember = await this.companyTeamRepository.findByUserId(interviewerId);
+        if (teamMember instanceof InterviewerProfile || teamMember instanceof HRProfile) {
+          interviewerName = teamMember.fullName || teamMember.email || 'Interviewer';
+        }
+      }
+
+      // Get the scheduled date from the updated round
+      const scheduledRound = updatedRounds.find(r => r.roundName === roundName);
+      const scheduledDate = scheduledRound?.scheduledAt || scheduledAt;
+
+      // Send email
+      await this.emailService.sendInterviewScheduledNotification(
+        developerUser.email,
+        developerUser.name || 'Developer',
+        companyName,
+        jobTitle,
+        roundName,
+        scheduledDate,
+        interviewerName
+      );
+    } catch (error) {
+      // Log error but don't fail the interview scheduling
+      console.error('Failed to send interview scheduled notification email:', error);
+    }
   }
 }
 

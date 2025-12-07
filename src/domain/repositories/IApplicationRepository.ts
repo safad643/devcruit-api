@@ -41,5 +41,6 @@ export interface IApplicationRepository {
   listWithFilters(filters: ApplicationListFilters): Promise<ApplicationListResult>;
   getMetricsByJobId(jobId: string, companyId: string): Promise<ApplicationMetrics>;
   findByInterviewerId(interviewerId: string): Promise<Application[]>;
+  findConflictingInterviews(interviewerId: string, scheduledAt: Date): Promise<Application[]>;
 }
 
