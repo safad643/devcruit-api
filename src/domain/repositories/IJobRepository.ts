@@ -1,4 +1,5 @@
 import { Job, JobProps, JobStatus } from '../entities/Job';
+import { IGenericRepository } from './IGenericRepository';
 
 export interface JobListFilters {
   companyId: string;
@@ -15,7 +16,6 @@ export interface JobListResult {
   total: number;
 }
 
-// Public listing filters (no auth, only open jobs)
 export interface PublicJobListFilters {
   page: number;
   limit: number;
@@ -29,13 +29,11 @@ export interface PublicJobListFilters {
   sortOrder?: 'asc' | 'desc';
 }
 
-export interface IJobRepository {
-  create(job: Omit<JobProps, 'id' | 'createdAt' | 'updatedAt' | 'status'> & { status?: JobStatus }): Promise<Job>;
-  findById(id: string): Promise<Job | null>;
+export type CreateJobProps = Omit<JobProps, 'id' | 'createdAt' | 'updatedAt' | 'status'> & { status?: JobStatus };
+export type UpdateJobProps = Partial<JobProps>;
+
+export interface IJobRepository extends IGenericRepository<Job, CreateJobProps, UpdateJobProps> {
   findByCompanyId(companyId: string): Promise<Job[]>;
-  update(id: string, updates: Partial<JobProps>): Promise<Job>;
-  delete(id: string): Promise<void>;
   listWithFilters(filters: JobListFilters): Promise<JobListResult>;
   listPublicWithFilters(filters: PublicJobListFilters): Promise<JobListResult>;
 }
-

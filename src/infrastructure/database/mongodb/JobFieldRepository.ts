@@ -1,23 +1,39 @@
 import { Collection, ObjectId } from 'mongodb';
-import { IJobFieldRepository } from '../../../domain/repositories/IJobFieldRepository';
-import { JobField, JobFieldProps, FieldType } from '../../../domain/entities/JobField';
+import { IJobFieldRepository, CreateJobFieldProps, UpdateJobFieldProps } from '../../../domain/repositories/IJobFieldRepository';
+import { JobField, FieldType } from '../../../domain/entities/JobField';
 import { getMongoDb } from './client';
 import { InternalError, NotFoundError } from '../../../domain/errors';
 import { injectable } from 'inversify';
+import { MongoGenericRepository } from './MongoGenericRepository';
 
 @injectable()
-export class JobFieldRepository implements IJobFieldRepository {
-    private collection: Collection;
+export class JobFieldRepository
+    extends MongoGenericRepository<JobField, CreateJobFieldProps, UpdateJobFieldProps>
+    implements IJobFieldRepository {
+
+    protected collection: Collection;
 
     constructor() {
+        super();
         this.collection = getMongoDb().collection('job_fields');
-        // Create compound unique index on type + name
-        this.collection.createIndex({ type: 1, name: 1 }, { unique: true }).catch(() => {
-            // Index already exists or will be created on first insert
+        this.collection.createIndex({ type: 1, name: 1 }, { unique: true }).catch(() => { });
+    }
+
+    protected getEntityName(): string {
+        return 'Job field';
+    }
+
+    protected mapToEntity(doc: any): JobField {
+        return new JobField({
+            id: doc._id.toString(),
+            type: doc.type,
+            name: doc.name,
+            createdAt: doc.createdAt instanceof Date ? doc.createdAt : new Date(doc.createdAt),
+            updatedAt: doc.updatedAt instanceof Date ? doc.updatedAt : new Date(doc.updatedAt),
         });
     }
 
-    async create(data: Omit<JobFieldProps, 'id' | 'createdAt' | 'updatedAt'>): Promise<JobField> {
+    async create(data: CreateJobFieldProps): Promise<JobField> {
         try {
             const now = new Date();
             const result = await this.collection.insertOne({
@@ -41,37 +57,7 @@ export class JobFieldRepository implements IJobFieldRepository {
         }
     }
 
-    async findById(id: string): Promise<JobField | null> {
-        try {
-            if (!ObjectId.isValid(id)) return null;
-            const doc = await this.collection.findOne({ _id: new ObjectId(id) });
-            if (!doc) return null;
-            return this.mapToEntity(doc);
-        } catch (error) {
-            throw new InternalError('Database query failed', error as Error);
-        }
-    }
-
-    async findByTypeAndName(type: FieldType, name: string): Promise<JobField | null> {
-        try {
-            const doc = await this.collection.findOne({ type, name });
-            if (!doc) return null;
-            return this.mapToEntity(doc);
-        } catch (error) {
-            throw new InternalError('Database query failed', error as Error);
-        }
-    }
-
-    async findAllByType(type: FieldType): Promise<JobField[]> {
-        try {
-            const docs = await this.collection.find({ type }).sort({ name: 1 }).toArray();
-            return docs.map(doc => this.mapToEntity(doc));
-        } catch (error) {
-            throw new InternalError('Failed to list job fields', error as Error);
-        }
-    }
-
-    async update(id: string, data: { name: string }): Promise<JobField> {
+    async update(id: string, data: UpdateJobFieldProps): Promise<JobField> {
         try {
             if (!ObjectId.isValid(id)) {
                 throw new NotFoundError('Job field not found');
@@ -97,18 +83,22 @@ export class JobFieldRepository implements IJobFieldRepository {
         }
     }
 
-    async delete(id: string): Promise<void> {
+    async findByTypeAndName(type: FieldType, name: string): Promise<JobField | null> {
         try {
-            if (!ObjectId.isValid(id)) {
-                throw new NotFoundError('Job field not found');
-            }
-            const result = await this.collection.deleteOne({ _id: new ObjectId(id) });
-            if (result.deletedCount === 0) {
-                throw new NotFoundError('Job field not found');
-            }
+            const doc = await this.collection.findOne({ type, name });
+            if (!doc) return null;
+            return this.mapToEntity(doc);
         } catch (error) {
-            if (error instanceof NotFoundError) throw error;
-            throw new InternalError('Failed to delete job field', error as Error);
+            throw new InternalError('Database query failed', error as Error);
+        }
+    }
+
+    async findAllByType(type: FieldType): Promise<JobField[]> {
+        try {
+            const docs = await this.collection.find({ type }).sort({ name: 1 }).toArray();
+            return docs.map(doc => this.mapToEntity(doc));
+        } catch (error) {
+            throw new InternalError('Failed to list job fields', error as Error);
         }
     }
 
@@ -126,15 +116,5 @@ export class JobFieldRepository implements IJobFieldRepository {
         } catch (error) {
             throw new InternalError('Failed to validate job field names', error as Error);
         }
-    }
-
-    private mapToEntity(doc: any): JobField {
-        return new JobField({
-            id: doc._id.toString(),
-            type: doc.type,
-            name: doc.name,
-            createdAt: doc.createdAt instanceof Date ? doc.createdAt : new Date(doc.createdAt),
-            updatedAt: doc.updatedAt instanceof Date ? doc.updatedAt : new Date(doc.updatedAt),
-        });
     }
 }

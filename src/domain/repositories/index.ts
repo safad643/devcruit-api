@@ -11,5 +11,6 @@ export * from './IApplicationRepository';
 export * from './IConversationRepository';
 export * from './IMessageRepository';
 export * from './IJobFieldRepository';
+export * from './IGenericRepository';
 
 

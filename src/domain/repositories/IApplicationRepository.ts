@@ -1,4 +1,5 @@
-import { Application, ApplicationProps } from '../entities/Application';
+import { Application, ApplicationProps, InterviewRound } from '../entities/Application';
+import { IGenericRepository } from './IGenericRepository';
 
 export interface ApplicationListFilters {
   companyId?: string;
@@ -28,19 +29,18 @@ export interface ApplicationMetrics {
   withdrawn: number;
 }
 
-export interface IApplicationRepository {
-  create(application: Omit<ApplicationProps, 'id' | 'appliedAt' | 'lastUpdatedAt' | 'status' | 'interviewRounds'> & {
-    status?: string;
-    interviewRounds?: any[];
-  }): Promise<Application>;
-  findById(id: string): Promise<Application | null>;
+export type CreateApplicationProps = Omit<ApplicationProps, 'id' | 'appliedAt' | 'lastUpdatedAt' | 'status' | 'interviewRounds'> & {
+  status?: string;
+  interviewRounds?: InterviewRound[];
+};
+export type UpdateApplicationProps = Partial<ApplicationProps>;
+
+export interface IApplicationRepository extends IGenericRepository<Application, CreateApplicationProps, UpdateApplicationProps> {
   findByJobId(jobId: string): Promise<Application[]>;
   findByDeveloperId(developerId: string): Promise<Application[]>;
   findByJobIdAndDeveloperId(jobId: string, developerId: string): Promise<Application | null>;
-  update(id: string, updates: Partial<ApplicationProps>): Promise<Application>;
   listWithFilters(filters: ApplicationListFilters): Promise<ApplicationListResult>;
   getMetricsByJobId(jobId: string, companyId: string): Promise<ApplicationMetrics>;
   findByInterviewerId(interviewerId: string): Promise<Application[]>;
   findConflictingInterviews(interviewerId: string, scheduledAt: Date): Promise<Application[]>;
 }
-

@@ -1,18 +1,11 @@
 import { Conversation, ConversationProps } from '../entities/Conversation';
+import { IGenericRepository } from './IGenericRepository';
 
-export interface IConversationRepository {
-  create(conversation: Omit<ConversationProps, 'id'>): Promise<Conversation>;
-  findById(id: string): Promise<Conversation | null>;
-  findByParticipants(
-    participant1Id: string,
-    participant2Id: string
-  ): Promise<Conversation | null>;
+export type CreateConversationProps = Omit<ConversationProps, 'id'>;
+export type UpdateConversationProps = Partial<ConversationProps>;
+
+export interface IConversationRepository extends IGenericRepository<Conversation, CreateConversationProps, UpdateConversationProps> {
+  findByParticipants(participant1Id: string, participant2Id: string): Promise<Conversation | null>;
   findByUserId(userId: string): Promise<Conversation[]>;
-  update(id: string, updates: Partial<ConversationProps>): Promise<Conversation>;
-  updateLastMessage(
-    id: string,
-    lastMessage: string,
-    lastMessageAt: Date
-  ): Promise<Conversation>;
+  updateLastMessage(id: string, lastMessage: string, lastMessageAt: Date): Promise<Conversation>;
 }
-

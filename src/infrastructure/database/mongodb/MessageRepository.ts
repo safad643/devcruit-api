@@ -1,32 +1,39 @@
 import { Collection, ObjectId } from 'mongodb';
 import { injectable } from 'inversify';
-import {
-  IMessageRepository,
-  MessageListFilters,
-  MessageListResult,
-} from '../../../domain/repositories/IMessageRepository';
+import { IMessageRepository, MessageListFilters, MessageListResult, CreateMessageProps, UpdateMessageProps } from '../../../domain/repositories/IMessageRepository';
 import { Message, MessageProps } from '../../../domain/entities/Message';
 import { getMongoDb } from './client';
-import { InternalError } from '../../../domain/errors';
-
-interface MessageDocument {
-  _id: ObjectId;
-  conversationId: string;
-  senderId: string;
-  message: string;
-  readAt: Date | null;
-  createdAt: Date;
-}
+import { InternalError, NotFoundError } from '../../../domain/errors';
+import { MongoGenericRepository } from './MongoGenericRepository';
 
 @injectable()
-export class MessageRepository implements IMessageRepository {
-  private collection: Collection<MessageDocument>;
+export class MessageRepository
+  extends MongoGenericRepository<Message, CreateMessageProps, UpdateMessageProps>
+  implements IMessageRepository {
+
+  protected collection: Collection;
 
   constructor() {
-    this.collection = getMongoDb().collection<MessageDocument>('messages');
+    super();
+    this.collection = getMongoDb().collection('messages');
   }
 
-  async create(message: Omit<MessageProps, 'id'>): Promise<Message> {
+  protected getEntityName(): string {
+    return 'Message';
+  }
+
+  protected mapToEntity(doc: any): Message {
+    return new Message({
+      id: doc._id.toString(),
+      conversationId: doc.conversationId,
+      senderId: doc.senderId,
+      message: doc.message,
+      readAt: doc.readAt ? (doc.readAt instanceof Date ? doc.readAt : new Date(doc.readAt)) : null,
+      createdAt: doc.createdAt instanceof Date ? doc.createdAt : new Date(doc.createdAt),
+    });
+  }
+
+  async create(message: CreateMessageProps): Promise<Message> {
     try {
       const result = await this.collection.insertOne({
         conversationId: message.conversationId,
@@ -34,7 +41,7 @@ export class MessageRepository implements IMessageRepository {
         message: message.message,
         readAt: message.readAt,
         createdAt: message.createdAt,
-      } as MessageDocument);
+      });
 
       const doc = await this.collection.findOne({ _id: result.insertedId });
       if (!doc) {
@@ -47,25 +54,35 @@ export class MessageRepository implements IMessageRepository {
     }
   }
 
-  async findById(id: string): Promise<Message | null> {
+  async update(id: string, updates: UpdateMessageProps): Promise<Message> {
     try {
-      if (!ObjectId.isValid(id)) return null;
-      const doc = await this.collection.findOne({ _id: new ObjectId(id) });
-      if (!doc) return null;
-      return this.mapToEntity(doc);
+      if (!ObjectId.isValid(id)) {
+        throw new NotFoundError('Message not found');
+      }
+
+      const { id: _id, ...updateFields } = updates;
+      const result = await this.collection.findOneAndUpdate(
+        { _id: new ObjectId(id) },
+        { $set: updateFields },
+        { returnDocument: 'after' }
+      );
+
+      if (!result) {
+        throw new NotFoundError('Message not found');
+      }
+
+      return this.mapToEntity(result);
     } catch (error) {
-      throw new InternalError('Database query failed', error as Error);
+      if (error instanceof NotFoundError) throw error;
+      throw new InternalError('Failed to update message', error as Error);
     }
   }
 
   async findByConversationId(filters: MessageListFilters): Promise<MessageListResult> {
     try {
       const { conversationId, limit, beforeDate } = filters;
-
-      const query: { conversationId: string; createdAt?: { $lt: Date } } = { conversationId };
-      if (beforeDate) {
-        query.createdAt = { $lt: beforeDate };
-      }
+      const query: any = { conversationId };
+      if (beforeDate) query.createdAt = { $lt: beforeDate };
 
       const total = await this.collection.countDocuments({ conversationId });
 
@@ -77,14 +94,9 @@ export class MessageRepository implements IMessageRepository {
 
       const hasMore = docs.length > limit;
       const messagesToReturn = hasMore ? docs.slice(0, limit) : docs;
-
       const messages = messagesToReturn.reverse().map(doc => this.mapToEntity(doc));
 
-      return {
-        messages,
-        total,
-        hasMore,
-      };
+      return { messages, total, hasMore };
     } catch (error) {
       throw new InternalError('Database query failed', error as Error);
     }
@@ -94,25 +106,12 @@ export class MessageRepository implements IMessageRepository {
     try {
       if (messageIds.length === 0) return;
 
-      const objectIds = messageIds
-        .filter(id => ObjectId.isValid(id))
-        .map(id => new ObjectId(id));
-
+      const objectIds = messageIds.filter(id => ObjectId.isValid(id)).map(id => new ObjectId(id));
       if (objectIds.length === 0) return;
 
-      // Mark messages as read only if they belong to the conversation and were sent by someone other than the user
       await this.collection.updateMany(
-        {
-          _id: { $in: objectIds },
-          conversationId,
-          senderId: { $ne: userId }, // Only mark messages sent by others
-          readAt: null,
-        },
-        {
-          $set: {
-            readAt: new Date(),
-          },
-        }
+        { _id: { $in: objectIds }, conversationId, senderId: { $ne: userId }, readAt: null },
+        { $set: { readAt: new Date() } }
       );
     } catch (error) {
       throw new InternalError('Failed to mark messages as read', error as Error);
@@ -121,18 +120,9 @@ export class MessageRepository implements IMessageRepository {
 
   async markConversationAsRead(conversationId: string, userId: string): Promise<void> {
     try {
-      // Mark all messages in conversation as read that were sent by someone other than the user
       await this.collection.updateMany(
-        {
-          conversationId,
-          senderId: { $ne: userId }, // Only mark messages sent by others
-          readAt: null,
-        },
-        {
-          $set: {
-            readAt: new Date(),
-          },
-        }
+        { conversationId, senderId: { $ne: userId }, readAt: null },
+        { $set: { readAt: new Date() } }
       );
     } catch (error) {
       throw new InternalError('Failed to mark conversation as read', error as Error);
@@ -141,32 +131,13 @@ export class MessageRepository implements IMessageRepository {
 
   async getUnreadCount(conversationId: string, userId: string): Promise<number> {
     try {
-      // Count messages sent by others (not by the user) that are unread
       return await this.collection.countDocuments({
         conversationId,
-        senderId: { $ne: userId }, // Messages sent by others
+        senderId: { $ne: userId },
         readAt: null,
       });
     } catch (error) {
       throw new InternalError('Database query failed', error as Error);
     }
   }
-
-  private mapToEntity(doc: MessageDocument | any): Message {
-    return new Message({
-      id: doc._id.toString(),
-      conversationId: doc.conversationId,
-      senderId: doc.senderId,
-      message: doc.message,
-      readAt: doc.readAt
-        ? doc.readAt instanceof Date
-          ? doc.readAt
-          : new Date(doc.readAt)
-        : null,
-      createdAt: doc.createdAt instanceof Date
-        ? doc.createdAt
-        : new Date(doc.createdAt),
-    });
-  }
 }
-
