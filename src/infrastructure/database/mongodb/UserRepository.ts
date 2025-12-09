@@ -1,4 +1,4 @@
-import { Collection, ObjectId } from 'mongodb';
+import { Collection, ObjectId, WithId, Document, MongoServerError } from 'mongodb';
 import { IUserRepository, CreateUserProps, UpdateUserProps } from '../../../domain/repositories/IUserRepository';
 import { User, UserProps } from '../../../domain/entities/User';
 import { getMongoDb } from './client';
@@ -22,7 +22,7 @@ export class UserRepository
     return 'User';
   }
 
-  protected mapToEntity(doc: any): User {
+  protected mapToEntity(doc: WithId<Document>): User {
     return new User({
       id: doc._id.toString(),
       email: doc.email,
@@ -55,11 +55,11 @@ export class UserRepository
         id: result.insertedId.toString(),
         ...user,
       });
-    } catch (error: any) {
-      if (error.code === 11000) {
+    } catch (error) {
+      if (error instanceof MongoServerError && error.code === 11000) {
         throw new ConflictError('Email already registered');
       }
-      throw new InternalError('Failed to create user', error);
+      throw new InternalError('Failed to create user', error instanceof Error ? error : undefined);
     }
   }
 

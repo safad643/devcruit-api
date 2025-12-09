@@ -1,6 +1,6 @@
-import { Collection, ObjectId } from 'mongodb';
+import { Collection, ObjectId, WithId, Document, Filter } from 'mongodb';
 import { IDeveloperProfileRepository, DeveloperListFilters, DeveloperListResult, CreateDeveloperProfileProps, UpdateDeveloperProfileProps, DeveloperProfileSearchFilters } from '../../../domain/repositories/IDeveloperProfileRepository';
-import { DeveloperProfile, DeveloperProfileProps } from '../../../domain/entities/DeveloperProfile';
+import { DeveloperProfile } from '../../../domain/entities/DeveloperProfile';
 import { getMongoDb } from './client';
 import { InternalError, NotFoundError } from '../../../domain/errors';
 import { injectable } from 'inversify';
@@ -22,7 +22,7 @@ export class DeveloperProfileRepository
     return 'Developer profile';
   }
 
-  protected mapToEntity(doc: any): DeveloperProfile {
+  protected mapToEntity(doc: WithId<Document>): DeveloperProfile {
     return new DeveloperProfile({
       id: doc._id.toString(),
       userId: doc.userId,
@@ -128,7 +128,7 @@ export class DeveloperProfileRepository
 
   async search(filters: DeveloperProfileSearchFilters): Promise<DeveloperProfile[]> {
     try {
-      const query: any = {};
+      const query: Filter<Document> = {};
 
       if (filters.techs && filters.techs.length > 0) {
         query.techs = { $in: filters.techs };
@@ -176,7 +176,7 @@ export class DeveloperProfileRepository
 
   async listWithFilters(filters: DeveloperListFilters): Promise<DeveloperListResult> {
     try {
-      const pipeline: any[] = [];
+      const pipeline: Document[] = [];
 
       pipeline.push({
         $addFields: {
@@ -243,7 +243,7 @@ export class DeveloperProfileRepository
       const docs = await this.collection.aggregate(pipeline).toArray();
 
       const developers = docs.map(doc => ({
-        developerProfile: this.mapToEntity(doc),
+        developerProfile: this.mapToEntity(doc as WithId<Document>),
         userEmail: doc.userEmail,
         isBlocked: doc.isBlocked
       }));

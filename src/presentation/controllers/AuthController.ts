@@ -40,7 +40,7 @@ export class AuthController {
     @inject(TYPES.LogoutUseCase) private logoutUseCase: ILogoutUseCase,
     @inject(TYPES.GoogleLoginUseCase) private googleLoginUseCase: IGoogleLoginUseCase,
     @inject(TYPES.GoogleRegisterUseCase) private googleRegisterUseCase: IGoogleRegisterUseCase
-  ) {}
+  ) { }
 
   // Arrow functions auto-bind 'this'
   register = async (request: FastifyRequest<{ Body: RegisterUserInput }>, reply: FastifyReply): Promise<void> => {
@@ -86,21 +86,21 @@ export class AuthController {
   };
 
   googleLogin = async (
-    request: FastifyRequest<{ Body: { code: string } }>, 
+    request: FastifyRequest<{ Body: { code: string } }>,
     reply: FastifyReply
   ): Promise<void> => {
     const result = await this.googleLoginUseCase.execute(request.body);
     this.handleAuthResponse(reply, result);
   };
-  
+
   googleRegister = async (
-    request: FastifyRequest<{ Body: { code: string; role: string } }>, 
+    request: FastifyRequest<{ Body: { code: string; role: string } }>,
     reply: FastifyReply
   ): Promise<void> => {
     const result = await this.googleRegisterUseCase.execute(request.body);
     this.handleAuthResponse(reply, result);
   };
-  
+
 
   logout = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     const refreshToken = request.cookies.refreshToken;
@@ -110,7 +110,7 @@ export class AuthController {
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
-  private handleAuthResponse(reply: FastifyReply, result: { refreshToken: string; [key: string]:any }): void {
+  private handleAuthResponse(reply: FastifyReply, result: { refreshToken: string;[key: string]: any }): void {
     reply.setCookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: config.env.isProduction,

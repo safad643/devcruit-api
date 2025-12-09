@@ -1,4 +1,4 @@
-import { Collection, ObjectId } from 'mongodb';
+import { Collection, ObjectId, WithId, Document } from 'mongodb';
 import { IGenericRepository } from '../../../domain/repositories/IGenericRepository';
 import { InternalError, NotFoundError } from '../../../domain/errors';
 
@@ -6,7 +6,7 @@ export abstract class MongoGenericRepository<T, CreateProps, UpdateProps = Parti
     implements IGenericRepository<T, CreateProps, UpdateProps> {
 
     protected abstract collection: Collection;
-    protected abstract mapToEntity(doc: any): T;
+    protected abstract mapToEntity(doc: WithId<Document>): T;
     protected abstract getEntityName(): string;
 
     async findById(id: string): Promise<T | null> {

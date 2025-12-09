@@ -1,4 +1,4 @@
-import { Collection, ObjectId } from 'mongodb';
+import { Collection, ObjectId, WithId, Document, MongoServerError } from 'mongodb';
 import { IJobFieldRepository, CreateJobFieldProps, UpdateJobFieldProps } from '../../../domain/repositories/IJobFieldRepository';
 import { JobField, FieldType } from '../../../domain/entities/JobField';
 import { getMongoDb } from './client';
@@ -23,7 +23,7 @@ export class JobFieldRepository
         return 'Job field';
     }
 
-    protected mapToEntity(doc: any): JobField {
+    protected mapToEntity(doc: WithId<Document>): JobField {
         return new JobField({
             id: doc._id.toString(),
             type: doc.type,
@@ -49,11 +49,11 @@ export class JobFieldRepository
                 createdAt: now,
                 updatedAt: now,
             });
-        } catch (error: any) {
-            if (error?.code === 11000) {
+        } catch (error) {
+            if (error instanceof MongoServerError && error.code === 11000) {
                 throw new InternalError(`${data.type} "${data.name}" already exists`);
             }
-            throw new InternalError('Failed to create job field', error as Error);
+            throw new InternalError('Failed to create job field', error instanceof Error ? error : undefined);
         }
     }
 
@@ -74,12 +74,12 @@ export class JobFieldRepository
             }
 
             return this.mapToEntity(result);
-        } catch (error: any) {
+        } catch (error) {
             if (error instanceof NotFoundError) throw error;
-            if (error?.code === 11000) {
+            if (error instanceof MongoServerError && error.code === 11000) {
                 throw new InternalError('A field with this name already exists for this type');
             }
-            throw new InternalError('Failed to update job field', error as Error);
+            throw new InternalError('Failed to update job field', error instanceof Error ? error : undefined);
         }
     }
 

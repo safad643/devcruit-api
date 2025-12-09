@@ -61,8 +61,8 @@ export function globalErrorHandler(
   // Handle Fastify validation errors
   if ('validation' in error && error.validation) {
     const fields: Record<string, string> = {};
-    error.validation.forEach((err: any) => {
-      const field = err.instancePath.replace('/', '') || err.params?.missingProperty;
+    error.validation.forEach((err) => {
+      const field = (err.instancePath.replace('/', '') || err.params?.missingProperty) as string;
       fields[field] = err.message || 'Validation failed';
     });
 

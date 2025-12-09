@@ -1,4 +1,4 @@
-import { Collection, ObjectId } from 'mongodb';
+import { Collection, ObjectId, WithId, Document } from 'mongodb';
 import { IAdminRepository } from '../../../domain/repositories';
 import { Admin, AdminProps } from '../../../domain/entities/Admin';
 import { getMongoDb } from './client';
@@ -34,7 +34,7 @@ export class AdminRepository implements IAdminRepository {
     }
   }
 
-  private mapToEntity(doc: any): Admin {
+  private mapToEntity(doc: WithId<Document>): Admin {
     return new Admin({
       id: doc._id.toString(),
       email: doc.email,

@@ -1,4 +1,4 @@
-import { Collection, ObjectId } from 'mongodb';
+import { Collection, ObjectId, WithId, Document, OptionalId } from 'mongodb';
 import { injectable } from 'inversify';
 import { IConversationRepository, CreateConversationProps, UpdateConversationProps } from '../../../domain/repositories/IConversationRepository';
 import { Conversation, ConversationProps } from '../../../domain/entities/Conversation';
@@ -22,7 +22,7 @@ export class ConversationRepository
     return 'Conversation';
   }
 
-  protected mapToEntity(doc: any): Conversation {
+  protected mapToEntity(doc: WithId<Document>): Conversation {
     return new Conversation({
       id: doc._id.toString(),
       participant1Id: doc.participant1Id,
@@ -52,7 +52,7 @@ export class ConversationRepository
         updatedAt: conversation.updatedAt,
       };
 
-      const result = await this.collection.insertOne(doc as any);
+      const result = await this.collection.insertOne(doc as OptionalId<Document>);
       return this.mapToEntity({ _id: result.insertedId, ...doc });
     } catch (error) {
       throw new InternalError('Failed to create conversation', error as Error);

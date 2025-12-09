@@ -94,8 +94,8 @@ export function setupVideoSocket(io: SocketIOServer): void {
         socket.join(room);
         socket.to(room).emit('participant-joined', { userId });
         cb?.();
-      } catch (e: any) {
-        cb?.(e.message);
+      } catch (e) {
+        cb?.(e instanceof Error ? e.message : 'Failed to join call');
       }
     });
 
@@ -108,8 +108,8 @@ export function setupVideoSocket(io: SocketIOServer): void {
         socket.leave(room);
         socket.to(room).emit('participant-left', { userId });
         cb?.();
-      } catch (e: any) {
-        cb?.(e.message);
+      } catch (e) {
+        cb?.(e instanceof Error ? e.message : 'Failed to leave call');
       }
     });
 
@@ -119,8 +119,8 @@ export function setupVideoSocket(io: SocketIOServer): void {
         const room = getCachedRoom(payload.applicationId, payload.roundName);
         socket.to(room).emit('webrtc-offer', { ...payload, fromUserId: userId });
         cb?.();
-      } catch (e: any) {
-        cb?.(e.message);
+      } catch (e) {
+        cb?.(e instanceof Error ? e.message : 'Failed to send offer');
       }
     });
 
@@ -129,8 +129,8 @@ export function setupVideoSocket(io: SocketIOServer): void {
         const room = getCachedRoom(payload.applicationId, payload.roundName);
         socket.to(room).emit('webrtc-answer', { ...payload, fromUserId: userId });
         cb?.();
-      } catch (e: any) {
-        cb?.(e.message);
+      } catch (e) {
+        cb?.(e instanceof Error ? e.message : 'Failed to send answer');
       }
     });
 
@@ -139,8 +139,8 @@ export function setupVideoSocket(io: SocketIOServer): void {
         const room = getCachedRoom(payload.applicationId, payload.roundName);
         socket.to(room).emit('webrtc-ice-candidate', { ...payload, fromUserId: userId });
         cb?.();
-      } catch (e: any) {
-        cb?.(e.message);
+      } catch (e) {
+        cb?.(e instanceof Error ? e.message : 'Failed to send ICE candidate');
       }
     });
 

@@ -1,4 +1,4 @@
-import { Collection, ObjectId } from 'mongodb';
+import { Collection, ObjectId, WithId, Document, Filter } from 'mongodb';
 import { IApplicationRepository, ApplicationListFilters, ApplicationListResult, ApplicationMetrics, CreateApplicationProps, UpdateApplicationProps } from '../../../domain/repositories/IApplicationRepository';
 import { Application, ApplicationProps, InterviewRound, StatusNotes } from '../../../domain/entities/Application';
 import { getMongoDb } from './client';
@@ -22,8 +22,8 @@ export class ApplicationRepository
     return 'Application';
   }
 
-  protected mapToEntity(doc: any): Application {
-    const mapInterviewRounds = (rounds: any[]): InterviewRound[] => {
+  protected mapToEntity(doc: WithId<Document>): Application {
+    const mapInterviewRounds = (rounds: InterviewRound[]): InterviewRound[] => {
       if (!Array.isArray(rounds)) return [];
       return rounds.map(round => ({
         roundName: round.roundName,
@@ -103,7 +103,7 @@ export class ApplicationRepository
       const updatePayload = {
         ...updateFields,
         lastUpdatedAt: new Date(),
-      } as any;
+      };
 
       const result = await this.collection.findOneAndUpdate(
         { _id: new ObjectId(id) },
@@ -152,7 +152,7 @@ export class ApplicationRepository
 
   async listWithFilters(filters: ApplicationListFilters): Promise<ApplicationListResult> {
     try {
-      const matchQuery: any = {};
+      const matchQuery: Filter<Document> = {};
       if (filters.companyId) matchQuery.companyId = filters.companyId;
       if (filters.developerId) matchQuery.developerId = filters.developerId;
       if (filters.jobId) matchQuery.jobId = filters.jobId;
@@ -202,11 +202,11 @@ export class ApplicationRepository
         offer_extended: 0, offer_accepted: 0, offer_declined: 0, withdrawn: 0,
       };
 
-      results.forEach((result: any) => {
+      results.forEach((result) => {
         const status = result._id;
         const count = result.count;
         metrics.total += count;
-        if (status in metrics) (metrics as any)[status] = count;
+        if (status in metrics) (metrics as unknown as Record<string, number>)[status] = count;
       });
 
       return metrics;

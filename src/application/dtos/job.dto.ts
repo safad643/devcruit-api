@@ -3,7 +3,7 @@ import { JobType, WorkArrangement, ExperienceLevel, Compensation, JobStatus, Job
 // Input compensation type matching the API schema
 // - Hidden: empty object {}
 // - Range: { min, max, currency }
-export type CreateJobCompensationInput = 
+export type CreateJobCompensationInput =
   | {}
   | { min: number; max: number; currency: string };
 
@@ -184,14 +184,18 @@ export interface GetJobInput {
   companyId: string;
 }
 
+// Update job updates type that accepts string dates from HTTP schema
+export type UpdateJobUpdates = Partial<Omit<JobProps, 'id' | 'companyId' | 'createdAt' | 'updatedAt' | 'status' | 'validUntil'>> & {
+  validUntil?: string; // ISO date string from schema
+};
+
 export interface UpdateJobInput {
   jobId: string;
   companyId: string;
-  updates: Partial<Omit<JobProps, 'id' | 'companyId' | 'createdAt' | 'updatedAt' | 'status'>>;
+  updates: UpdateJobUpdates;
 }
 
 export interface UpdateJobOutput {
   id: string;
   message: string;
 }
-

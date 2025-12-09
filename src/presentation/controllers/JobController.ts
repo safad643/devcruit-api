@@ -26,7 +26,7 @@ export class JobController {
     @inject(TYPES.OpenJobUseCase) private openJobUseCase: IOpenJobUseCase,
     @inject(TYPES.UpdateJobUseCase) private updateJobUseCase: IUpdateJobUseCase,
     @inject(TYPES.GetJobUseCase) private getJobUseCase: IGetJobUseCase
-  ) {}
+  ) { }
 
   createJob = async (
     request: FastifyRequest<{ Body: CreateJobInput }>,
@@ -48,10 +48,10 @@ export class JobController {
     const query = request.query;
     const page = query.page ?? 1;
     const limit = query.limit ?? 25;
-    
+
     // Default status to 'open' if not provided
     const status = query.status === undefined ? 'open' : query.status;
-    
+
     const result = await this.listJobsUseCase.execute({
       companyId,
       page,
@@ -61,7 +61,7 @@ export class JobController {
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
     });
-    
+
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
@@ -121,18 +121,11 @@ export class JobController {
     const companyContext = this.getCompanyContext(request);
     const companyId = companyContext.companyUserId;
     const jobId = request.params.id;
-    
-    // Convert validUntil from string to Date if provided
-    // The schema provides validUntil as a string, but the use case expects a Date
-    const updates: any = { ...request.body };
-    if (updates.validUntil !== undefined && typeof updates.validUntil === 'string') {
-      updates.validUntil = new Date(updates.validUntil);
-    }
-    
+
     const result = await this.updateJobUseCase.execute({
       jobId,
       companyId,
-      updates
+      updates: request.body
     });
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };

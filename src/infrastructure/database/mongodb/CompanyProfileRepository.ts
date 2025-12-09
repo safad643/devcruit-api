@@ -1,4 +1,4 @@
-import { Collection, ObjectId } from 'mongodb';
+import { Collection, ObjectId, WithId, Document, Filter } from 'mongodb';
 import { ICompanyProfileRepository, CompanyListFilters, CompanyListResult, CreateCompanyProfileProps, UpdateCompanyProfileProps } from '../../../domain/repositories/ICompanyProfileRepository';
 import { CompanyProfile, CompanyProfileProps } from '../../../domain/entities/CompanyProfile';
 import { getMongoDb } from './client';
@@ -22,7 +22,7 @@ export class CompanyProfileRepository
     return 'Company profile';
   }
 
-  protected mapToEntity(doc: any): CompanyProfile {
+  protected mapToEntity(doc: WithId<Document>): CompanyProfile {
     return new CompanyProfile({
       id: doc._id.toString(),
       userId: doc.userId,
@@ -129,8 +129,8 @@ export class CompanyProfileRepository
 
   async listWithFilters(filters: CompanyListFilters): Promise<CompanyListResult> {
     try {
-      const pipeline: any[] = [];
-      const initialMatch: any = {};
+      const pipeline: Document[] = [];
+      const initialMatch: Filter<Document> = {};
 
       if (filters.companySize) {
         initialMatch.companySize = filters.companySize;
@@ -210,7 +210,7 @@ export class CompanyProfileRepository
       const docs = await this.collection.aggregate(pipeline).toArray();
 
       const companies = docs.map(doc => ({
-        companyProfile: this.mapToEntity(doc),
+        companyProfile: this.mapToEntity(doc as WithId<Document>),
         userEmail: doc.userEmail,
         isBlocked: doc.isBlocked
       }));

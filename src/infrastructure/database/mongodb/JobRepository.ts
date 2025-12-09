@@ -1,4 +1,4 @@
-import { Collection, ObjectId } from 'mongodb';
+import { Collection, ObjectId, WithId, Document, Filter } from 'mongodb';
 import { IJobRepository, JobListFilters, JobListResult, PublicJobListFilters, CreateJobProps, UpdateJobProps } from '../../../domain/repositories/IJobRepository';
 import { Job, JobProps } from '../../../domain/entities/Job';
 import { getMongoDb } from './client';
@@ -22,7 +22,7 @@ export class JobRepository
     return 'Job';
   }
 
-  protected mapToEntity(doc: any): Job {
+  protected mapToEntity(doc: WithId<Document>): Job {
     return new Job({
       id: doc._id.toString(),
       companyId: doc.companyId,
@@ -100,7 +100,7 @@ export class JobRepository
       const updatePayload = {
         ...updateFields,
         updatedAt: new Date(),
-      } as any;
+      };
 
       const result = await this.collection.findOneAndUpdate(
         { _id: new ObjectId(id) },
@@ -130,7 +130,7 @@ export class JobRepository
 
   async listWithFilters(filters: JobListFilters): Promise<JobListResult> {
     try {
-      const matchQuery: any = {
+      const matchQuery: Filter<Document> = {
         companyId: filters.companyId,
       };
 
@@ -165,7 +165,7 @@ export class JobRepository
 
   async listPublicWithFilters(filters: PublicJobListFilters): Promise<JobListResult> {
     try {
-      const matchQuery: any = {
+      const matchQuery: Filter<Document> = {
         status: 'open',
       };
       if (filters.location) {
@@ -190,7 +190,7 @@ export class JobRepository
         ];
       }
 
-      const pipeline: any[] = [{ $match: matchQuery }];
+      const pipeline: Document[] = [{ $match: matchQuery }];
 
       pipeline.push({
         $lookup: {
@@ -225,7 +225,7 @@ export class JobRepository
       );
 
       const docs = await this.collection.aggregate(pipeline).toArray();
-      const jobs = docs.map((doc: any) => this.mapToEntity(doc));
+      const jobs = docs.map((doc) => this.mapToEntity(doc as WithId<Document>));
 
       return { jobs, total };
     } catch (error) {

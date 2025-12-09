@@ -47,7 +47,13 @@ export class UpdateJobUseCase implements IUpdateJobUseCase {
       }
     }
 
-    const updates: Partial<JobProps> = { ...input.updates };
+    //Build updates object with proper types
+    const updates: Partial<JobProps> = { ...input.updates } as Partial<JobProps>;
+
+    // Convert validUntil from string to Date if provided
+    if (input.updates.validUntil) {
+      updates.validUntil = new Date(input.updates.validUntil);
+    }
 
     const updated = await this.jobRepository.update(input.jobId, updates);
     return {
@@ -56,5 +62,3 @@ export class UpdateJobUseCase implements IUpdateJobUseCase {
     };
   }
 }
-
-

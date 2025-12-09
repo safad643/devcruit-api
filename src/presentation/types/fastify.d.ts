@@ -1,5 +1,6 @@
 import 'fastify';
 import '@fastify/cookie';
+import { CookieSerializeOptions } from '@fastify/cookie';
 import { UserRole } from '../../domain/types';
 import { CompanyProfile } from '../../domain/entities/CompanyProfile';
 import { CompanyTeamMember } from '../../domain/repositories';
@@ -21,7 +22,7 @@ declare module 'fastify' {
   }
 
   interface FastifyReply {
-    setCookie(name: string, value: string, options?: any): this;
-    clearCookie(name: string, options?: any): this;
+    setCookie(name: string, value: string, options?: CookieSerializeOptions): this;
+    clearCookie(name: string, options?: CookieSerializeOptions): this;
   }
 }

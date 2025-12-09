@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { injectable } from 'inversify';
 import { IGoogleAuthService, GoogleUserInfo } from '../../application/services/IGoogleAuthService';
 import { config } from '../../config';
@@ -20,11 +20,11 @@ export class GoogleAuthService implements IGoogleAuthService {
       });
 
       return response.data.access_token;
-    } catch (error: any) {
-      if (error.response?.status === 400) {
+    } catch (error) {
+      if (error instanceof AxiosError && error.response?.status === 400) {
         throw new UnauthorizedError('Invalid or expired authorization code');
       }
-      throw new InternalError('Failed to exchange Google authorization code', error);
+      throw new InternalError('Failed to exchange Google authorization code', error instanceof Error ? error : undefined);
     }
   }
 
@@ -39,9 +39,9 @@ export class GoogleAuthService implements IGoogleAuthService {
       }
 
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
       if (error instanceof UnauthorizedError) throw error;
-      throw new InternalError('Failed to fetch Google user info', error);
+      throw new InternalError('Failed to fetch Google user info', error instanceof Error ? error : undefined);
     }
   }
 }

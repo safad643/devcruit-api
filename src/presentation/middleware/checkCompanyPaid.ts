@@ -50,7 +50,7 @@ export async function checkCompanyPaid(
       throw new ForbiddenError('Company must have a paid subscription to access this feature');
     }
 
-    (request as any).companyContext = {
+    request.companyContext = {
       companyProfile,
       companyUserId: companyProfile.userId,
       teamMemberId,

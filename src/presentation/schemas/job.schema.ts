@@ -1,11 +1,14 @@
 import { Type, Static } from '@sinclair/typebox';
 
-// Compensation Schema (inferred)
-// - Hidden: empty object {}
-// - Range: { min, max, currency }
+// Compensation Schema
+// - Hidden: { mode: 'hidden' }
+// - Range: { mode: 'range', min, max, currency }
 const CompensationSchema = Type.Union([
-  Type.Object({}), // hidden (no fields)
   Type.Object({
+    mode: Type.Literal('hidden')
+  }),
+  Type.Object({
+    mode: Type.Literal('range'),
     min: Type.Number({ minimum: 0 }),
     max: Type.Number({ minimum: 0 }),
     currency: Type.String({ minLength: 1, maxLength: 10 })

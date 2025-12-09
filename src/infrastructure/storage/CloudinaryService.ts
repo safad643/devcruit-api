@@ -18,12 +18,12 @@ export class CloudinaryService implements IFileService {
 
   async generateSignature(params: GenerateSignatureParams): Promise<SignatureResult> {
     const { timestamp, category, userId } = params;
-    
+
     // Get or create folder
     const folder = params.folder || this.getFolderForCategory(category, userId);
-    
+
     // Create parameters to sign (according to Cloudinary signed upload docs)
-    const paramsToSign: Record<string, any> = {
+    const paramsToSign: Record<string, string | number> = {
       timestamp,
       folder,
     };

@@ -1,4 +1,4 @@
-import { Collection, ObjectId } from 'mongodb';
+import { Collection, ObjectId, WithId, Document, Filter } from 'mongodb';
 import { injectable } from 'inversify';
 import { IMessageRepository, MessageListFilters, MessageListResult, CreateMessageProps, UpdateMessageProps } from '../../../domain/repositories/IMessageRepository';
 import { Message, MessageProps } from '../../../domain/entities/Message';
@@ -22,7 +22,7 @@ export class MessageRepository
     return 'Message';
   }
 
-  protected mapToEntity(doc: any): Message {
+  protected mapToEntity(doc: WithId<Document>): Message {
     return new Message({
       id: doc._id.toString(),
       conversationId: doc.conversationId,
@@ -81,7 +81,7 @@ export class MessageRepository
   async findByConversationId(filters: MessageListFilters): Promise<MessageListResult> {
     try {
       const { conversationId, limit, beforeDate } = filters;
-      const query: any = { conversationId };
+      const query: Filter<Document> = { conversationId };
       if (beforeDate) query.createdAt = { $lt: beforeDate };
 
       const total = await this.collection.countDocuments({ conversationId });
