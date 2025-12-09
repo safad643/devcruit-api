@@ -1,4 +1,5 @@
 import { DeveloperProfile, DeveloperProfileProps } from '../entities/DeveloperProfile';
+import { IGenericRepository } from './IGenericRepository';
 
 export interface DeveloperProfileSearchFilters {
   techs?: string[];
@@ -16,7 +17,7 @@ export interface DeveloperProfileSearchFilters {
 export interface DeveloperListFilters {
   page: number;
   limit: number;
-  search?: string; // Search by user email
+  search?: string;
   isBlocked?: boolean;
   sortBy?: 'createdAt' | 'updatedAt';
   sortOrder?: 'asc' | 'desc';
@@ -31,13 +32,11 @@ export interface DeveloperListResult {
   total: number;
 }
 
-export interface IDeveloperProfileRepository {
+export type CreateDeveloperProfileProps = Omit<DeveloperProfileProps, 'id' | 'createdAt' | 'updatedAt'>;
+export type UpdateDeveloperProfileProps = Partial<DeveloperProfileProps>;
+
+export interface IDeveloperProfileRepository extends IGenericRepository<DeveloperProfile, CreateDeveloperProfileProps, UpdateDeveloperProfileProps> {
   findByUserId(userId: string): Promise<DeveloperProfile | null>;
-  findById(id: string): Promise<DeveloperProfile | null>;
-  create(profile: Omit<DeveloperProfileProps, 'id' | 'createdAt' | 'updatedAt'>): Promise<DeveloperProfile>;
-  update(userId: string, updates: Partial<DeveloperProfileProps>): Promise<DeveloperProfile>;
-  delete(userId: string): Promise<void>;
   search(filters: DeveloperProfileSearchFilters): Promise<DeveloperProfile[]>;
   listWithFilters(filters: DeveloperListFilters): Promise<DeveloperListResult>;
 }
-

@@ -10,7 +10,7 @@ export class CreateCompanyProfileUseCase {
   constructor(
     @inject(TYPES.CompanyProfileRepository) private profileRepository: ICompanyProfileRepository,
     @inject(TYPES.UserRepository) private userRepository: IUserRepository
-  ) {}
+  ) { }
 
   async execute(input: CreateCompanyProfileInput): Promise<CreateCompanyProfileOutput> {
     // 1. Verify user exists
@@ -49,7 +49,7 @@ export class CreateCompanyProfileUseCase {
     const createdProfile = await this.profileRepository.create(profile);
 
     // 6. Mark user's profile as completed
-    await this.userRepository.updateProfileCompletedStatus(input.userId, true);
+    await this.userRepository.update(input.userId, user.withProfileCompleted(true));
 
     return {
       id: createdProfile.id,

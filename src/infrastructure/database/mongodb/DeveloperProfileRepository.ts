@@ -1,42 +1,56 @@
 import { Collection, ObjectId } from 'mongodb';
-import { IDeveloperProfileRepository, DeveloperListFilters, DeveloperListResult } from '../../../domain/repositories';
+import { IDeveloperProfileRepository, DeveloperListFilters, DeveloperListResult, CreateDeveloperProfileProps, UpdateDeveloperProfileProps, DeveloperProfileSearchFilters } from '../../../domain/repositories/IDeveloperProfileRepository';
 import { DeveloperProfile, DeveloperProfileProps } from '../../../domain/entities/DeveloperProfile';
 import { getMongoDb } from './client';
-import { InternalError } from '../../../domain/errors';
+import { InternalError, NotFoundError } from '../../../domain/errors';
 import { injectable } from 'inversify';
+import { MongoGenericRepository } from './MongoGenericRepository';
 
 @injectable()
-export class DeveloperProfileRepository implements IDeveloperProfileRepository {
-  private collection: Collection;
+export class DeveloperProfileRepository
+  extends MongoGenericRepository<DeveloperProfile, CreateDeveloperProfileProps, UpdateDeveloperProfileProps>
+  implements IDeveloperProfileRepository {
+
+  protected collection: Collection;
 
   constructor() {
+    super();
     this.collection = getMongoDb().collection('developer_profiles');
-    
   }
 
-  async findByUserId(userId: string): Promise<DeveloperProfile | null> {
-    try {
-      if (!ObjectId.isValid(userId)) return null;
-      const doc = await this.collection.findOne({ userId });
-      if (!doc) return null;
-      return this.mapToEntity(doc);
-    } catch (error) {
-      throw new InternalError('Database query failed', error as Error);
-    }
+  protected getEntityName(): string {
+    return 'Developer profile';
   }
 
-  async findById(id: string): Promise<DeveloperProfile | null> {
-    try {
-      if (!ObjectId.isValid(id)) return null;
-      const doc = await this.collection.findOne({ _id: new ObjectId(id) });
-      if (!doc) return null;
-      return this.mapToEntity(doc);
-    } catch (error) {
-      throw new InternalError('Database query failed', error as Error);
-    }
+  protected mapToEntity(doc: any): DeveloperProfile {
+    return new DeveloperProfile({
+      id: doc._id.toString(),
+      userId: doc.userId,
+      profilePhotoUrl: doc.profilePhotoUrl,
+      bio: doc.bio,
+      skills: doc.skills || [],
+      techs: doc.techs || [],
+      workHistory: doc.workHistory || [],
+      employmentStatus: doc.employmentStatus,
+      education: doc.education || [],
+      certifications: doc.certifications || [],
+      githubUrl: doc.githubUrl,
+      portfolioUrl: doc.portfolioUrl,
+      projects: doc.projects || [],
+      linkedinUrl: doc.linkedinUrl,
+      desiredSalary: doc.desiredSalary,
+      jobTypePreferences: doc.jobTypePreferences || [],
+      workArrangement: doc.workArrangement || [],
+      yearsExperience: doc.yearsExperience,
+      seniorityLevel: doc.seniorityLevel,
+      willingToRelocate: doc.willingToRelocate,
+      resumeUrl: doc.resumeUrl,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+    });
   }
 
-  async create(profile: Omit<DeveloperProfileProps, 'id' | 'createdAt' | 'updatedAt'>): Promise<DeveloperProfile> {
+  async create(profile: CreateDeveloperProfileProps): Promise<DeveloperProfile> {
     try {
       const now = new Date();
       const result = await this.collection.insertOne({
@@ -64,11 +78,6 @@ export class DeveloperProfileRepository implements IDeveloperProfileRepository {
         updatedAt: now,
       });
 
-      await getMongoDb().collection('users').updateOne(
-        { _id: new ObjectId(profile.userId) },
-        { $set: { isProfileCompleted: true } }
-      );
-
       return new DeveloperProfile({
         id: result.insertedId.toString(),
         ...profile,
@@ -80,76 +89,65 @@ export class DeveloperProfileRepository implements IDeveloperProfileRepository {
     }
   }
 
-  async update(userId: string, updates: Partial<DeveloperProfileProps>): Promise<DeveloperProfile> {
+  async update(id: string, updates: UpdateDeveloperProfileProps): Promise<DeveloperProfile> {
     try {
-      if (!ObjectId.isValid(userId)) {
-        throw new InternalError('Invalid user ID format');
+      if (!ObjectId.isValid(id)) {
+        throw new NotFoundError('Developer profile not found');
       }
 
-      // Remove fields that shouldn't be updated
-      const { id, userId: _userId, createdAt, updatedAt, ...updateFields } = updates;
-      const updatePayload = {
-        ...updateFields,
-        updatedAt: new Date(),
-      };
+      const { id: _id, userId, createdAt, updatedAt, ...updateFields } = updates;
+      const updatePayload = { ...updateFields, updatedAt: new Date() };
 
       const result = await this.collection.findOneAndUpdate(
-        { userId },
+        { _id: new ObjectId(id) },
         { $set: updatePayload },
         { returnDocument: 'after' }
       );
 
       if (!result) {
-        throw new InternalError('Profile not found for update');
+        throw new NotFoundError('Developer profile not found');
       }
 
       return this.mapToEntity(result);
     } catch (error) {
-      if (error instanceof InternalError) throw error;
+      if (error instanceof NotFoundError) throw error;
       throw new InternalError('Failed to update developer profile', error as Error);
     }
   }
 
-  async delete(userId: string): Promise<void> {
+  async findByUserId(userId: string): Promise<DeveloperProfile | null> {
     try {
-      const result = await this.collection.deleteOne({ userId });
-      if (result.deletedCount === 0) {
-        throw new InternalError('Profile not found for deletion');
-      }
+      if (!ObjectId.isValid(userId)) return null;
+      const doc = await this.collection.findOne({ userId });
+      if (!doc) return null;
+      return this.mapToEntity(doc);
     } catch (error) {
-      if (error instanceof InternalError) throw error;
-      throw new InternalError('Failed to delete developer profile', error as Error);
+      throw new InternalError('Database query failed', error as Error);
     }
   }
 
-  async search(filters: any): Promise<DeveloperProfile[]> {
+  async search(filters: DeveloperProfileSearchFilters): Promise<DeveloperProfile[]> {
     try {
       const query: any = {};
-      
+
       if (filters.techs && filters.techs.length > 0) {
         query.techs = { $in: filters.techs };
       }
-      
       if (filters.seniorityLevel) {
         query.seniorityLevel = filters.seniorityLevel;
       }
-      
       if (filters.willingToRelocate !== undefined) {
         query.willingToRelocate = filters.willingToRelocate;
       }
-      
       if (filters.workArrangement && filters.workArrangement.length > 0) {
         query.workArrangement = { $in: filters.workArrangement };
       }
-      
       if (filters.jobTypePreferences && filters.jobTypePreferences.length > 0) {
         query.jobTypePreferences = { $in: filters.jobTypePreferences };
       }
-      
       if (filters.employmentStatus) {
         query.employmentStatus = filters.employmentStatus;
       }
-      
       if (filters.minYearsExperience !== undefined || filters.maxYearsExperience !== undefined) {
         query.yearsExperience = {};
         if (filters.minYearsExperience !== undefined) {
@@ -159,7 +157,6 @@ export class DeveloperProfileRepository implements IDeveloperProfileRepository {
           query.yearsExperience.$lte = filters.maxYearsExperience;
         }
       }
-      
       if (filters.minDesiredSalary !== undefined || filters.maxDesiredSalary !== undefined) {
         query.desiredSalary = {};
         if (filters.minDesiredSalary !== undefined) {
@@ -169,7 +166,7 @@ export class DeveloperProfileRepository implements IDeveloperProfileRepository {
           query.desiredSalary.$lte = filters.maxDesiredSalary;
         }
       }
-      
+
       const docs = await this.collection.find(query).toArray();
       return docs.map(doc => this.mapToEntity(doc));
     } catch (error) {
@@ -179,10 +176,8 @@ export class DeveloperProfileRepository implements IDeveloperProfileRepository {
 
   async listWithFilters(filters: DeveloperListFilters): Promise<DeveloperListResult> {
     try {
-      // Build aggregation pipeline
       const pipeline: any[] = [];
 
-      // Lookup users to get email and isBlocked
       pipeline.push({
         $addFields: {
           userIdObjectId: {
@@ -205,48 +200,27 @@ export class DeveloperProfileRepository implements IDeveloperProfileRepository {
       });
 
       pipeline.push({
-        $unwind: {
-          path: '$user',
-          preserveNullAndEmptyArrays: false
-        }
+        $unwind: { path: '$user', preserveNullAndEmptyArrays: false }
       });
 
-      // Ensure we only get developer role users
-      pipeline.push({
-        $match: {
-          'user.role': 'developer'
-        }
-      });
+      pipeline.push({ $match: { 'user.role': 'developer' } });
 
-      // Blocked filter
       if (filters.isBlocked !== undefined) {
-        pipeline.push({
-          $match: {
-            'user.isBlocked': filters.isBlocked
-          }
-        });
+        pipeline.push({ $match: { 'user.isBlocked': filters.isBlocked } });
       }
 
-      // Search by email
       if (filters.search) {
         const searchRegex = { $regex: filters.search, $options: 'i' };
-        pipeline.push({
-          $match: {
-            'user.email': searchRegex
-          }
-        });
+        pipeline.push({ $match: { 'user.email': searchRegex } });
       }
 
-      // Sorting (default: createdAt desc)
       const sortField = filters.sortBy ?? 'createdAt';
       const sortOrder = filters.sortOrder === 'asc' ? 1 : -1;
 
-      // Get total count before pagination
       const countPipeline = [...pipeline, { $count: 'total' }];
       const countResult = await this.collection.aggregate(countPipeline).toArray();
       const total = countResult.length > 0 ? countResult[0].total : 0;
 
-      // Add pagination
       const skip = (filters.page - 1) * filters.limit;
       pipeline.push(
         { $sort: { [sortField]: sortOrder } },
@@ -254,34 +228,15 @@ export class DeveloperProfileRepository implements IDeveloperProfileRepository {
         { $limit: filters.limit }
       );
 
-      // Project final fields
       pipeline.push({
         $project: {
-          _id: 1,
-          userId: 1,
-          profilePhotoUrl: 1,
-          bio: 1,
-          skills: 1,
-          techs: 1,
-          workHistory: 1,
-          employmentStatus: 1,
-          education: 1,
-          certifications: 1,
-          githubUrl: 1,
-          portfolioUrl: 1,
-          projects: 1,
-          linkedinUrl: 1,
-          desiredSalary: 1,
-          jobTypePreferences: 1,
-          workArrangement: 1,
-          yearsExperience: 1,
-          seniorityLevel: 1,
-          willingToRelocate: 1,
-          resumeUrl: 1,
-          createdAt: 1,
-          updatedAt: 1,
-          userEmail: '$user.email',
-          isBlocked: '$user.isBlocked'
+          _id: 1, userId: 1, profilePhotoUrl: 1, bio: 1, skills: 1, techs: 1,
+          workHistory: 1, employmentStatus: 1, education: 1, certifications: 1,
+          githubUrl: 1, portfolioUrl: 1, projects: 1, linkedinUrl: 1,
+          desiredSalary: 1, jobTypePreferences: 1, workArrangement: 1,
+          yearsExperience: 1, seniorityLevel: 1, willingToRelocate: 1,
+          resumeUrl: 1, createdAt: 1, updatedAt: 1,
+          userEmail: '$user.email', isBlocked: '$user.isBlocked'
         }
       });
 
@@ -293,41 +248,9 @@ export class DeveloperProfileRepository implements IDeveloperProfileRepository {
         isBlocked: doc.isBlocked
       }));
 
-      return {
-        developers,
-        total
-      };
+      return { developers, total };
     } catch (error) {
       throw new InternalError('Failed to list developers with filters', error as Error);
     }
   }
-
-  private mapToEntity(doc: any): DeveloperProfile {
-    return new DeveloperProfile({
-      id: doc._id.toString(),
-      userId: doc.userId,
-      profilePhotoUrl: doc.profilePhotoUrl,
-      bio: doc.bio,
-      skills: doc.skills || [],
-      techs: doc.techs || [],
-      workHistory: doc.workHistory || [],
-      employmentStatus: doc.employmentStatus,
-      education: doc.education || [],
-      certifications: doc.certifications || [],
-      githubUrl: doc.githubUrl,
-      portfolioUrl: doc.portfolioUrl,
-      projects: doc.projects || [],
-      linkedinUrl: doc.linkedinUrl,
-      desiredSalary: doc.desiredSalary,
-      jobTypePreferences: doc.jobTypePreferences || [],
-      workArrangement: doc.workArrangement || [],
-      yearsExperience: doc.yearsExperience,
-      seniorityLevel: doc.seniorityLevel,
-      willingToRelocate: doc.willingToRelocate,
-      resumeUrl: doc.resumeUrl,
-      createdAt: doc.createdAt,
-      updatedAt: doc.updatedAt,
-    });
-  }
 }
-

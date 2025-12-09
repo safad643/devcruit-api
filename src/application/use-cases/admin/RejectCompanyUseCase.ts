@@ -9,7 +9,7 @@ import { RejectCompanyInput, RejectCompanyOutput } from '../../dtos/admin.dto';
 export class RejectCompanyUseCase {
   constructor(
     @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository
-  ) {}
+  ) { }
 
   async execute(input: RejectCompanyInput): Promise<RejectCompanyOutput> {
     // 1. Verify company profile exists
@@ -30,9 +30,9 @@ export class RejectCompanyUseCase {
     };
 
     // 4. Reject the company profile with reupload requests
-    const rejectedProfile = await this.companyProfileRepository.rejectCompany(
+    const rejectedProfile = await this.companyProfileRepository.update(
       input.companyId,
-      documentReuploadRequest
+      existingProfile.reject(documentReuploadRequest)
     );
 
     return {

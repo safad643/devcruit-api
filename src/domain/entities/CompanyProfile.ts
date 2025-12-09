@@ -24,7 +24,7 @@ export type CompanyProfileStatus = 'pending' | 'approved' | 'rejected' | 'resubm
 
 export interface CompanyProfileProps {
   id: string;
-  userId: string; // Reference to the User
+  userId: string;
   fullName: string;
   phoneNumber: string;
   companyName: string;
@@ -35,11 +35,8 @@ export interface CompanyProfileProps {
   businessRegistrationProofUrl: string;
   employmentVerificationUrl: string;
   logoUrl?: string;
-  // Profile verification status
   status: CompanyProfileStatus;
-  // Historical subscription plan records
   planHistory: PlanHistoryItem[];
-  // Admin re-upload requests for specific documents
   documentReuploadRequests: DocumentReuploadRequest[];
   createdAt: Date;
   updatedAt: Date;
@@ -97,5 +94,27 @@ export class CompanyProfile {
       updatedAt: now,
     };
   }
-}
 
+  // Domain methods
+  approve(): Partial<CompanyProfileProps> {
+    return { status: 'approved' };
+  }
+
+  reject(request: DocumentReuploadRequest): Partial<CompanyProfileProps> {
+    return {
+      status: 'rejected',
+      documentReuploadRequests: [...this.documentReuploadRequests, request],
+    };
+  }
+
+  resubmitDocuments(documents: Partial<Record<CompanyDocumentKey, string>>): Partial<CompanyProfileProps> {
+    const updates: Partial<CompanyProfileProps> = { status: 'resubmitted' };
+    if (documents.COMPANY_REGISTRATION_DOCUMENT) {
+      updates.businessRegistrationProofUrl = documents.COMPANY_REGISTRATION_DOCUMENT;
+    }
+    if (documents.COMPANY_VERIFICATION_DOCUMENT) {
+      updates.employmentVerificationUrl = documents.COMPANY_VERIFICATION_DOCUMENT;
+    }
+    return updates;
+  }
+}

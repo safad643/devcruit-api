@@ -21,7 +21,7 @@ export class InviteCompanyTeamMemberUseCase implements IInviteCompanyTeamMemberU
     @inject(TYPES.HashService) private hashService: IHashService,
     @inject(TYPES.EmailService) private emailService: IEmailService,
     @inject(TYPES.CryptographicService) private cryptographicService: ICryptographicService
-  ) {}
+  ) { }
 
   async execute(input: InviteCompanyTeamMemberInput): Promise<CompanyTeamMemberDTO> {
     const inviter = await this.userRepository.findById(input.inviterUserId);
@@ -64,7 +64,7 @@ export class InviteCompanyTeamMemberUseCase implements IInviteCompanyTeamMemberU
       authProviders: ['local'],
     });
     const user = await this.userRepository.create(userProps);
-    await this.userRepository.updateProfileCompletedStatus(user.id, true);
+    await this.userRepository.update(user.id, user.withProfileCompleted(true));
 
     const teamMember = await this.companyTeamRepository.inviteMember({
       companyId: companyProfile.userId,
@@ -86,7 +86,7 @@ export class InviteCompanyTeamMemberUseCase implements IInviteCompanyTeamMemberU
     return this.toDTO(teamMember, input.role);
   }
 
-  private toDTO(member: CompanyTeamMember,role: 'hr' | 'interviewer'): CompanyTeamMemberDTO {
+  private toDTO(member: CompanyTeamMember, role: 'hr' | 'interviewer'): CompanyTeamMemberDTO {
     return {
       id: member.id,
       email: member.email,

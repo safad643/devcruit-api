@@ -65,7 +65,7 @@ export class CreateDeveloperProfileUseCase {
     const createdProfile = await this.profileRepository.create(profile);
 
     // 6. Mark user's profile as completed
-    await this.userRepository.updateProfileCompletedStatus(input.userId, true);
+    await this.userRepository.update(input.userId, user.withProfileCompleted(true));
 
     return {
       id: createdProfile.id,

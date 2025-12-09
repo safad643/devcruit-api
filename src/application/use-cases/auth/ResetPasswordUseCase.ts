@@ -14,7 +14,7 @@ export class ResetPasswordUseCase implements IResetPasswordUseCase {
     @inject(TYPES.OTPRepository) private otpRepository: IOTPRepository,
     @inject(TYPES.RefreshTokenRepository) private refreshTokenRepository: IRefreshTokenRepository,
     @inject(TYPES.HashService) private hashService: IHashService
-  ) {}
+  ) { }
 
   async execute(input: ResetPasswordInput): Promise<ResetPasswordOutput> {
     // 1. Find user by email
@@ -40,7 +40,7 @@ export class ResetPasswordUseCase implements IResetPasswordUseCase {
     const hashedPassword = await this.hashService.hash(input.newPassword);
 
     // 5. Update password in database
-    await this.userRepository.updatePassword(user.id, hashedPassword);
+    await this.userRepository.update(user.id, user.withPassword(hashedPassword));
 
     // 6. Invalidate all refresh tokens (logout from all devices)
     await this.refreshTokenRepository.deleteAllForUser(user.id);

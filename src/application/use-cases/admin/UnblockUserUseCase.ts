@@ -8,8 +8,8 @@ import { IEmailService } from '../../services';
 export class UnblockUserUseCase {
   constructor(
     @inject(TYPES.UserRepository) private userRepository: IUserRepository,
-    @inject(TYPES.EmailService) private emailService: IEmailService 
-  ) {}
+    @inject(TYPES.EmailService) private emailService: IEmailService
+  ) { }
 
   async execute(input: UnblockUserInput): Promise<UnblockUserOutput> {
     // 1. Verify user exists
@@ -19,10 +19,10 @@ export class UnblockUserUseCase {
     }
 
     // 2. Unblock the user
-    await this.userRepository.unblockUser(input.userId);
+    await this.userRepository.update(input.userId, user.unblock());
 
     // 3. Notify user via email
-     this.emailService.sendUserUnblocked(user.email);
+    this.emailService.sendUserUnblocked(user.email);
 
     return {
       userId: input.userId,

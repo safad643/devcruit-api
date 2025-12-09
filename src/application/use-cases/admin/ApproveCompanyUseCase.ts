@@ -8,7 +8,7 @@ import { ApproveCompanyInput, ApproveCompanyOutput } from '../../dtos/admin.dto'
 export class ApproveCompanyUseCase {
   constructor(
     @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository
-  ) {}
+  ) { }
 
   async execute(input: ApproveCompanyInput): Promise<ApproveCompanyOutput> {
     // 1. Verify company profile exists
@@ -23,7 +23,7 @@ export class ApproveCompanyUseCase {
     }
 
     // 3. Approve the company profile
-    const approvedProfile = await this.companyProfileRepository.approveCompany(input.companyId);
+    const approvedProfile = await this.companyProfileRepository.update(input.companyId, existingProfile.approve());
 
     return {
       companyId: approvedProfile.id,

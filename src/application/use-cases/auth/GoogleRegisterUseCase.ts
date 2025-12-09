@@ -13,12 +13,12 @@ export class GoogleRegisterUseCase implements IGoogleRegisterUseCase {
     @inject(TYPES.GoogleAuthService) private googleAuthService: IGoogleAuthService,
     @inject(TYPES.UserRepository) private userRepository: IUserRepository,
     @inject(TYPES.AuthTokenService) private authTokenService: IAuthTokenService
-  ) {}
+  ) { }
 
   async execute(input: GoogleRegisterInput): Promise<GoogleRegisterOutput> {
     // 1. Exchange code for Google access token
     const googleAccessToken = await this.googleAuthService.exchangeCodeForTokens(input.code);
-    
+
     // 2. Get user info from Google (this validates email_verified internally)
     const googleUser = await this.googleAuthService.getUserInfo(googleAccessToken);
 
@@ -28,7 +28,7 @@ export class GoogleRegisterUseCase implements IGoogleRegisterUseCase {
     if (existingUser) {
       // User exists with local auth - link Google account
       if (existingUser.hasAuthProvider('local') && !existingUser.hasAuthProvider('google')) {
-        await this.userRepository.linkGoogleAccount(existingUser.id, googleUser.sub);
+        await this.userRepository.update(existingUser.id, existingUser.withGoogleLink(googleUser.sub));
 
         // Refetch to get updated user
         const updatedUser = await this.userRepository.findById(existingUser.id);

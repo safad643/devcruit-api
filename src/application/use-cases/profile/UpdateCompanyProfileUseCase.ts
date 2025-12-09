@@ -22,7 +22,7 @@ export class UpdateCompanyProfileUseCase {
     const updateData = { ...input } as Partial<CompanyProfileProps>;
 
     // 3. Update the profile
-    const updatedProfile = await this.profileRepository.update(userId, updateData);
+    const updatedProfile = await this.profileRepository.update(existingProfile.id, updateData);
 
     return {
       id: updatedProfile.id,

@@ -1,5 +1,5 @@
-import { CompanyProfile, CompanyProfileProps, CompanyProfileStatus, DocumentReuploadRequest } from '../entities/CompanyProfile';
-import { CompanyDocumentKey } from '../types';
+import { CompanyProfile, CompanyProfileProps, CompanyProfileStatus } from '../entities/CompanyProfile';
+import { IGenericRepository } from './IGenericRepository';
 
 export interface CompanyListFilters {
   page: number;
@@ -22,17 +22,10 @@ export interface CompanyListResult {
   total: number;
 }
 
-export interface ICompanyProfileRepository {
-  findByUserId(userId: string): Promise<CompanyProfile | null>;
-  findById(id: string): Promise<CompanyProfile | null>;
-  create(
-    profile: Omit<CompanyProfileProps, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'planHistory' | 'documentReuploadRequests'>
-  ): Promise<CompanyProfile>;
-  update(userId: string, updates: Partial<CompanyProfileProps>): Promise<CompanyProfile>;
-  delete(userId: string): Promise<void>;
-  listWithFilters(filters: CompanyListFilters): Promise<CompanyListResult>;
-  approveCompany(companyId: string): Promise<CompanyProfile>;
-  rejectCompany(companyId: string, documentReuploadRequest: DocumentReuploadRequest): Promise<CompanyProfile>;
-  updateDocuments(userId: string, documents: Partial<Record<CompanyDocumentKey, string>>): Promise<CompanyProfile>;
-}
+export type CreateCompanyProfileProps = Omit<CompanyProfileProps, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'planHistory' | 'documentReuploadRequests'>;
+export type UpdateCompanyProfileProps = Partial<CompanyProfileProps>;
 
+export interface ICompanyProfileRepository extends IGenericRepository<CompanyProfile, CreateCompanyProfileProps, UpdateCompanyProfileProps> {
+  findByUserId(userId: string): Promise<CompanyProfile | null>;
+  listWithFilters(filters: CompanyListFilters): Promise<CompanyListResult>;
+}

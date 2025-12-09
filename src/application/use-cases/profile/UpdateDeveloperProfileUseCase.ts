@@ -28,7 +28,7 @@ export class UpdateDeveloperProfileUseCase {
     const updateData = { ...input } as Partial<DeveloperProfileProps>;
 
     // 3. Update the profile
-    const updatedProfile = await this.profileRepository.update(userId, updateData);
+    const updatedProfile = await this.profileRepository.update(existingProfile.id, updateData);
 
     return {
       id: updatedProfile.id,

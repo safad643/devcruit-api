@@ -5,13 +5,13 @@ export type AuthProvider = 'local' | 'google';
 export interface UserProps {
   id: string;
   email: string;
-  name: string; 
-  password: string | null; 
+  name: string;
+  password: string | null;
   role: UserRole;
   isBlocked: boolean;
-  isProfileCompleted: boolean; 
-  authProviders: AuthProvider[]; 
-  googleId?: string; 
+  isProfileCompleted: boolean;
+  authProviders: AuthProvider[];
+  googleId?: string;
   createdAt: Date;
 }
 
@@ -55,5 +55,34 @@ export class User {
 
   canLoginWithPassword(): boolean {
     return this.password !== null && this.hasAuthProvider('local');
+  }
+
+  // Domain methods - return new immutable instances
+  block(): Partial<UserProps> {
+    return { isBlocked: true };
+  }
+
+  unblock(): Partial<UserProps> {
+    return { isBlocked: false };
+  }
+
+  withPassword(hashedPassword: string): Partial<UserProps> {
+    return { password: hashedPassword };
+  }
+
+  withGoogleLink(googleId: string): Partial<UserProps> {
+    return {
+      googleId,
+      authProviders: [...this.authProviders.filter(p => p !== 'google'), 'google']
+    };
+  }
+
+  withAuthProvider(provider: AuthProvider): Partial<UserProps> {
+    if (this.authProviders.includes(provider)) return {};
+    return { authProviders: [...this.authProviders, provider] };
+  }
+
+  withProfileCompleted(status: boolean): Partial<UserProps> {
+    return { isProfileCompleted: status };
   }
 }

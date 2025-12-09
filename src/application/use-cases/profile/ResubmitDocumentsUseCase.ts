@@ -9,7 +9,7 @@ import { CompanyDocumentKey } from '../../../domain/types';
 export class ResubmitDocumentsUseCase {
   constructor(
     @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository
-  ) {}
+  ) { }
 
   private isCompanyDocumentKey(key: string): key is CompanyDocumentKey {
     return key === 'COMPANY_REGISTRATION_DOCUMENT' || key === 'COMPANY_VERIFICATION_DOCUMENT';
@@ -37,12 +37,12 @@ export class ResubmitDocumentsUseCase {
     // Get the most recent request (last in array)
     const mostRecentRequest = documentReuploadRequests[documentReuploadRequests.length - 1];
     const requestedDocumentKeys = mostRecentRequest.documents.map(doc => doc.documentKey);
-    
+
     // Validate that documents are provided
     if (!input.documents || Object.keys(input.documents).length === 0) {
       throw new ValidationError('At least one document must be provided');
     }
-    
+
     // Check that all submitted document keys are in the reupload request
     const submittedKeys = Object.keys(input.documents);
     const invalidKeys = submittedKeys.filter(key => {
@@ -51,13 +51,13 @@ export class ResubmitDocumentsUseCase {
       }
       return !requestedDocumentKeys.includes(key);
     });
-    
+
     if (invalidKeys.length > 0) {
       throw new ValidationError(`Documents being resubmitted (${invalidKeys.join(', ')}) do not match the requested documents`);
     }
 
     // 4. Update documents
-    const updatedProfile = await this.companyProfileRepository.updateDocuments(input.userId, input.documents);
+    const updatedProfile = await this.companyProfileRepository.update(existingProfile.id, existingProfile.resubmitDocuments(input.documents));
 
     return {
       id: updatedProfile.id,

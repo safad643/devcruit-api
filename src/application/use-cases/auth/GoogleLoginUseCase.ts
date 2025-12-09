@@ -12,12 +12,12 @@ export class GoogleLoginUseCase implements IGoogleLoginUseCase {
     @inject(TYPES.GoogleAuthService) private googleAuthService: IGoogleAuthService,
     @inject(TYPES.UserRepository) private userRepository: IUserRepository,
     @inject(TYPES.AuthTokenService) private authTokenService: IAuthTokenService
-  ) {}
+  ) { }
 
   async execute(input: GoogleLoginInput): Promise<GoogleLoginOutput> {
     // 1. Exchange code for Google access token
     const googleAccessToken = await this.googleAuthService.exchangeCodeForTokens(input.code);
-    
+
     // 2. Get user info from Google
     const googleUser = await this.googleAuthService.getUserInfo(googleAccessToken);
 
@@ -35,9 +35,8 @@ export class GoogleLoginUseCase implements IGoogleLoginUseCase {
 
     // 5. Link Google account if not already linked
     if (!user.hasAuthProvider('google')) {
-      // linkGoogleAccount already adds 'google' to authProviders
-      await this.userRepository.linkGoogleAccount(user.id, googleUser.sub);
-      
+      await this.userRepository.update(user.id, user.withGoogleLink(googleUser.sub));
+
       // Refetch user to get updated data
       user = await this.userRepository.findById(user.id);
       if (!user) {
