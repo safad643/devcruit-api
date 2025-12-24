@@ -7,7 +7,7 @@ import { HandleStripeWebhookInput, HandleStripeWebhookOutput } from '../../dtos/
 export class HandleStripeWebhookUseCase {
   constructor(
     @inject(TYPES.PaymentService) private paymentService: IPaymentService
-  ) {}
+  ) { }
 
   async execute(input: HandleStripeWebhookInput): Promise<HandleStripeWebhookOutput> {
     const verified = await this.paymentService.verifyWebhookAndExtractEvent({
@@ -18,9 +18,7 @@ export class HandleStripeWebhookUseCase {
     return {
       eventType: verified.eventType,
       userId: verified.userId,
-      plan: verified.plan,
+      planId: verified.planId,
     };
   }
 }
-
-

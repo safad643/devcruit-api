@@ -51,6 +51,16 @@ export const TYPES = {
   CompletePaymentUseCase: Symbol.for('CompletePaymentUseCase'),
   PaymentController: Symbol.for('PaymentController'),
 
+  // Plan module
+  PlanRepository: Symbol.for('PlanRepository'),
+  PaymentTransactionRepository: Symbol.for('PaymentTransactionRepository'),
+  CreatePlanUseCase: Symbol.for('CreatePlanUseCase'),
+  UpdatePlanUseCase: Symbol.for('UpdatePlanUseCase'),
+  DeletePlanUseCase: Symbol.for('DeletePlanUseCase'),
+  ListPlansUseCase: Symbol.for('ListPlansUseCase'),
+  GetPlanByIdUseCase: Symbol.for('GetPlanByIdUseCase'),
+  PlanController: Symbol.for('PlanController'),
+
   // File module
   GenerateSignatureUseCase: Symbol.for('GenerateSignatureUseCase'),
   DeleteFileUseCase: Symbol.for('DeleteFileUseCase'),

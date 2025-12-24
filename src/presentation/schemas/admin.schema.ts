@@ -40,9 +40,9 @@ export const ListCompaniesSchema = Type.Object({
     Type.Literal('approved'),
     Type.Literal('rejected'),
     Type.Literal('resubmitted'),
-    Type.Literal('paid'),
     Type.Literal('all')
   ])),
+  hasActivePlan: Type.Optional(Type.Boolean()),
   isBlocked: Type.Optional(Type.Boolean()),
   sortBy: Type.Optional(Type.Union([
     Type.Literal('createdAt'),

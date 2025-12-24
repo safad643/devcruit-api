@@ -1,13 +1,17 @@
+import { PlanLimits } from './Plan';
 import { CompanyDocumentKey } from '../types';
 
 export type CompanySize = '1-10' | '11-50' | '51-200' | '201-500' | '501-1000' | '1000+';
 
-export type PlanTier = 'Basic' | 'Standard' | 'Premium';
-
+// Pure snapshot - no planId reference, stores complete plan details at purchase time
 export interface PlanHistoryItem {
-  plan: PlanTier;
+  planName: string;
+  price: number;
+  finalPrice: number;              // After discount
+  durationMonths: number;
+  limits: PlanLimits;
   startDate: Date;
-  endDate: Date | null;
+  endDate: Date;
 }
 
 export interface DocumentReuploadRequestDocumentItem {
@@ -20,7 +24,7 @@ export interface DocumentReuploadRequest {
   requestedAt: Date;
 }
 
-export type CompanyProfileStatus = 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid';
+export type CompanyProfileStatus = 'pending' | 'approved' | 'rejected' | 'resubmitted';
 
 export interface CompanyProfileProps {
   id: string;
@@ -116,5 +120,21 @@ export class CompanyProfile {
       updates.employmentVerificationUrl = documents.COMPANY_VERIFICATION_DOCUMENT;
     }
     return updates;
+  }
+
+  hasActivePlan(): boolean {
+    const now = new Date();
+    return this.planHistory.some(p => new Date(p.endDate) > now);
+  }
+
+  getCurrentPlan(): PlanHistoryItem | null {
+    const now = new Date();
+    return this.planHistory.find(p => new Date(p.endDate) > now) ?? null;
+  }
+
+  getPlanExpiryDate(): Date | null {
+    const activePlan = this.getCurrentPlan();
+    if (!activePlan) return null;
+    return new Date(activePlan.endDate);
   }
 }

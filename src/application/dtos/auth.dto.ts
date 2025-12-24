@@ -26,7 +26,8 @@ export interface AuthTokensOutput {
     name: string;
     role: UserRole;
     isProfileCompleted: boolean;
-    status?: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid';
+    status?: 'pending' | 'approved' | 'rejected' | 'resubmitted';
+    hasActivePlan?: boolean;
     neededDocuments?: Array<{
       documentKey: CompanyDocumentKey;
       note?: string;
@@ -109,7 +110,8 @@ export interface GoogleLoginOutput {
     name: string;
     role: string;
     isProfileCompleted: boolean;
-    status?: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid';
+    status?: 'pending' | 'approved' | 'rejected' | 'resubmitted';
+    hasActivePlan?: boolean;
     neededDocuments?: Array<{
       documentKey: CompanyDocumentKey;
       note?: string;
@@ -131,7 +133,8 @@ export interface GoogleRegisterOutput {
     name: string;
     role: string;
     isProfileCompleted: boolean;
-    status?: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid';
+    status?: 'pending' | 'approved' | 'rejected' | 'resubmitted';
+    hasActivePlan?: boolean;
     neededDocuments?: Array<{
       documentKey: CompanyDocumentKey;
       note?: string;

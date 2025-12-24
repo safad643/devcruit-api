@@ -49,10 +49,10 @@ export class CompanyTeamRepository implements ICompanyTeamRepository {
       const permissions =
         input.role === 'hr'
           ? input.hrPermissions ?? {
-              manageApplications: true,
-              scheduleInterviews: true,
-              inviteMembers: false,
-            }
+            manageApplications: true,
+            scheduleInterviews: true,
+            inviteMembers: false,
+          }
           : undefined;
 
       const focusAreas = input.role === 'interviewer'
@@ -185,6 +185,17 @@ export class CompanyTeamRepository implements ICompanyTeamRepository {
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
     });
+  }
+
+  async countActiveByCompany(companyId: string): Promise<number> {
+    try {
+      return await this.collection.countDocuments({
+        companyId,
+        status: { $in: ['active', 'invited'] },
+      });
+    } catch (error) {
+      throw new InternalError('Failed to count active team members', error as Error);
+    }
   }
 }
 

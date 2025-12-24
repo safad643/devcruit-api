@@ -3,6 +3,7 @@ import { container } from '../../di/container';
 import { TYPES } from '../../di/types';
 import { AdminController } from '../controllers/AdminController';
 import { JobFieldController } from '../controllers/JobFieldController';
+import { PlanController } from '../controllers/PlanController';
 import { authenticate } from '../middleware/authenticate';
 import { authorize } from '../middleware/authorize';
 import {
@@ -19,6 +20,11 @@ import {
   UpdateJobFieldSchema,
   JobFieldIdParamsSchema
 } from '../schemas/jobField.schema';
+import {
+  CreatePlanSchema,
+  UpdatePlanSchema,
+  PlanIdParamsSchema
+} from '../schemas/plan.schema';
 
 export async function adminRoutes(fastify: FastifyInstance): Promise<void> {
   const adminController = container.get<AdminController>(TYPES.AdminController);
@@ -130,6 +136,61 @@ export async function adminRoutes(fastify: FastifyInstance): Promise<void> {
       schema: { params: JobFieldIdParamsSchema }
     },
     jobFieldController.delete
+  );
+
+  // Plan CRUD endpoints
+  const planController = container.get<PlanController>(TYPES.PlanController);
+
+  // Create plan
+  fastify.post(
+    '/admin/plans',
+    {
+      preHandler: authorize('admin'),
+      schema: { body: CreatePlanSchema }
+    },
+    planController.create
+  );
+
+  // List all plans (admin - includes inactive)
+  fastify.get(
+    '/admin/plans',
+    {
+      preHandler: authorize('admin')
+    },
+    planController.listAll
+  );
+
+  // Get plan by ID
+  fastify.get(
+    '/admin/plans/:id',
+    {
+      preHandler: authorize('admin'),
+      schema: { params: PlanIdParamsSchema }
+    },
+    planController.getById
+  );
+
+  // Update plan
+  fastify.put(
+    '/admin/plans/:id',
+    {
+      preHandler: authorize('admin'),
+      schema: {
+        params: PlanIdParamsSchema,
+        body: UpdatePlanSchema
+      }
+    },
+    planController.update
+  );
+
+  // Delete plan (soft delete)
+  fastify.delete(
+    '/admin/plans/:id',
+    {
+      preHandler: authorize('admin'),
+      schema: { params: PlanIdParamsSchema }
+    },
+    planController.delete
   );
 }
 

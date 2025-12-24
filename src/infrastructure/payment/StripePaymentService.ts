@@ -1,6 +1,5 @@
 import { injectable } from 'inversify';
 import { IPaymentService, CheckoutSessionResult, WebhookVerifiedEvent } from '../../application/services/IPaymentService';
-import { PlanTier } from '../../domain/entities/CompanyProfile';
 import { InternalError, ValidationError } from '../../domain/errors';
 import Stripe from 'stripe';
 import { config } from '../../config';
@@ -20,24 +19,19 @@ export class StripePaymentService implements IPaymentService {
   }
 
   async createCheckoutSession(params: {
-    plan: PlanTier;
+    planId: string;
+    planName: string;
+    amount: number;
     userId: string;
     successUrl: string;
     cancelUrl: string;
     currency?: string;
   }): Promise<CheckoutSessionResult> {
-    const { plan, userId, successUrl, cancelUrl } = params;
+    const { planId, planName, amount, userId, successUrl, cancelUrl } = params;
     const currency = (params.currency ?? this.defaultCurrency).toLowerCase();
 
-    const amountByPlan: Record<PlanTier, number> = {
-      Basic: 10000,     // INR 100.00 (in paise)
-      Standard: 20000,  // INR 200.00
-      Premium: 30000,   // INR 300.00
-    };
-
-    const unitAmount = amountByPlan[plan];
-    if (!unitAmount) {
-      throw new ValidationError('Invalid plan selected');
+    if (amount <= 0) {
+      throw new ValidationError('Invalid plan amount');
     }
 
     try {
@@ -49,9 +43,9 @@ export class StripePaymentService implements IPaymentService {
             price_data: {
               currency,
               product_data: {
-                name: `${plan} Plan`,
+                name: planName,
               },
-              unit_amount: unitAmount,
+              unit_amount: amount,
             },
             quantity: 1,
           },
@@ -60,7 +54,7 @@ export class StripePaymentService implements IPaymentService {
         cancel_url: cancelUrl,
         metadata: {
           userId,
-          plan,
+          planId,  // Store planId for webhook lookup
         },
       });
 
@@ -70,6 +64,7 @@ export class StripePaymentService implements IPaymentService {
 
       return { sessionId: session.id, url: session.url as string };
     } catch (error) {
+      if (error instanceof ValidationError) throw error;
       throw new InternalError('Stripe session creation failed', error as Error);
     }
   }
@@ -91,23 +86,16 @@ export class StripePaymentService implements IPaymentService {
     const session = event.data.object as Stripe.Checkout.Session;
     const metadata = session.metadata || {};
     const userId = metadata.userId;
-    const planStr = metadata.plan as string | undefined;
+    const planId = metadata.planId;
 
-    if (!userId || !planStr) {
+    if (!userId || !planId) {
       throw new ValidationError('Missing metadata in Stripe session');
-    }
-
-    const allowedPlans: PlanTier[] = ['Basic', 'Standard', 'Premium'];
-    if (!allowedPlans.includes(planStr as PlanTier)) {
-      throw new ValidationError('Invalid plan in Stripe metadata');
     }
 
     return {
       eventType: event.type,
       userId,
-      plan: planStr as PlanTier,
+      planId,
     };
   }
 }
-
-

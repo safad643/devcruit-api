@@ -46,7 +46,7 @@ export async function checkCompanyPaid(
       throw new NotFoundError('Company profile not found');
     }
 
-    if (companyProfile.status !== 'paid') {
+    if (!companyProfile.hasActivePlan()) {
       throw new ForbiddenError('Company must have a paid subscription to access this feature');
     }
 

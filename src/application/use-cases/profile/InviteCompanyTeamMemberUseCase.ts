@@ -9,7 +9,6 @@ import {
 import { CompanyTeamMemberDTO, IInviteCompanyTeamMemberUseCase, InviteCompanyTeamMemberInput } from './interfaces';
 import { ForbiddenError, NotFoundError, ValidationError, ConflictError } from '../../../domain/errors';
 import { User } from '../../../domain/entities/User';
-import { HRProfile } from '../../../domain/entities/HRProfile';
 import { IHashService, IEmailService, ICryptographicService } from '../../services';
 
 @injectable()
@@ -51,6 +50,15 @@ export class InviteCompanyTeamMemberUseCase implements IInviteCompanyTeamMemberU
     const existingInvite = await this.companyTeamRepository.findByEmail(companyProfile.userId, normalizedEmail);
     if (existingInvite) {
       throw new ConflictError('This email has already been invited to your team');
+    }
+
+    // Check plan limits for team members
+    const currentPlan = companyProfile.getCurrentPlan();
+    if (currentPlan && currentPlan.limits.maxTeamMembers !== null) {
+      const teamMemberCount = await this.companyTeamRepository.countActiveByCompany(companyProfile.userId);
+      if (teamMemberCount >= currentPlan.limits.maxTeamMembers) {
+        throw new ForbiddenError(`You have reached your plan limit of ${currentPlan.limits.maxTeamMembers} team members`);
+      }
     }
 
     const tempPassword = this.cryptographicService.generateTemporaryPassword();

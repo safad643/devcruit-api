@@ -7,7 +7,7 @@ import { ListCompaniesInput, ListCompaniesOutput, CompanyListItem } from '../../
 export class ListCompaniesUseCase {
   constructor(
     @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository
-  ) {}
+  ) { }
 
   async execute(input: ListCompaniesInput): Promise<ListCompaniesOutput> {
     // Map input to repository filters
@@ -34,6 +34,7 @@ export class ListCompaniesUseCase {
       fullName: item.companyProfile.fullName,
       phoneNumber: item.companyProfile.phoneNumber,
       status: item.companyProfile.status,
+      hasActivePlan: item.companyProfile.hasActivePlan(),
       isBlocked: item.isBlocked,
       createdAt: item.companyProfile.createdAt,
     }));

@@ -29,5 +29,6 @@ export interface ICompanyTeamRepository {
   findByEmail(companyId: string, email: string): Promise<CompanyTeamMember | null>;
   findByUserId(userId: string): Promise<CompanyTeamMember | null>;
   updateStatus(teamMemberId: string, status: CompanyTeamMemberStatus): Promise<void>;
+  countActiveByCompany(companyId: string): Promise<number>;
 }
 

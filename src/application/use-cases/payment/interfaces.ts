@@ -1,10 +1,10 @@
 import {
-    CompletePaymentInput,
     CreateCheckoutSessionInput,
     CreateCheckoutSessionOutput,
     HandleStripeWebhookInput,
     HandleStripeWebhookOutput,
 } from '../../dtos/payment.dto';
+import { CompletePaymentWithSessionInput } from './CompletePaymentUseCase';
 
 export interface ICreateCheckoutSessionUseCase {
     execute(input: CreateCheckoutSessionInput): Promise<CreateCheckoutSessionOutput>;
@@ -15,5 +15,6 @@ export interface IHandleStripeWebhookUseCase {
 }
 
 export interface ICompletePaymentUseCase {
-    execute(input: CompletePaymentInput): Promise<void>;
+    execute(input: CompletePaymentWithSessionInput): Promise<void>;
 }
+

@@ -1,12 +1,10 @@
-import { PlanTier } from '../../domain/entities/CompanyProfile';
-
 export interface CompletePaymentInput {
   userId: string;
-  plan: PlanTier;
+  planId: string;
 }
 
 export interface CreateCheckoutSessionInput {
-  plan: PlanTier;
+  planId: string;
   userId: string;
   successUrl: string;
   cancelUrl: string;
@@ -25,6 +23,5 @@ export interface HandleStripeWebhookInput {
 export interface HandleStripeWebhookOutput {
   eventType: string;
   userId: string;
-  plan: PlanTier;
+  planId: string;
 }
-

@@ -232,4 +232,15 @@ export class JobRepository
       throw new InternalError('Failed to list public jobs with filters', error as Error);
     }
   }
+
+  async countActiveByCompany(companyId: string): Promise<number> {
+    try {
+      return await this.collection.countDocuments({
+        companyId,
+        status: 'open',
+      });
+    } catch (error) {
+      throw new InternalError('Failed to count active jobs', error as Error);
+    }
+  }
 }

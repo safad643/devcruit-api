@@ -24,9 +24,9 @@ export class PaymentController {
     reply: FastifyReply
   ): Promise<void> => {
     const userId = request.user!.id;
-    const { plan, successUrl, cancelUrl } = request.body;
+    const { planId, successUrl, cancelUrl } = request.body;
     const result = await this.createCheckoutSessionUseCase.execute({
-      plan,
+      planId,
       userId,
       successUrl,
       cancelUrl,
@@ -40,13 +40,11 @@ export class PaymentController {
     reply: FastifyReply
   ): Promise<void> => {
     console.log('Stripe webhook received');
-    // Raw body handling will be configured at the route level; here we access request.raw
     const signature = request.headers['stripe-signature'];
     if (!signature || typeof signature !== 'string') {
       throw new ValidationError('Missing Stripe signature header');
     }
 
-    // Fastify rawBody not enabled globally; route will provide Buffer
     const raw = request.rawBody;
     if (!raw) {
       throw new ValidationError('Raw body is required for Stripe webhook verification');
@@ -58,13 +56,22 @@ export class PaymentController {
       signature,
     });
 
+    // Extract session ID from the raw body (Stripe event structure)
+    let stripeSessionId = '';
+    try {
+      const eventData = JSON.parse(rawBuffer.toString());
+      stripeSessionId = eventData?.data?.object?.id || '';
+    } catch {
+      // Fallback - shouldn't happen if webhook is valid
+      stripeSessionId = `session_${Date.now()}`;
+    }
+
     await this.completePaymentUseCase.execute({
       userId: verified.userId,
-      plan: verified.plan
+      planId: verified.planId,
+      stripeSessionId,
     });
 
     reply.status(HttpStatus.OK).send(wrapSuccess({ received: true, eventType: verified.eventType }));
   };
 }
-
-

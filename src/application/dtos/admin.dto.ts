@@ -47,7 +47,8 @@ export interface ListCompaniesInput {
   page: number;
   limit: number;
   search?: string; // Search by email
-  status?: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid' | 'all';
+  status?: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'all';
+  hasActivePlan?: boolean;
   isBlocked?: boolean;
   sortBy?: 'createdAt' | 'updatedAt' | 'companyName';
   sortOrder?: 'asc' | 'desc';
@@ -60,7 +61,8 @@ export interface CompanyListItem {
   email: string;
   fullName: string;
   phoneNumber: string;
-  status: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid';
+  status: 'pending' | 'approved' | 'rejected' | 'resubmitted';
+  hasActivePlan: boolean;
   isBlocked: boolean;
   createdAt: Date;
 }

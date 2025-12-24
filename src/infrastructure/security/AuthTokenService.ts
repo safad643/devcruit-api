@@ -14,7 +14,7 @@ export class AuthTokenService implements IAuthTokenService {
     @inject(TYPES.TokenService) private tokenService: ITokenService,
     @inject(TYPES.RefreshTokenRepository) private refreshTokenRepository: IRefreshTokenRepository,
     @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository
-  ) {}
+  ) { }
 
   async generateAuthResponse(user: User): Promise<AuthTokensOutput> {
     // 1. Generate tokens
@@ -36,13 +36,21 @@ export class AuthTokenService implements IAuthTokenService {
     );
 
     // 3. Get company profile status if user is a company
-    let status: 'pending' | 'approved' | 'rejected' | 'resubmitted' | 'paid' | undefined;
+    let status: 'pending' | 'approved' | 'rejected' | 'resubmitted' | undefined;
+    let hasActivePlan: boolean | undefined;
+    let planExpiryDate: string | undefined;
     let neededDocuments: Array<{ documentKey: CompanyDocumentKey; note?: string }> | undefined;
-    
+
     if (user.role === 'company') {
       const companyProfile = await this.companyProfileRepository.findByUserId(user.id);
       if (companyProfile) {
         status = companyProfile.status;
+        hasActivePlan = companyProfile.hasActivePlan();
+        // Get the expiry date of the current active plan
+        const currentPlan = companyProfile.getCurrentPlan();
+        if (currentPlan) {
+          planExpiryDate = new Date(currentPlan.endDate).toISOString();
+        }
         // If company is rejected, include the needed documents from the latest reupload request
         if (status === 'rejected' && companyProfile.documentReuploadRequests.length > 0) {
           const latestRequest = companyProfile.documentReuploadRequests[companyProfile.documentReuploadRequests.length - 1];
@@ -62,6 +70,8 @@ export class AuthTokenService implements IAuthTokenService {
         role: user.role,
         isProfileCompleted: user.isProfileCompleted,
         ...(status && { status }),
+        ...(hasActivePlan !== undefined && { hasActivePlan }),
+        ...(planExpiryDate && { planExpiryDate }),
         ...(neededDocuments && { neededDocuments }),
       },
     };

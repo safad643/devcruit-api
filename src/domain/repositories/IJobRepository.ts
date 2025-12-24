@@ -36,4 +36,5 @@ export interface IJobRepository extends IGenericRepository<Job, CreateJobProps, 
   findByCompanyId(companyId: string): Promise<Job[]>;
   listWithFilters(filters: JobListFilters): Promise<JobListResult>;
   listPublicWithFilters(filters: PublicJobListFilters): Promise<JobListResult>;
+  countActiveByCompany(companyId: string): Promise<number>;
 }

@@ -1,5 +1,3 @@
-import { PlanTier } from '../../domain/entities/CompanyProfile';
-
 export interface CheckoutSessionResult {
   sessionId: string;
   url: string;
@@ -8,16 +6,18 @@ export interface CheckoutSessionResult {
 export interface WebhookVerifiedEvent {
   eventType: string;
   userId: string;
-  plan: PlanTier;
+  planId: string;  // Changed from plan: PlanTier
 }
 
 export interface IPaymentService {
   createCheckoutSession(params: {
-    plan: PlanTier;
+    planId: string;
+    planName: string;       // Display name for Stripe
+    amount: number;         // Final price in smallest currency unit
     userId: string;
     successUrl: string;
     cancelUrl: string;
-    currency?: string; // default will be set by implementation
+    currency?: string;
   }): Promise<CheckoutSessionResult>;
 
   verifyWebhookAndExtractEvent(params: {
@@ -25,5 +25,3 @@ export interface IPaymentService {
     signature: string;
   }): Promise<WebhookVerifiedEvent>;
 }
-
-

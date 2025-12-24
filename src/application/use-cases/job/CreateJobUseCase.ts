@@ -1,7 +1,7 @@
-import { IJobRepository, IUserRepository, IJobFieldRepository } from '../../../domain/repositories';
+import { IJobRepository, IUserRepository, IJobFieldRepository, ICompanyProfileRepository } from '../../../domain/repositories';
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
-import { NotFoundError, ValidationError } from '../../../domain/errors';
+import { NotFoundError, ValidationError, ForbiddenError } from '../../../domain/errors';
 import { Job, Compensation } from '../../../domain/entities/Job';
 import { ICreateJobUseCase } from './interfaces';
 import { CreateJobInput, CreateJobOutput, CreateJobCompensationInput } from '../../dtos/job.dto';
@@ -11,7 +11,8 @@ export class CreateJobUseCase implements ICreateJobUseCase {
   constructor(
     @inject(TYPES.JobRepository) private jobRepository: IJobRepository,
     @inject(TYPES.UserRepository) private userRepository: IUserRepository,
-    @inject(TYPES.JobFieldRepository) private jobFieldRepository: IJobFieldRepository
+    @inject(TYPES.JobFieldRepository) private jobFieldRepository: IJobFieldRepository,
+    @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository
   ) { }
 
   /**
@@ -57,6 +58,18 @@ export class CreateJobUseCase implements ICreateJobUseCase {
     // 2. Check if user is a company
     if (user.role !== 'company') {
       throw new ValidationError('Only company users can create jobs');
+    }
+
+    // 2.5 Check plan limits for active jobs (only for 'open' status)
+    if (input.status === 'open') {
+      const companyProfile = await this.companyProfileRepository.findByUserId(user.id);
+      const currentPlan = companyProfile?.getCurrentPlan();
+      if (currentPlan && currentPlan.limits.maxActiveJobs !== null) {
+        const activeJobCount = await this.jobRepository.countActiveByCompany(user.id);
+        if (activeJobCount >= currentPlan.limits.maxActiveJobs) {
+          throw new ForbiddenError(`You have reached your plan limit of ${currentPlan.limits.maxActiveJobs} active jobs`);
+        }
+      }
     }
 
     // 3. Validate location is provided if workArrangement requires it
