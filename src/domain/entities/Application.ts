@@ -1,12 +1,12 @@
-export type ApplicationStatus = 
-  | 'applied' 
-  | 'shortlisted' 
-  | 'interviewing' 
+export type ApplicationStatus =
+  | 'applied'
+  | 'shortlisted'
+  | 'interviewing'
   | 'interview_completed'
-  | 'rejected' 
-  | 'offer_extended' 
-  | 'offer_accepted' 
-  | 'offer_declined' 
+  | 'rejected'
+  | 'offer_extended'
+  | 'offer_accepted'
+  | 'offer_declined'
   | 'withdrawn';
 
 export type ShortlistMethod = 'auto' | 'manual';
@@ -57,6 +57,7 @@ export interface ApplicationProps {
   rejectedAtStage?: string; // Exact stage or round at which rejection happened
   interviewRounds: InterviewRound[];
   resumeUrl?: string; // Optional resume URL for this specific application
+  currentOfferLetterId?: string; // Reference to the latest offer letter
 }
 
 export class Application {
@@ -73,6 +74,7 @@ export class Application {
   public readonly rejectedAtStage?: string;
   public readonly interviewRounds: InterviewRound[];
   public readonly resumeUrl?: string;
+  public readonly currentOfferLetterId?: string;
 
   constructor(props: ApplicationProps) {
     this.id = props.id;
@@ -88,6 +90,7 @@ export class Application {
     this.rejectedAtStage = props.rejectedAtStage;
     this.interviewRounds = props.interviewRounds;
     this.resumeUrl = props.resumeUrl;
+    this.currentOfferLetterId = props.currentOfferLetterId;
   }
 
   static create(

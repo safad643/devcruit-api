@@ -14,6 +14,8 @@ import { GetInterviewsForInterviewerUseCase } from '../../application/use-cases/
 import { ExtendOfferUseCase } from '../../application/use-cases/application/ExtendOfferUseCase';
 import { AcceptOfferUseCase } from '../../application/use-cases/application/AcceptOfferUseCase';
 import { DeclineOfferUseCase } from '../../application/use-cases/application/DeclineOfferUseCase';
+import { CreateOfferLetterUseCase } from '../../application/use-cases/offer-letter/CreateOfferLetterUseCase';
+import { GetOfferLetterUseCase } from '../../application/use-cases/offer-letter/GetOfferLetterUseCase';
 import { GetOrCreateVideoCallUseCase } from '../../application/use-cases/video-call/GetOrCreateVideoCallUseCase';
 import { StartVideoCallUseCase } from '../../application/use-cases/video-call/StartVideoCallUseCase';
 import { EndVideoCallUseCase } from '../../application/use-cases/video-call/EndVideoCallUseCase';
@@ -36,6 +38,10 @@ import {
   IDeclineOfferUseCase,
 } from '../../application/use-cases/application/interfaces';
 import {
+  ICreateOfferLetterUseCase,
+  IGetOfferLetterUseCase,
+} from '../../application/use-cases/offer-letter/interfaces';
+import {
   IGetOrCreateVideoCallUseCase,
   IStartVideoCallUseCase,
   IEndVideoCallUseCase
@@ -56,6 +62,8 @@ export const applicationModule = new ContainerModule((bind) => {
   bind<IExtendOfferUseCase>(TYPES.ExtendOfferUseCase).to(ExtendOfferUseCase);
   bind<IAcceptOfferUseCase>(TYPES.AcceptOfferUseCase).to(AcceptOfferUseCase);
   bind<IDeclineOfferUseCase>(TYPES.DeclineOfferUseCase).to(DeclineOfferUseCase);
+  bind<ICreateOfferLetterUseCase>(TYPES.CreateOfferLetterUseCase).to(CreateOfferLetterUseCase);
+  bind<IGetOfferLetterUseCase>(TYPES.GetOfferLetterUseCase).to(GetOfferLetterUseCase);
   bind<VideoCallHelper>(TYPES.VideoCallHelper).to(VideoCallHelper);
   bind<IGetOrCreateVideoCallUseCase>(TYPES.GetOrCreateVideoCallUseCase).to(GetOrCreateVideoCallUseCase);
   bind<IStartVideoCallUseCase>(TYPES.StartVideoCallUseCase).to(StartVideoCallUseCase);

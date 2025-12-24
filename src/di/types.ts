@@ -18,6 +18,7 @@ export const TYPES = {
   FileService: Symbol.for('FileService'),
   PaymentService: Symbol.for('PaymentService'),
   CryptographicService: Symbol.for('CryptographicService'),
+  OfferLetterRepository: Symbol.for('OfferLetterRepository'),
 
   // Auth module
   RegisterUserUseCase: Symbol.for('RegisterUserUseCase'),
@@ -114,6 +115,8 @@ export const TYPES = {
   ExtendOfferUseCase: Symbol.for('ExtendOfferUseCase'),
   AcceptOfferUseCase: Symbol.for('AcceptOfferUseCase'),
   DeclineOfferUseCase: Symbol.for('DeclineOfferUseCase'),
+  CreateOfferLetterUseCase: Symbol.for('CreateOfferLetterUseCase'),
+  GetOfferLetterUseCase: Symbol.for('GetOfferLetterUseCase'),
   ApplicationController: Symbol.for('ApplicationController'),
 
   // Public Job module

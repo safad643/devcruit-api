@@ -1,9 +1,10 @@
-import { 
-  IApplicationRepository, 
+import {
+  IApplicationRepository,
   IJobRepository,
   IDeveloperProfileRepository,
   ICompanyProfileRepository,
-  IUserRepository
+  IUserRepository,
+  IOfferLetterRepository
 } from '../../../domain/repositories';
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
@@ -21,8 +22,9 @@ export class DeclineOfferUseCase implements IDeclineOfferUseCase {
     @inject(TYPES.DeveloperProfileRepository) private developerProfileRepository: IDeveloperProfileRepository,
     @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository,
     @inject(TYPES.UserRepository) private userRepository: IUserRepository,
-    @inject(TYPES.EmailService) private emailService: IEmailService
-  ) {}
+    @inject(TYPES.EmailService) private emailService: IEmailService,
+    @inject(TYPES.OfferLetterRepository) private offerLetterRepository: IOfferLetterRepository
+  ) { }
 
   async execute(input: DeclineOfferInput): Promise<DeclineOfferOutput> {
     // 1. Get developer profile (input.developerId is the userId)
@@ -73,18 +75,26 @@ export class DeclineOfferUseCase implements IDeclineOfferUseCase {
     // 8. Update application
     const updatedApplication = await this.applicationRepository.update(input.applicationId, updateData);
 
-    // 9. Send email notification to company
+    // 9. Update offer letter status to 'declined'
+    if (application.currentOfferLetterId) {
+      await this.offerLetterRepository.update(application.currentOfferLetterId, {
+        status: 'declined',
+        declinedAt: new Date(),
+      });
+    }
+
+    // 10. Send email notification to company
     try {
       // Get company profile for company name
       const companyProfile = await this.companyProfileRepository.findByUserId(application.companyId);
       const companyName = companyProfile?.companyName || 'the company';
-      
+
       // Get developer profile and user for developer name/email
       const developerProfile = await this.developerProfileRepository.findById(application.developerId);
       if (developerProfile) {
         const developerUser = await this.userRepository.findById(developerProfile.userId);
         const developerName = developerProfile.name || developerUser?.email || 'the candidate';
-        
+
         // Note: Email service method for offer decline can be added later
         console.log(`Offer declined by ${developerName} for ${job.title} at ${companyName}`);
       }

@@ -2,8 +2,8 @@ import { Type, Static } from '@sinclair/typebox';
 
 // Plan limits schema
 const PlanLimitsSchema = Type.Object({
-    maxActiveJobs: Type.Union([Type.Integer({ minimum: 0 }), Type.Null()]),
-    maxTeamMembers: Type.Union([Type.Integer({ minimum: 0 }), Type.Null()]),
+    maxActiveJobs: Type.Union([Type.Integer({ minimum: 1 }), Type.Null()]),
+    maxTeamMembers: Type.Union([Type.Integer({ minimum: 1 }), Type.Null()]),
 });
 
 // Discount type enum

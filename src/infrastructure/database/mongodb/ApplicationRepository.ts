@@ -59,6 +59,7 @@ export class ApplicationRepository
       rejectedAtStage: doc.rejectedAtStage,
       interviewRounds: mapInterviewRounds(doc.interviewRounds || []),
       resumeUrl: doc.resumeUrl,
+      currentOfferLetterId: doc.currentOfferLetterId,
     });
   }
 

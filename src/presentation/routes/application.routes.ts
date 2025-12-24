@@ -6,8 +6,8 @@ import { authenticate } from '../middleware/authenticate';
 import { authorize } from '../middleware/authorize';
 import { checkCompanyPaid } from '../middleware/checkCompanyPaid';
 import { Type } from '@sinclair/typebox';
-import { 
-  CreateApplicationSchema, 
+import {
+  CreateApplicationSchema,
   ListApplicationsForCompanyQuerySchema,
   ApplicationIdParamsSchema,
   ListApplicationsForDeveloperQuerySchema,
@@ -19,7 +19,8 @@ import {
   ApplicationInterviewRoundParamsSchema,
   ExtendOfferSchema,
   AcceptOfferSchema,
-  DeclineOfferSchema
+  DeclineOfferSchema,
+  CreateOfferLetterSchema
 } from '../schemas/application.schema';
 
 export async function applicationRoutes(fastify: FastifyInstance): Promise<void> {
@@ -92,7 +93,7 @@ export async function applicationRoutes(fastify: FastifyInstance): Promise<void>
     '/company/applications/:id/shortlist',
     {
       preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
-      schema: { 
+      schema: {
         params: ApplicationIdParamsSchema,
         body: UpdateApplicationStatusSchema
       }
@@ -104,7 +105,7 @@ export async function applicationRoutes(fastify: FastifyInstance): Promise<void>
     '/company/applications/:id/reject',
     {
       preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
-      schema: { 
+      schema: {
         params: ApplicationIdParamsSchema,
         body: RejectApplicationSchema
       }
@@ -185,7 +186,7 @@ export async function applicationRoutes(fastify: FastifyInstance): Promise<void>
     '/company/applications/:id/extend-offer',
     {
       preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
-      schema: { 
+      schema: {
         params: ApplicationIdParamsSchema,
         body: ExtendOfferSchema
       }
@@ -198,7 +199,7 @@ export async function applicationRoutes(fastify: FastifyInstance): Promise<void>
     '/applications/:id/accept-offer',
     {
       preHandler: [authenticate, authorize('developer')],
-      schema: { 
+      schema: {
         params: ApplicationIdParamsSchema,
         body: AcceptOfferSchema
       }
@@ -211,12 +212,45 @@ export async function applicationRoutes(fastify: FastifyInstance): Promise<void>
     '/applications/:id/decline-offer',
     {
       preHandler: [authenticate, authorize('developer')],
-      schema: { 
+      schema: {
         params: ApplicationIdParamsSchema,
         body: DeclineOfferSchema
       }
     },
     applicationController.declineOffer
+  );
+
+  // Company route: Create offer letter
+  fastify.post(
+    '/company/applications/:id/offer-letter',
+    {
+      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
+      schema: {
+        params: ApplicationIdParamsSchema,
+        body: CreateOfferLetterSchema
+      }
+    },
+    applicationController.createOfferLetter
+  );
+
+  // Company route: Get offer letter
+  fastify.get(
+    '/company/applications/:id/offer-letter',
+    {
+      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
+      schema: { params: ApplicationIdParamsSchema }
+    },
+    applicationController.getOfferLetterForCompany
+  );
+
+  // Developer route: Get offer letter
+  fastify.get(
+    '/applications/:id/offer-letter',
+    {
+      preHandler: [authenticate, authorize('developer')],
+      schema: { params: ApplicationIdParamsSchema }
+    },
+    applicationController.getOfferLetterForDeveloper
   );
 }
 

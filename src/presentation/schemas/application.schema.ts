@@ -140,3 +140,23 @@ export const DeclineOfferSchema = Type.Object({
 
 export type DeclineOfferInput = Static<typeof DeclineOfferSchema>;
 
+// Create Offer Letter Schema (Company)
+export const CreateOfferLetterSchema = Type.Object({
+  offeredSalary: Type.Number({ minimum: 0 }),
+  salaryCurrency: Type.String({ minLength: 1, maxLength: 10 }),
+  salaryFrequency: Type.Union([
+    Type.Literal('monthly'),
+    Type.Literal('annual')
+  ]),
+  proposedStartDate: Type.String({ format: 'date-time' }),
+  offerExpirationDate: Type.String({ format: 'date-time' }),
+  probationPeriodMonths: Type.Integer({ minimum: 0, maximum: 12 }),
+  noticePeriodDays: Type.Integer({ minimum: 0, maximum: 180 }),
+  reportingManager: Type.Optional(Type.String({ maxLength: 200 })),
+  documentsRequired: Type.Array(Type.String({ minLength: 1 })),
+  additionalTerms: Type.Optional(Type.String({ maxLength: 2000 })),
+  signatoryDesignation: Type.Optional(Type.String({ maxLength: 200 }))
+});
+
+export type CreateOfferLetterInput = Static<typeof CreateOfferLetterSchema>;
+

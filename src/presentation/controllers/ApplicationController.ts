@@ -18,12 +18,16 @@ import {
   IDeclineOfferUseCase,
 } from '../../application/use-cases/application/interfaces';
 import {
+  ICreateOfferLetterUseCase,
+  IGetOfferLetterUseCase,
+} from '../../application/use-cases/offer-letter/interfaces';
+import {
   IGetOrCreateVideoCallUseCase,
   IStartVideoCallUseCase,
   IEndVideoCallUseCase
 } from '../../application/use-cases/video-call/interfaces';
-import { 
-  CreateApplicationInput, 
+import {
+  CreateApplicationInput,
   ListApplicationsForCompanyQueryInput,
   ListApplicationsForDeveloperQueryInput,
   WithdrawApplicationInput,
@@ -32,7 +36,8 @@ import {
   UpdateInterviewResultInput,
   ExtendOfferInput,
   AcceptOfferInput,
-  DeclineOfferInput
+  DeclineOfferInput,
+  CreateOfferLetterInput
 } from '../schemas/application.schema';
 import { wrapSuccess } from '../../utils/response';
 import { HttpStatus } from '../../utils/statusCodes';
@@ -57,8 +62,10 @@ export class ApplicationController {
     @inject(TYPES.EndVideoCallUseCase) private endVideoCallUseCase: IEndVideoCallUseCase,
     @inject(TYPES.ExtendOfferUseCase) private extendOfferUseCase: IExtendOfferUseCase,
     @inject(TYPES.AcceptOfferUseCase) private acceptOfferUseCase: IAcceptOfferUseCase,
-    @inject(TYPES.DeclineOfferUseCase) private declineOfferUseCase: IDeclineOfferUseCase
-  ) {}
+    @inject(TYPES.DeclineOfferUseCase) private declineOfferUseCase: IDeclineOfferUseCase,
+    @inject(TYPES.CreateOfferLetterUseCase) private createOfferLetterUseCase: ICreateOfferLetterUseCase,
+    @inject(TYPES.GetOfferLetterUseCase) private getOfferLetterUseCase: IGetOfferLetterUseCase
+  ) { }
 
   // Developer endpoint: Apply to a job
   applyToJob = async (
@@ -66,9 +73,9 @@ export class ApplicationController {
     reply: FastifyReply
   ): Promise<void> => {
     const developerId = request.user?.id as string;
-    const result = await this.createApplicationUseCase.execute({ 
-      ...request.body, 
-      developerId 
+    const result = await this.createApplicationUseCase.execute({
+      ...request.body,
+      developerId
     });
     reply.status(HttpStatus.CREATED).send(wrapSuccess(result));
   };
@@ -83,7 +90,7 @@ export class ApplicationController {
     const query = request.query;
     const page = query.page ?? 1;
     const limit = query.limit ?? 25;
-    
+
     const result = await this.listApplicationsForCompanyUseCase.execute({
       companyId,
       jobId: query.jobId,
@@ -93,7 +100,7 @@ export class ApplicationController {
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
     });
-    
+
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
@@ -104,17 +111,17 @@ export class ApplicationController {
   ): Promise<void> => {
     const applicationId = request.params.id;
     const userRole = request.user?.role;
-    
+
     let companyId: string | undefined;
     let interviewerId: string | undefined;
-    
+
     if (userRole === 'company' || userRole === 'hr') {
       const companyContext = this.getCompanyContext(request);
       companyId = companyContext.companyUserId;
     } else if (userRole === 'interviewer') {
       interviewerId = request.user?.id as string;
     }
-    
+
     const result = await this.getApplicationDetailsUseCase.execute(applicationId, companyId, interviewerId);
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
@@ -128,7 +135,7 @@ export class ApplicationController {
     const query = request.query;
     const page = query.page ?? 1;
     const limit = query.limit ?? 25;
-    
+
     const result = await this.listApplicationsForDeveloperUseCase.execute({
       developerId,
       jobId: query.jobId,
@@ -138,7 +145,7 @@ export class ApplicationController {
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
     });
-    
+
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
@@ -350,5 +357,44 @@ export class ApplicationController {
     }
     return companyContext;
   }
+
+  // Company endpoint: Create offer letter
+  createOfferLetter = async (
+    request: FastifyRequest<{ Params: { id: string }; Body: CreateOfferLetterInput }>,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const companyContext = this.getCompanyContext(request);
+    const companyId = companyContext.companyUserId;
+    const applicationId = request.params.id;
+    const result = await this.createOfferLetterUseCase.execute({
+      applicationId,
+      companyId,
+      ...request.body,
+    });
+    reply.status(HttpStatus.CREATED).send(wrapSuccess(result));
+  };
+
+  // Company endpoint: Get offer letter
+  getOfferLetterForCompany = async (
+    request: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const companyContext = this.getCompanyContext(request);
+    const companyId = companyContext.companyUserId;
+    const applicationId = request.params.id;
+    const result = await this.getOfferLetterUseCase.execute(applicationId, companyId, 'company');
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
+  };
+
+  // Developer endpoint: Get offer letter
+  getOfferLetterForDeveloper = async (
+    request: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const developerId = request.user?.id as string;
+    const applicationId = request.params.id;
+    const result = await this.getOfferLetterUseCase.execute(applicationId, developerId, 'developer');
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
+  };
 }
 

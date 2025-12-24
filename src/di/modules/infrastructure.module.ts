@@ -1,19 +1,20 @@
 import { ContainerModule } from 'inversify';
 import { TYPES } from '../types';
 
-import { 
+import {
   IUserRepository,
   IAdminRepository,
-  IDeveloperProfileRepository, 
+  IDeveloperProfileRepository,
   ICompanyProfileRepository,
   ICompanyTeamRepository,
   IConversationRepository,
   IMessageRepository,
-  IPendingUserRepository, 
-  IOTPRepository, 
+  IPendingUserRepository,
+  IOTPRepository,
   IRefreshTokenRepository,
   IJobRepository,
-  IApplicationRepository
+  IApplicationRepository,
+  IOfferLetterRepository
 } from '../../domain/repositories';
 
 import { IHashService, ITokenService, IAuthTokenService, IEmailService, IGoogleAuthService, IFileService, IPaymentService, ICryptographicService } from '../../application/services';
@@ -25,6 +26,7 @@ import { CompanyProfileRepository } from '../../infrastructure/database/mongodb/
 import { CompanyTeamRepository } from '../../infrastructure/database/mongodb/CompanyTeamRepository';
 import { JobRepository } from '../../infrastructure/database/mongodb/JobRepository';
 import { ApplicationRepository } from '../../infrastructure/database/mongodb/ApplicationRepository';
+import { OfferLetterRepository } from '../../infrastructure/database/mongodb/OfferLetterRepository';
 import { ConversationRepository } from '../../infrastructure/database/mongodb/ConversationRepository';
 import { MessageRepository } from '../../infrastructure/database/mongodb/MessageRepository';
 import { PendingUserRepository } from '../../infrastructure/database/redis/PendingUserRepository';
@@ -51,6 +53,7 @@ export const infrastructureModule = new ContainerModule((bind) => {
   bind<IMessageRepository>(TYPES.MessageRepository).to(MessageRepository).inSingletonScope();
   bind<IJobRepository>(TYPES.JobRepository).to(JobRepository).inSingletonScope();
   bind<IApplicationRepository>(TYPES.ApplicationRepository).to(ApplicationRepository).inSingletonScope();
+  bind<IOfferLetterRepository>(TYPES.OfferLetterRepository).to(OfferLetterRepository).inSingletonScope();
   bind<IPendingUserRepository>(TYPES.PendingUserRepository).to(PendingUserRepository).inSingletonScope();
   bind<IOTPRepository>(TYPES.OTPRepository).to(OTPRepository).inSingletonScope();
   bind<IRefreshTokenRepository>(TYPES.RefreshTokenRepository).to(RefreshTokenRepository).inSingletonScope();
