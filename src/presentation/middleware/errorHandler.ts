@@ -4,6 +4,8 @@ import {
   ValidationError,
   UnauthorizedError,
   ForbiddenError,
+  SubscriptionRequiredError,
+  PlanLimitError,
   NotFoundError,
   ConflictError,
   TooManyRequestsError
@@ -17,6 +19,8 @@ function getStatusCode(error: AppError): number {
   if (error instanceof ValidationError) return HttpStatus.BAD_REQUEST;
   if (error instanceof UnauthorizedError) return HttpStatus.UNAUTHORIZED;
   if (error instanceof ForbiddenError) return HttpStatus.FORBIDDEN;
+  if (error instanceof SubscriptionRequiredError) return HttpStatus.FORBIDDEN;
+  if (error instanceof PlanLimitError) return HttpStatus.FORBIDDEN;
   if (error instanceof TooManyRequestsError) return HttpStatus.TOO_MANY_REQUESTS;
   if (error instanceof NotFoundError) return HttpStatus.NOT_FOUND;
   if (error instanceof ConflictError) return HttpStatus.CONFLICT;

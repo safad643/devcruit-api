@@ -2,7 +2,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { container } from '../../di/container';
 import { TYPES } from '../../di/types';
 import { ICompanyProfileRepository, ICompanyTeamRepository, CompanyTeamMember } from '../../domain/repositories';
-import { ForbiddenError, UnauthorizedError, NotFoundError } from '../../domain/errors';
+import { ForbiddenError, UnauthorizedError, NotFoundError, SubscriptionRequiredError } from '../../domain/errors';
 
 export async function checkCompanyPaid(
   request: FastifyRequest,
@@ -47,7 +47,7 @@ export async function checkCompanyPaid(
     }
 
     if (!companyProfile.hasActivePlan()) {
-      throw new ForbiddenError('Company must have a paid subscription to access this feature');
+      throw new SubscriptionRequiredError();
     }
 
     request.companyContext = {

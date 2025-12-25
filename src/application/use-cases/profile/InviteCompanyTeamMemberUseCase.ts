@@ -7,7 +7,7 @@ import {
   IUserRepository
 } from '../../../domain/repositories';
 import { CompanyTeamMemberDTO, IInviteCompanyTeamMemberUseCase, InviteCompanyTeamMemberInput } from './interfaces';
-import { ForbiddenError, NotFoundError, ValidationError, ConflictError } from '../../../domain/errors';
+import { ForbiddenError, NotFoundError, ValidationError, ConflictError, PlanLimitError } from '../../../domain/errors';
 import { User } from '../../../domain/entities/User';
 import { IHashService, IEmailService, ICryptographicService } from '../../services';
 
@@ -57,7 +57,7 @@ export class InviteCompanyTeamMemberUseCase implements IInviteCompanyTeamMemberU
     if (currentPlan && currentPlan.limits.maxTeamMembers !== null) {
       const teamMemberCount = await this.companyTeamRepository.countActiveByCompany(companyProfile.userId);
       if (teamMemberCount >= currentPlan.limits.maxTeamMembers) {
-        throw new ForbiddenError(`You have reached your plan limit of ${currentPlan.limits.maxTeamMembers} team members`);
+        throw new PlanLimitError('team members', currentPlan.limits.maxTeamMembers);
       }
     }
 

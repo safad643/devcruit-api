@@ -18,6 +18,18 @@ export class ForbiddenError extends AppError {
   }
 }
 
+export class SubscriptionRequiredError extends AppError {
+  constructor(message = 'Active subscription required') {
+    super(message, 'SUBSCRIPTION_REQUIRED', true);
+  }
+}
+
+export class PlanLimitError extends AppError {
+  constructor(resource: string, limit: number) {
+    super(`You have reached your plan limit of ${limit} ${resource}`, 'PLAN_LIMIT_EXCEEDED', true);
+  }
+}
+
 export class NotFoundError extends AppError {
   constructor(message: string) {
     super(message, 'NOT_FOUND', true);

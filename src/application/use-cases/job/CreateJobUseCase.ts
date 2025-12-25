@@ -1,7 +1,7 @@
 import { IJobRepository, IUserRepository, IJobFieldRepository, ICompanyProfileRepository } from '../../../domain/repositories';
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
-import { NotFoundError, ValidationError, ForbiddenError } from '../../../domain/errors';
+import { NotFoundError, ValidationError, PlanLimitError } from '../../../domain/errors';
 import { Job, Compensation } from '../../../domain/entities/Job';
 import { ICreateJobUseCase } from './interfaces';
 import { CreateJobInput, CreateJobOutput, CreateJobCompensationInput } from '../../dtos/job.dto';
@@ -67,7 +67,7 @@ export class CreateJobUseCase implements ICreateJobUseCase {
       if (currentPlan && currentPlan.limits.maxActiveJobs !== null) {
         const activeJobCount = await this.jobRepository.countActiveByCompany(user.id);
         if (activeJobCount >= currentPlan.limits.maxActiveJobs) {
-          throw new ForbiddenError(`You have reached your plan limit of ${currentPlan.limits.maxActiveJobs} active jobs`);
+          throw new PlanLimitError('active jobs', currentPlan.limits.maxActiveJobs);
         }
       }
     }
