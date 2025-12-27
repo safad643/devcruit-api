@@ -14,6 +14,8 @@ import { jobRoutes } from './presentation/routes/job.routes';
 import { publicJobRoutes } from './presentation/routes/public.jobs.routes';
 import { publicPlanRoutes } from './presentation/routes/plan.routes';
 import { applicationRoutes } from './presentation/routes/application.routes';
+import { interviewRoutes } from './presentation/routes/interview.routes';
+import { offerRoutes } from './presentation/routes/offer.routes';
 import { chatRoutes } from './presentation/routes/chat.routes';
 import fastifyRawBody from 'fastify-raw-body';
 import { globalErrorHandler } from './presentation/middleware/errorHandler';
@@ -99,6 +101,8 @@ export async function buildServer() {
   await server.register(publicJobRoutes, { prefix: '/api/jobs' });
   await server.register(publicPlanRoutes, { prefix: '/api/plans' });
   await server.register(applicationRoutes, { prefix: '/api' });
+  await server.register(interviewRoutes, { prefix: '/api' });
+  await server.register(offerRoutes, { prefix: '/api' });
   await server.register(chatRoutes, { prefix: '/api/chat' });
 
 

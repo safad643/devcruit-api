@@ -118,6 +118,8 @@ export const TYPES = {
   CreateOfferLetterUseCase: Symbol.for('CreateOfferLetterUseCase'),
   GetOfferLetterUseCase: Symbol.for('GetOfferLetterUseCase'),
   ApplicationController: Symbol.for('ApplicationController'),
+  InterviewController: Symbol.for('InterviewController'),
+  OfferController: Symbol.for('OfferController'),
 
   // Public Job module
   PublicListJobsUseCase: Symbol.for('PublicListJobsUseCase'),

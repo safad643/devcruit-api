@@ -21,6 +21,8 @@ import { StartVideoCallUseCase } from '../../application/use-cases/video-call/St
 import { EndVideoCallUseCase } from '../../application/use-cases/video-call/EndVideoCallUseCase';
 import { VideoCallHelper } from '../../application/use-cases/video-call/VideoCallHelper';
 import { ApplicationController } from '../../presentation/controllers/ApplicationController';
+import { InterviewController } from '../../presentation/controllers/InterviewController';
+import { OfferController } from '../../presentation/controllers/OfferController';
 import {
   ICreateApplicationUseCase,
   IListApplicationsForCompanyUseCase,
@@ -69,4 +71,6 @@ export const applicationModule = new ContainerModule((bind) => {
   bind<IStartVideoCallUseCase>(TYPES.StartVideoCallUseCase).to(StartVideoCallUseCase);
   bind<IEndVideoCallUseCase>(TYPES.EndVideoCallUseCase).to(EndVideoCallUseCase);
   bind<ApplicationController>(TYPES.ApplicationController).to(ApplicationController);
+  bind<InterviewController>(TYPES.InterviewController).to(InterviewController);
+  bind<OfferController>(TYPES.OfferController).to(OfferController);
 });
