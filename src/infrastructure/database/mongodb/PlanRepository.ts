@@ -11,22 +11,22 @@ export class PlanRepository
     extends MongoGenericRepository<Plan, CreatePlanData, UpdatePlanData>
     implements IPlanRepository {
 
-    protected collection: Collection;
+    protected _collection: Collection;
 
     constructor() {
         super();
-        this.collection = getMongoDb().collection('plans');
+        this._collection = getMongoDb().collection('plans');
         // Ensure unique plan names
-        this.collection.createIndex({ name: 1 }, { unique: true }).catch(() => { });
+        this._collection.createIndex({ name: 1 }, { unique: true }).catch(() => { });
         // Index for display order sorting
-        this.collection.createIndex({ displayOrder: 1 }).catch(() => { });
+        this._collection.createIndex({ displayOrder: 1 }).catch(() => { });
     }
 
-    protected getEntityName(): string {
+    protected _getEntityName(): string {
         return 'Plan';
     }
 
-    protected mapToEntity(doc: WithId<Document>): Plan {
+    protected _mapToEntity(doc: WithId<Document>): Plan {
         return new Plan({
             id: doc._id.toString(),
             name: doc.name,
@@ -55,13 +55,13 @@ export class PlanRepository
             const now = new Date();
             const planData = Plan.create(data);
 
-            const result = await this.collection.insertOne({
+            const result = await this._collection.insertOne({
                 ...planData,
                 createdAt: now,
                 updatedAt: now,
             });
 
-            return this.mapToEntity({
+            return this._mapToEntity({
                 _id: result.insertedId,
                 ...planData,
                 createdAt: now,
@@ -74,11 +74,11 @@ export class PlanRepository
 
     async findActive(): Promise<Plan[]> {
         try {
-            const docs = await this.collection
+            const docs = await this._collection
                 .find({ isActive: true })
                 .sort({ displayOrder: 1 })
                 .toArray();
-            return docs.map(doc => this.mapToEntity(doc));
+            return docs.map(doc => this._mapToEntity(doc));
         } catch (error) {
             throw new InternalError('Failed to fetch active plans', error as Error);
         }
@@ -86,11 +86,11 @@ export class PlanRepository
 
     async findAll(): Promise<Plan[]> {
         try {
-            const docs = await this.collection
+            const docs = await this._collection
                 .find({})
                 .sort({ displayOrder: 1 })
                 .toArray();
-            return docs.map(doc => this.mapToEntity(doc));
+            return docs.map(doc => this._mapToEntity(doc));
         } catch (error) {
             throw new InternalError('Failed to fetch plans', error as Error);
         }

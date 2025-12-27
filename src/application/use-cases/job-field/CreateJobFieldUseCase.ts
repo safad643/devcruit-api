@@ -9,12 +9,12 @@ import { ValidationError } from '../../../domain/errors';
 @injectable()
 export class CreateJobFieldUseCase implements ICreateJobFieldUseCase {
     constructor(
-        @inject(TYPES.JobFieldRepository) private jobFieldRepository: IJobFieldRepository
+        @inject(TYPES.JobFieldRepository) private _jobFieldRepository: IJobFieldRepository
     ) { }
 
     async execute(input: CreateJobFieldInput): Promise<CreateJobFieldOutput> {
         // Check if field already exists
-        const existing = await this.jobFieldRepository.findByTypeAndName(input.type, input.name.trim());
+        const existing = await this._jobFieldRepository.findByTypeAndName(input.type, input.name.trim());
         if (existing) {
             throw new ValidationError(`${input.type} "${input.name}" already exists`);
         }
@@ -25,7 +25,7 @@ export class CreateJobFieldUseCase implements ICreateJobFieldUseCase {
             name: input.name.trim(),
         });
 
-        const created = await this.jobFieldRepository.create(fieldData);
+        const created = await this._jobFieldRepository.create(fieldData);
 
         return {
             id: created.id,

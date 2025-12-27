@@ -5,19 +5,19 @@ import { injectable } from 'inversify';
 
 @injectable()
 export class RefreshTokenRepository implements IRefreshTokenRepository {
-  private getKey(tokenId: string): string {
+  private _getKey(tokenId: string): string {
     return `refresh:${tokenId}`;
   }
 
-  private getUserTokensKey(userId: string): string {
+  private _getUserTokensKey(userId: string): string {
     return `user:tokens:${userId}`;
   }
 
   async save(tokenId: string, userId: string, ttlSeconds: number): Promise<void> {
     try {
       const redis = getRedis();
-      const key = this.getKey(tokenId);
-      const userTokensKey = this.getUserTokensKey(userId);
+      const key = this._getKey(tokenId);
+      const userTokensKey = this._getUserTokensKey(userId);
 
       await redis
         .multi()
@@ -32,7 +32,7 @@ export class RefreshTokenRepository implements IRefreshTokenRepository {
   async exists(tokenId: string): Promise<boolean> {
     try {
       const redis = getRedis();
-      const key = this.getKey(tokenId);
+      const key = this._getKey(tokenId);
       const result = await redis.exists(key);
       return result === 1;
     } catch (error) {
@@ -43,8 +43,8 @@ export class RefreshTokenRepository implements IRefreshTokenRepository {
   async delete(tokenId: string, userId: string): Promise<void> {
     try {
       const redis = getRedis();
-      const key = this.getKey(tokenId);
-      const userTokensKey = this.getUserTokensKey(userId);
+      const key = this._getKey(tokenId);
+      const userTokensKey = this._getUserTokensKey(userId);
 
       await redis
         .multi()
@@ -59,12 +59,12 @@ export class RefreshTokenRepository implements IRefreshTokenRepository {
   async deleteAllForUser(userId: string): Promise<void> {
     try {
       const redis = getRedis();
-      const userTokensKey = this.getUserTokensKey(userId);
+      const userTokensKey = this._getUserTokensKey(userId);
 
       const tokenIds = await redis.smembers(userTokensKey);
       if (tokenIds.length === 0) return;
 
-      const keys = tokenIds.map((id) => this.getKey(id));
+      const keys = tokenIds.map((id) => this._getKey(id));
 
       await redis
         .multi()

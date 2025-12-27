@@ -37,10 +37,10 @@ interface CompanyTeamMemberDocument {
 
 @injectable()
 export class CompanyTeamRepository implements ICompanyTeamRepository {
-  private collection: Collection<CompanyTeamMemberDocument>;
+  private _collection: Collection<CompanyTeamMemberDocument>;
 
   constructor() {
-    this.collection = getMongoDb().collection<CompanyTeamMemberDocument>('company_team_members');
+    this._collection = getMongoDb().collection<CompanyTeamMemberDocument>('company_team_members');
   }
 
   async inviteMember(input: InviteCompanyTeamMemberInput): Promise<CompanyTeamMember> {
@@ -84,8 +84,12 @@ export class CompanyTeamRepository implements ICompanyTeamRepository {
         updatedAt: now,
       };
 
-      const result = await this.collection.insertOne(doc);
-      return this.mapToEntity({ ...doc, _id: result.insertedId });
+      const result = await this._collection.insertOne(doc);
+      const documentWithId: CompanyTeamMemberDocument = {
+        ...doc,
+        _id: result.insertedId,
+      };
+      return this._mapToEntity(documentWithId);
     } catch (error) {
       throw new InternalError('Failed to invite team member', error as Error);
     }
@@ -93,12 +97,12 @@ export class CompanyTeamRepository implements ICompanyTeamRepository {
 
   async listMembers(companyId: string): Promise<CompanyTeamMemberWithRole[]> {
     try {
-      const docs = await this.collection
+      const docs = await this._collection
         .find({ companyId })
         .sort({ createdAt: -1 })
         .toArray();
       return docs.map((doc) => ({
-        member: this.mapToEntity(doc),
+        member: this._mapToEntity(doc),
         role: doc.role,
       }));
     } catch (error) {
@@ -108,8 +112,8 @@ export class CompanyTeamRepository implements ICompanyTeamRepository {
 
   async findByEmail(companyId: string, email: string): Promise<CompanyTeamMember | null> {
     try {
-      const doc = await this.collection.findOne({ companyId, email: email.toLowerCase() });
-      return doc ? this.mapToEntity(doc) : null;
+      const doc = await this._collection.findOne({ companyId, email: email.toLowerCase() });
+      return doc ? this._mapToEntity(doc) : null;
     } catch (error) {
       throw new InternalError('Failed to find team member by email', error as Error);
     }
@@ -117,8 +121,8 @@ export class CompanyTeamRepository implements ICompanyTeamRepository {
 
   async findByUserId(userId: string): Promise<CompanyTeamMember | null> {
     try {
-      const doc = await this.collection.findOne({ userId });
-      return doc ? this.mapToEntity(doc) : null;
+      const doc = await this._collection.findOne({ userId });
+      return doc ? this._mapToEntity(doc) : null;
     } catch (error) {
       throw new InternalError('Failed to find team member by user ID', error as Error);
     }
@@ -130,7 +134,7 @@ export class CompanyTeamRepository implements ICompanyTeamRepository {
         throw new InternalError('Invalid team member ID');
       }
 
-      await this.collection.updateOne(
+      await this._collection.updateOne(
         { _id: new ObjectId(teamMemberId) },
         {
           $set: {
@@ -144,7 +148,7 @@ export class CompanyTeamRepository implements ICompanyTeamRepository {
     }
   }
 
-  private mapToEntity(doc: CompanyTeamMemberDocument): CompanyTeamMember {
+  private _mapToEntity(doc: CompanyTeamMemberDocument): CompanyTeamMember {
     if (doc.role === 'hr') {
       return new HRProfile({
         id: doc._id.toString(),
@@ -189,7 +193,7 @@ export class CompanyTeamRepository implements ICompanyTeamRepository {
 
   async countActiveByCompany(companyId: string): Promise<number> {
     try {
-      return await this.collection.countDocuments({
+      return await this._collection.countDocuments({
         companyId,
         status: { $in: ['active', 'invited'] },
       });

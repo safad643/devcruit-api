@@ -12,19 +12,19 @@ import { IWithdrawApplicationUseCase } from './interfaces';
 @injectable()
 export class WithdrawApplicationUseCase implements IWithdrawApplicationUseCase {
   constructor(
-    @inject(TYPES.ApplicationRepository) private applicationRepository: IApplicationRepository,
-    @inject(TYPES.DeveloperProfileRepository) private developerProfileRepository: IDeveloperProfileRepository
+    @inject(TYPES.ApplicationRepository) private _applicationRepository: IApplicationRepository,
+    @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository
   ) {}
 
   async execute(input: WithdrawApplicationInput & { developerId: string }): Promise<WithdrawApplicationOutput> {
     // Get developer profile
-    const developerProfile = await this.developerProfileRepository.findByUserId(input.developerId);
+    const developerProfile = await this._developerProfileRepository.findByUserId(input.developerId);
     if (!developerProfile) {
       throw new NotFoundError('Developer profile not found');
     }
 
     // Get application
-    const application = await this.applicationRepository.findById(input.applicationId);
+    const application = await this._applicationRepository.findById(input.applicationId);
     if (!application) {
       throw new NotFoundError('Application not found');
     }
@@ -41,7 +41,7 @@ export class WithdrawApplicationUseCase implements IWithdrawApplicationUseCase {
     }
 
     // Update application status to withdrawn
-    const updatedApplication = await this.applicationRepository.update(input.applicationId, {
+    const updatedApplication = await this._applicationRepository.update(input.applicationId, {
       status: 'withdrawn',
       lastUpdatedAt: new Date(),
     });

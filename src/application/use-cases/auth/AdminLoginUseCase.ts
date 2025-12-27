@@ -10,34 +10,34 @@ import { IAdminLoginUseCase } from './interfaces';
 @injectable()
 export class AdminLoginUseCase implements IAdminLoginUseCase {
   constructor(
-    @inject(TYPES.AdminRepository) private adminRepository: IAdminRepository,
-    @inject(TYPES.RefreshTokenRepository) private refreshTokenRepository: IRefreshTokenRepository,
-    @inject(TYPES.HashService) private hashService: IHashService,
-    @inject(TYPES.TokenService) private tokenService: ITokenService
+    @inject(TYPES.AdminRepository) private _adminRepository: IAdminRepository,
+    @inject(TYPES.RefreshTokenRepository) private _refreshTokenRepository: IRefreshTokenRepository,
+    @inject(TYPES.HashService) private _hashService: IHashService,
+    @inject(TYPES.TokenService) private _tokenService: ITokenService
   ) {}
 
   async execute(input: LoginInput): Promise<AdminAuthTokensOutput> {
-    const admin = await this.adminRepository.findByEmail(input.email);
+    const admin = await this._adminRepository.findByEmail(input.email);
     if (!admin) {
       throw new UnauthorizedError('Invalid email or password');
     }
 
-    const isPasswordValid = await this.hashService.compare(input.password, admin.password);
+    const isPasswordValid = await this._hashService.compare(input.password, admin.password);
     if (!isPasswordValid) {
       throw new UnauthorizedError('Invalid email or password');
     }
 
-    const accessToken = this.tokenService.generateAccessToken({
+    const accessToken = this._tokenService.generateAccessToken({
       userId: admin.id,
       role: admin.role
     });
 
-    const { token: refreshToken, tokenId } = this.tokenService.generateRefreshToken({
+    const { token: refreshToken, tokenId } = this._tokenService.generateRefreshToken({
       userId: admin.id,
       role: admin.role
     });
 
-    await this.refreshTokenRepository.save(
+    await this._refreshTokenRepository.save(
       tokenId,
       admin.id,
       config.jwt.refreshTokenExpiry

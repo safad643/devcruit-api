@@ -9,8 +9,8 @@ import { HttpStatus } from '../../utils/statusCodes';
 @injectable()
 export class FileController {
   constructor(
-    @inject(TYPES.GenerateSignatureUseCase) private generateSignatureUseCase: IGenerateSignatureUseCase,
-    @inject(TYPES.DeleteFileUseCase) private deleteFileUseCase: IDeleteFileUseCase
+    @inject(TYPES.GenerateSignatureUseCase) private _generateSignatureUseCase: IGenerateSignatureUseCase,
+    @inject(TYPES.DeleteFileUseCase) private _deleteFileUseCase: IDeleteFileUseCase
   ) { }
 
   generateSignature = async (
@@ -20,7 +20,7 @@ export class FileController {
     const userId = request.user!.id;
     const { timestamp, category } = request.body;
 
-    const result = await this.generateSignatureUseCase.execute({
+    const result = await this._generateSignatureUseCase.execute({
       timestamp,
       category,
       userId,
@@ -33,7 +33,7 @@ export class FileController {
     request: FastifyRequest<{ Body: DeleteFileInput }>,
     reply: FastifyReply
   ): Promise<void> => {
-    const result = await this.deleteFileUseCase.execute({
+    const result = await this._deleteFileUseCase.execute({
       publicId: request.body.publicId,
     });
 

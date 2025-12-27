@@ -14,9 +14,9 @@ import { HttpStatus } from '../../utils/statusCodes';
 @injectable()
 export class PaymentController {
   constructor(
-    @inject(TYPES.CreateCheckoutSessionUseCase) private createCheckoutSessionUseCase: ICreateCheckoutSessionUseCase,
-    @inject(TYPES.HandleStripeWebhookUseCase) private handleStripeWebhookUseCase: IHandleStripeWebhookUseCase,
-    @inject(TYPES.CompletePaymentUseCase) private completePaymentUseCase: ICompletePaymentUseCase
+    @inject(TYPES.CreateCheckoutSessionUseCase) private _createCheckoutSessionUseCase: ICreateCheckoutSessionUseCase,
+    @inject(TYPES.HandleStripeWebhookUseCase) private _handleStripeWebhookUseCase: IHandleStripeWebhookUseCase,
+    @inject(TYPES.CompletePaymentUseCase) private _completePaymentUseCase: ICompletePaymentUseCase
   ) { }
 
   checkout = async (
@@ -25,7 +25,7 @@ export class PaymentController {
   ): Promise<void> => {
     const userId = request.user!.id;
     const { planId, successUrl, cancelUrl } = request.body;
-    const result = await this.createCheckoutSessionUseCase.execute({
+    const result = await this._createCheckoutSessionUseCase.execute({
       planId,
       userId,
       successUrl,
@@ -51,7 +51,7 @@ export class PaymentController {
     }
     const rawBuffer = Buffer.isBuffer(raw) ? raw : Buffer.from(raw);
 
-    const verified = await this.handleStripeWebhookUseCase.execute({
+    const verified = await this._handleStripeWebhookUseCase.execute({
       rawBody: rawBuffer,
       signature,
     });
@@ -66,7 +66,7 @@ export class PaymentController {
       stripeSessionId = `session_${Date.now()}`;
     }
 
-    await this.completePaymentUseCase.execute({
+    await this._completePaymentUseCase.execute({
       userId: verified.userId,
       planId: verified.planId,
       stripeSessionId,

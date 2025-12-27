@@ -11,18 +11,18 @@ export class JobRepository
   extends MongoGenericRepository<Job, CreateJobProps, UpdateJobProps>
   implements IJobRepository {
 
-  protected collection: Collection;
+  protected _collection: Collection;
 
   constructor() {
     super();
-    this.collection = getMongoDb().collection('jobs');
+    this._collection = getMongoDb().collection('jobs');
   }
 
-  protected getEntityName(): string {
+  protected _getEntityName(): string {
     return 'Job';
   }
 
-  protected mapToEntity(doc: WithId<Document>): Job {
+  protected _mapToEntity(doc: WithId<Document>): Job {
     return new Job({
       id: doc._id.toString(),
       companyId: doc.companyId,
@@ -53,7 +53,7 @@ export class JobRepository
   async create(job: CreateJobProps): Promise<Job> {
     try {
       const now = new Date();
-      const result = await this.collection.insertOne({
+      const result = await this._collection.insertOne({
         companyId: job.companyId,
         title: job.title,
         description: job.description,
@@ -78,7 +78,7 @@ export class JobRepository
         updatedAt: now,
       });
 
-      return this.mapToEntity({
+      return this._mapToEntity({
         _id: result.insertedId,
         ...job,
         status: job.status || 'draft',
@@ -102,7 +102,7 @@ export class JobRepository
         updatedAt: new Date(),
       };
 
-      const result = await this.collection.findOneAndUpdate(
+      const result = await this._collection.findOneAndUpdate(
         { _id: new ObjectId(id) },
         { $set: updatePayload },
         { returnDocument: 'after' }
@@ -112,7 +112,7 @@ export class JobRepository
         throw new NotFoundError('Job not found');
       }
 
-      return this.mapToEntity(result);
+      return this._mapToEntity(result);
     } catch (error) {
       if (error instanceof NotFoundError) throw error;
       throw new InternalError('Failed to update job', error as Error);
@@ -121,8 +121,8 @@ export class JobRepository
 
   async findByCompanyId(companyId: string): Promise<Job[]> {
     try {
-      const docs = await this.collection.find({ companyId }).toArray();
-      return docs.map(doc => this.mapToEntity(doc));
+      const docs = await this._collection.find({ companyId }).toArray();
+      return docs.map(doc => this._mapToEntity(doc));
     } catch (error) {
       throw new InternalError('Database query failed', error as Error);
     }
@@ -145,17 +145,17 @@ export class JobRepository
       const sortField = filters.sortBy ?? 'createdAt';
       const sortOrder = filters.sortOrder === 'asc' ? 1 : -1;
 
-      const total = await this.collection.countDocuments(matchQuery);
+      const total = await this._collection.countDocuments(matchQuery);
 
       const skip = (filters.page - 1) * filters.limit;
-      const docs = await this.collection
+      const docs = await this._collection
         .find(matchQuery)
         .sort({ [sortField]: sortOrder })
         .skip(skip)
         .limit(filters.limit)
         .toArray();
 
-      const jobs = docs.map(doc => this.mapToEntity(doc));
+      const jobs = docs.map(doc => this._mapToEntity(doc));
 
       return { jobs, total };
     } catch (error) {
@@ -214,7 +214,7 @@ export class JobRepository
       const sortOrder = filters.sortOrder === 'asc' ? 1 : -1;
 
       const countPipeline = [...pipeline, { $count: 'total' }];
-      const countResult = await this.collection.aggregate(countPipeline).toArray();
+      const countResult = await this._collection.aggregate(countPipeline).toArray();
       const total = countResult.length > 0 ? countResult[0].total : 0;
 
       const skip = (filters.page - 1) * filters.limit;
@@ -224,8 +224,8 @@ export class JobRepository
         { $limit: filters.limit }
       );
 
-      const docs = await this.collection.aggregate(pipeline).toArray();
-      const jobs = docs.map((doc) => this.mapToEntity(doc as WithId<Document>));
+      const docs = await this._collection.aggregate(pipeline).toArray();
+      const jobs = docs.map((doc) => this._mapToEntity(doc as WithId<Document>));
 
       return { jobs, total };
     } catch (error) {
@@ -235,7 +235,7 @@ export class JobRepository
 
   async countActiveByCompany(companyId: string): Promise<number> {
     try {
-      return await this.collection.countDocuments({
+      return await this._collection.countDocuments({
         companyId,
         status: 'open',
       });

@@ -8,16 +8,16 @@ import { CompanyDocumentKey } from '../../../domain/types';
 @injectable()
 export class ResubmitDocumentsUseCase {
   constructor(
-    @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository
+    @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository
   ) { }
 
-  private isCompanyDocumentKey(key: string): key is CompanyDocumentKey {
+  private _isCompanyDocumentKey(key: string): key is CompanyDocumentKey {
     return key === 'COMPANY_REGISTRATION_DOCUMENT' || key === 'COMPANY_VERIFICATION_DOCUMENT';
   }
 
   async execute(input: ResubmitDocumentsInput): Promise<ResubmitDocumentsOutput> {
     // 1. Verify company profile exists
-    const existingProfile = await this.companyProfileRepository.findByUserId(input.userId);
+    const existingProfile = await this._companyProfileRepository.findByUserId(input.userId);
     if (!existingProfile) {
       throw new NotFoundError('Company profile not found');
     }
@@ -46,7 +46,7 @@ export class ResubmitDocumentsUseCase {
     // Check that all submitted document keys are in the reupload request
     const submittedKeys = Object.keys(input.documents);
     const invalidKeys = submittedKeys.filter(key => {
-      if (!this.isCompanyDocumentKey(key)) {
+      if (!this._isCompanyDocumentKey(key)) {
         return true; // Invalid key type
       }
       return !requestedDocumentKeys.includes(key);
@@ -57,7 +57,7 @@ export class ResubmitDocumentsUseCase {
     }
 
     // 4. Update documents
-    const updatedProfile = await this.companyProfileRepository.update(existingProfile.id, existingProfile.resubmitDocuments(input.documents));
+    const updatedProfile = await this._companyProfileRepository.update(existingProfile.id, existingProfile.resubmitDocuments(input.documents));
 
     return {
       id: updatedProfile.id,

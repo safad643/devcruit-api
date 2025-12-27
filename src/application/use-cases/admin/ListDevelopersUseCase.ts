@@ -6,7 +6,7 @@ import { ListDevelopersInput, ListDevelopersOutput, DeveloperListItem } from '..
 @injectable()
 export class ListDevelopersUseCase {
   constructor(
-    @inject(TYPES.DeveloperProfileRepository) private developerProfileRepository: IDeveloperProfileRepository
+    @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository
   ) {}
 
   async execute(input: ListDevelopersInput): Promise<ListDevelopersOutput> {
@@ -21,7 +21,7 @@ export class ListDevelopersUseCase {
     };
 
     // Call repository
-    const result = await this.developerProfileRepository.listWithFilters(filters);
+    const result = await this._developerProfileRepository.listWithFilters(filters);
 
     // Map to output DTO with only essential fields
     const developers: DeveloperListItem[] = result.developers.map((item) => ({

@@ -6,7 +6,7 @@ import { ListCompaniesInput, ListCompaniesOutput, CompanyListItem } from '../../
 @injectable()
 export class ListCompaniesUseCase {
   constructor(
-    @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository
+    @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository
   ) { }
 
   async execute(input: ListCompaniesInput): Promise<ListCompaniesOutput> {
@@ -23,7 +23,7 @@ export class ListCompaniesUseCase {
     };
 
     // Call repository
-    const result = await this.companyProfileRepository.listWithFilters(filters);
+    const result = await this._companyProfileRepository.listWithFilters(filters);
 
     // Map to output DTO with only essential fields
     const companies: CompanyListItem[] = result.companies.map((item) => ({

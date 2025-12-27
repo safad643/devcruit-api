@@ -22,11 +22,11 @@ import { ForbiddenError } from '../../domain/errors';
 @injectable()
 export class OfferController {
     constructor(
-        @inject(TYPES.ExtendOfferUseCase) private extendOfferUseCase: IExtendOfferUseCase,
-        @inject(TYPES.AcceptOfferUseCase) private acceptOfferUseCase: IAcceptOfferUseCase,
-        @inject(TYPES.DeclineOfferUseCase) private declineOfferUseCase: IDeclineOfferUseCase,
-        @inject(TYPES.CreateOfferLetterUseCase) private createOfferLetterUseCase: ICreateOfferLetterUseCase,
-        @inject(TYPES.GetOfferLetterUseCase) private getOfferLetterUseCase: IGetOfferLetterUseCase
+        @inject(TYPES.ExtendOfferUseCase) private _extendOfferUseCase: IExtendOfferUseCase,
+        @inject(TYPES.AcceptOfferUseCase) private _acceptOfferUseCase: IAcceptOfferUseCase,
+        @inject(TYPES.DeclineOfferUseCase) private _declineOfferUseCase: IDeclineOfferUseCase,
+        @inject(TYPES.CreateOfferLetterUseCase) private _createOfferLetterUseCase: ICreateOfferLetterUseCase,
+        @inject(TYPES.GetOfferLetterUseCase) private _getOfferLetterUseCase: IGetOfferLetterUseCase
     ) { }
 
     // Company endpoint: Extend offer
@@ -34,11 +34,11 @@ export class OfferController {
         request: FastifyRequest<{ Params: { id: string }; Body?: ExtendOfferInput }>,
         reply: FastifyReply
     ): Promise<void> => {
-        const companyContext = this.getCompanyContext(request);
+        const companyContext = this._getCompanyContext(request);
         const companyId = companyContext.companyUserId;
         const applicationId = request.params.id;
         const note = request.body?.note?.trim() || undefined;
-        const result = await this.extendOfferUseCase.execute({
+        const result = await this._extendOfferUseCase.execute({
             applicationId,
             companyId,
             note,
@@ -53,7 +53,7 @@ export class OfferController {
     ): Promise<void> => {
         const developerId = request.user?.id as string;
         const applicationId = request.params.id;
-        const result = await this.acceptOfferUseCase.execute({
+        const result = await this._acceptOfferUseCase.execute({
             applicationId,
             developerId,
         });
@@ -68,7 +68,7 @@ export class OfferController {
         const developerId = request.user?.id as string;
         const applicationId = request.params.id;
         const note = request.body?.note?.trim() || undefined;
-        const result = await this.declineOfferUseCase.execute({
+        const result = await this._declineOfferUseCase.execute({
             applicationId,
             developerId,
             note,
@@ -81,10 +81,10 @@ export class OfferController {
         request: FastifyRequest<{ Params: { id: string }; Body: CreateOfferLetterInput }>,
         reply: FastifyReply
     ): Promise<void> => {
-        const companyContext = this.getCompanyContext(request);
+        const companyContext = this._getCompanyContext(request);
         const companyId = companyContext.companyUserId;
         const applicationId = request.params.id;
-        const result = await this.createOfferLetterUseCase.execute({
+        const result = await this._createOfferLetterUseCase.execute({
             applicationId,
             companyId,
             ...request.body,
@@ -97,10 +97,10 @@ export class OfferController {
         request: FastifyRequest<{ Params: { id: string } }>,
         reply: FastifyReply
     ): Promise<void> => {
-        const companyContext = this.getCompanyContext(request);
+        const companyContext = this._getCompanyContext(request);
         const companyId = companyContext.companyUserId;
         const applicationId = request.params.id;
-        const result = await this.getOfferLetterUseCase.execute(applicationId, companyId, 'company');
+        const result = await this._getOfferLetterUseCase.execute(applicationId, companyId, 'company');
         reply.status(HttpStatus.OK).send(wrapSuccess(result));
     };
 
@@ -111,11 +111,11 @@ export class OfferController {
     ): Promise<void> => {
         const developerId = request.user?.id as string;
         const applicationId = request.params.id;
-        const result = await this.getOfferLetterUseCase.execute(applicationId, developerId, 'developer');
+        const result = await this._getOfferLetterUseCase.execute(applicationId, developerId, 'developer');
         reply.status(HttpStatus.OK).send(wrapSuccess(result));
     };
 
-    private getCompanyContext(request: FastifyRequest) {
+    private _getCompanyContext(request: FastifyRequest) {
         const companyContext = request.companyContext;
         if (!companyContext) {
             throw new ForbiddenError('Company context missing. Ensure checkCompanyPaid middleware is applied.');

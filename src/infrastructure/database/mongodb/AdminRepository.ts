@@ -7,17 +7,17 @@ import { injectable } from 'inversify';
 
 @injectable()
 export class AdminRepository implements IAdminRepository {
-  private collection: Collection;
+  private _collection: Collection;
 
   constructor() {
-    this.collection = getMongoDb().collection('admins');
+    this._collection = getMongoDb().collection('admins');
   }
 
   async findByEmail(email: string): Promise<Admin | null> {
     try {
-      const doc = await this.collection.findOne({ email });
+      const doc = await this._collection.findOne({ email });
       if (!doc) return null;
-      return this.mapToEntity(doc);
+      return this._mapToEntity(doc);
     } catch (error) {
       throw new InternalError('Database query failed', error as Error);
     }
@@ -26,15 +26,15 @@ export class AdminRepository implements IAdminRepository {
   async findById(id: string): Promise<Admin | null> {
     try {
       if (!ObjectId.isValid(id)) return null;
-      const doc = await this.collection.findOne({ _id: new ObjectId(id) });
+      const doc = await this._collection.findOne({ _id: new ObjectId(id) });
       if (!doc) return null;
-      return this.mapToEntity(doc);
+      return this._mapToEntity(doc);
     } catch (error) {
       throw new InternalError('Database query failed', error as Error);
     }
   }
 
-  private mapToEntity(doc: WithId<Document>): Admin {
+  private _mapToEntity(doc: WithId<Document>): Admin {
     return new Admin({
       id: doc._id.toString(),
       email: doc.email,

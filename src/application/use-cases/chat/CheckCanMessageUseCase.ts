@@ -10,10 +10,10 @@ import { CheckCanMessageInput, CheckCanMessageOutput } from '../../dtos/chat.dto
 @injectable()
 export class CheckCanMessageUseCase implements ICheckCanMessageUseCase {
   constructor(
-    @inject(TYPES.ConversationRepository) private conversationRepository: IConversationRepository,
-    @inject(TYPES.ApplicationRepository) private applicationRepository: IApplicationRepository,
-    @inject(TYPES.CompanyTeamRepository) private companyTeamRepository: ICompanyTeamRepository,
-    @inject(TYPES.DeveloperProfileRepository) private developerProfileRepository: IDeveloperProfileRepository
+    @inject(TYPES.ConversationRepository) private _conversationRepository: IConversationRepository,
+    @inject(TYPES.ApplicationRepository) private _applicationRepository: IApplicationRepository,
+    @inject(TYPES.CompanyTeamRepository) private _companyTeamRepository: ICompanyTeamRepository,
+    @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository
   ) {}
 
   async execute(input: CheckCanMessageInput): Promise<CheckCanMessageOutput> {
@@ -22,7 +22,7 @@ export class CheckCanMessageUseCase implements ICheckCanMessageUseCase {
     }
 
     if (input.requesterRole === 'developer') {
-      const existingConversation = await this.conversationRepository.findByParticipants(
+      const existingConversation = await this._conversationRepository.findByParticipants(
         input.requesterUserId,
         input.targetUserId
       );
@@ -31,18 +31,18 @@ export class CheckCanMessageUseCase implements ICheckCanMessageUseCase {
         return { canMessage: true };
       }
 
-      const hrTeamMember = await this.companyTeamRepository.findByUserId(input.targetUserId);
+      const hrTeamMember = await this._companyTeamRepository.findByUserId(input.targetUserId);
       if (!hrTeamMember || hrTeamMember.status !== 'active') {
         return { canMessage: false };
       }
 
       const companyId = hrTeamMember.companyId;
-      const developerProfile = await this.developerProfileRepository.findByUserId(input.requesterUserId);
+      const developerProfile = await this._developerProfileRepository.findByUserId(input.requesterUserId);
       if (!developerProfile) {
         return { canMessage: false };
       }
 
-      const applications = await this.applicationRepository.findByDeveloperId(developerProfile.id);
+      const applications = await this._applicationRepository.findByDeveloperId(developerProfile.id);
 
       const hasShortlistedApplication = applications.some(
         (app) =>

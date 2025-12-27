@@ -19,23 +19,23 @@ import { getExperienceLevelValue } from '../../../domain/constants/experienceLev
 @injectable()
 export class CreateApplicationUseCase implements ICreateApplicationUseCase {
   constructor(
-    @inject(TYPES.ApplicationRepository) private applicationRepository: IApplicationRepository,
-    @inject(TYPES.JobRepository) private jobRepository: IJobRepository,
-    @inject(TYPES.DeveloperProfileRepository) private developerProfileRepository: IDeveloperProfileRepository,
-    @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository,
-    @inject(TYPES.UserRepository) private userRepository: IUserRepository,
-    @inject(TYPES.EmailService) private emailService: IEmailService
+    @inject(TYPES.ApplicationRepository) private _applicationRepository: IApplicationRepository,
+    @inject(TYPES.JobRepository) private _jobRepository: IJobRepository,
+    @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository,
+    @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository,
+    @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
+    @inject(TYPES.EmailService) private _emailService: IEmailService
   ) {}
 
   async execute(input: CreateApplicationInput & { developerId: string }): Promise<CreateApplicationOutput> {
     // 1. Verify developer profile exists
-    const developerProfile = await this.developerProfileRepository.findByUserId(input.developerId);
+    const developerProfile = await this._developerProfileRepository.findByUserId(input.developerId);
     if (!developerProfile) {
       throw new NotFoundError('Developer profile not found. Please complete your profile first.');
     }
 
     // 2. Get the job
-    const job = await this.jobRepository.findById(input.jobId);
+    const job = await this._jobRepository.findById(input.jobId);
     if (!job) {
       throw new NotFoundError('Job not found');
     }
@@ -50,7 +50,7 @@ export class CreateApplicationUseCase implements ICreateApplicationUseCase {
     }
 
     // 4. Check for duplicate application
-    const existingApplication = await this.applicationRepository.findByJobIdAndDeveloperId(
+    const existingApplication = await this._applicationRepository.findByJobIdAndDeveloperId(
       input.jobId,
       developerProfile.id
     );
@@ -68,7 +68,7 @@ export class CreateApplicationUseCase implements ICreateApplicationUseCase {
 
     // 7. Auto-shortlist logic
     if (job.autoShortlist) {
-      const isMatch = this.checkProfileMatch(job, developerProfile);
+      const isMatch = this._checkProfileMatch(job, developerProfile);
       if (isMatch) {
         status = 'shortlisted';
         shortlistMethod = 'auto';
@@ -95,19 +95,19 @@ export class CreateApplicationUseCase implements ICreateApplicationUseCase {
       resumeUrl,
     });
 
-    const createdApplication = await this.applicationRepository.create(applicationData);
+    const createdApplication = await this._applicationRepository.create(applicationData);
 
     // 10. Send email notification if shortlisted
     if (status === 'shortlisted') {
       try {
         // Get company profile for company name
-        const companyProfile = await this.companyProfileRepository.findByUserId(companyId);
+        const companyProfile = await this._companyProfileRepository.findByUserId(companyId);
         const companyName = companyProfile?.companyName || 'the company';
         
         // Get developer user email
-        const developerUser = await this.userRepository.findById(input.developerId);
+        const developerUser = await this._userRepository.findById(input.developerId);
         if (developerUser?.email) {
-          await this.emailService.sendShortlistNotification(
+          await this._emailService.sendShortlistNotification(
             developerUser.email,
             companyName,
             job.title
@@ -132,7 +132,7 @@ export class CreateApplicationUseCase implements ICreateApplicationUseCase {
     };
   }
 
-  private checkProfileMatch(job: Job, developerProfile: DeveloperProfile): boolean {
+  private _checkProfileMatch(job: Job, developerProfile: DeveloperProfile): boolean {
     // Check required tech match
     const requiredTechMatch = job.requiredTech.every((tech: string) => 
       developerProfile.techs.some((devTech: string) => 
@@ -148,7 +148,7 @@ export class CreateApplicationUseCase implements ICreateApplicationUseCase {
     );
 
     // Check experience level match
-    const experienceLevelMatch = this.checkExperienceLevelMatch(
+    const experienceLevelMatch = this._checkExperienceLevelMatch(
       job.experienceLevel,
       developerProfile.seniorityLevel
     );
@@ -160,7 +160,7 @@ export class CreateApplicationUseCase implements ICreateApplicationUseCase {
     return requiredTechMatch && requiredSkillsMatch && experienceLevelMatch && yearsExperienceMatch;
   }
 
-  private checkExperienceLevelMatch(jobLevel: string, developerLevel: string): boolean {
+  private _checkExperienceLevelMatch(jobLevel: string, developerLevel: string): boolean {
     const jobLevelNum = getExperienceLevelValue(jobLevel);
     const devLevelNum = getExperienceLevelValue(developerLevel);
 

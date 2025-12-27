@@ -8,11 +8,11 @@ import { NotFoundError } from '../../../domain/errors';
 @injectable()
 export class GetPlanByIdUseCase implements IGetPlanByIdUseCase {
     constructor(
-        @inject(TYPES.PlanRepository) private planRepository: IPlanRepository
+        @inject(TYPES.PlanRepository) private _planRepository: IPlanRepository
     ) { }
 
     async execute(id: string): Promise<GetPlanByIdOutput> {
-        const plan = await this.planRepository.findById(id);
+        const plan = await this._planRepository.findById(id);
         if (!plan) {
             throw new NotFoundError('Plan not found');
         }

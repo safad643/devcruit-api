@@ -16,17 +16,17 @@ import { IExtendOfferUseCase } from './interfaces';
 @injectable()
 export class ExtendOfferUseCase implements IExtendOfferUseCase {
   constructor(
-    @inject(TYPES.ApplicationRepository) private applicationRepository: IApplicationRepository,
-    @inject(TYPES.JobRepository) private jobRepository: IJobRepository,
-    @inject(TYPES.DeveloperProfileRepository) private developerProfileRepository: IDeveloperProfileRepository,
-    @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository,
-    @inject(TYPES.UserRepository) private userRepository: IUserRepository,
-    @inject(TYPES.EmailService) private emailService: IEmailService
+    @inject(TYPES.ApplicationRepository) private _applicationRepository: IApplicationRepository,
+    @inject(TYPES.JobRepository) private _jobRepository: IJobRepository,
+    @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository,
+    @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository,
+    @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
+    @inject(TYPES.EmailService) private _emailService: IEmailService
   ) {}
 
   async execute(input: ExtendOfferInput): Promise<ExtendOfferOutput> {
     // 1. Get application
-    const application = await this.applicationRepository.findById(input.applicationId);
+    const application = await this._applicationRepository.findById(input.applicationId);
     if (!application) {
       throw new NotFoundError('Application not found');
     }
@@ -42,7 +42,7 @@ export class ExtendOfferUseCase implements IExtendOfferUseCase {
     }
 
     // 4. Get the job for email notification
-    const job = await this.jobRepository.findById(application.jobId);
+    const job = await this._jobRepository.findById(application.jobId);
     if (!job) {
       throw new NotFoundError('Job not found');
     }
@@ -64,19 +64,19 @@ export class ExtendOfferUseCase implements IExtendOfferUseCase {
     }
 
     // 7. Update application
-    const updatedApplication = await this.applicationRepository.update(input.applicationId, updateData);
+    const updatedApplication = await this._applicationRepository.update(input.applicationId, updateData);
 
     // 8. Send email notification
     try {
       // Get developer profile to get userId
-      const developerProfile = await this.developerProfileRepository.findById(application.developerId);
+      const developerProfile = await this._developerProfileRepository.findById(application.developerId);
       if (developerProfile) {
         // Get company profile for company name
-        const companyProfile = await this.companyProfileRepository.findByUserId(input.companyId);
+        const companyProfile = await this._companyProfileRepository.findByUserId(input.companyId);
         const companyName = companyProfile?.companyName || 'the company';
         
         // Get developer user email
-        const developerUser = await this.userRepository.findById(developerProfile.userId);
+        const developerUser = await this._userRepository.findById(developerProfile.userId);
         if (developerUser?.email) {
           // Note: Email service method for offer extension can be added later
           // For now, we'll just log it

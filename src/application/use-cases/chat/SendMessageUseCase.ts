@@ -13,14 +13,14 @@ import { Message } from '../../../domain/entities/Message';
 @injectable()
 export class SendMessageUseCase implements ISendMessageUseCase {
   constructor(
-    @inject(TYPES.ConversationRepository) private conversationRepository: IConversationRepository,
-    @inject(TYPES.MessageRepository) private messageRepository: IMessageRepository,
-    @inject(TYPES.CompanyTeamRepository) private companyTeamRepository: ICompanyTeamRepository,
-    @inject(TYPES.CheckCanMessageUseCase) private checkCanMessageUseCase: ICheckCanMessageUseCase
+    @inject(TYPES.ConversationRepository) private _conversationRepository: IConversationRepository,
+    @inject(TYPES.MessageRepository) private _messageRepository: IMessageRepository,
+    @inject(TYPES.CompanyTeamRepository) private _companyTeamRepository: ICompanyTeamRepository,
+    @inject(TYPES.CheckCanMessageUseCase) private _checkCanMessageUseCase: ICheckCanMessageUseCase
   ) {}
 
   async execute(input: SendMessageInput & { senderId: string; senderRole: string }): Promise<SendMessageOutput> {
-    const canMessage = await this.checkCanMessageUseCase.execute({
+    const canMessage = await this._checkCanMessageUseCase.execute({
       requesterUserId: input.senderId,
       requesterRole: input.senderRole,
       targetUserId: input.receiverId,
@@ -30,7 +30,7 @@ export class SendMessageUseCase implements ISendMessageUseCase {
       throw new ForbiddenError('You are not authorized to message this user');
     }
 
-    let conversation = await this.conversationRepository.findByParticipants(
+    let conversation = await this._conversationRepository.findByParticipants(
       input.senderId,
       input.receiverId
     );
@@ -39,12 +39,12 @@ export class SendMessageUseCase implements ISendMessageUseCase {
       let companyId: string | undefined;
       
       if (input.senderRole === 'developer') {
-        const hrTeamMember = await this.companyTeamRepository.findByUserId(input.receiverId);
+        const hrTeamMember = await this._companyTeamRepository.findByUserId(input.receiverId);
         if (hrTeamMember && hrTeamMember.status === 'active') {
           companyId = hrTeamMember.companyId;
         }
       } else if (input.senderRole === 'hr') {
-        const hrTeamMember = await this.companyTeamRepository.findByUserId(input.senderId);
+        const hrTeamMember = await this._companyTeamRepository.findByUserId(input.senderId);
         if (hrTeamMember && hrTeamMember.status === 'active') {
           companyId = hrTeamMember.companyId;
         }
@@ -55,7 +55,7 @@ export class SendMessageUseCase implements ISendMessageUseCase {
         participant2Id: input.receiverId,
         companyId,
       });
-      conversation = await this.conversationRepository.create(conversationData);
+      conversation = await this._conversationRepository.create(conversationData);
     }
 
     const messageData = Message.create({
@@ -64,9 +64,9 @@ export class SendMessageUseCase implements ISendMessageUseCase {
       message: input.message,
     });
 
-    const message = await this.messageRepository.create(messageData);
+    const message = await this._messageRepository.create(messageData);
 
-    await this.conversationRepository.updateLastMessage(
+    await this._conversationRepository.updateLastMessage(
       conversation.id,
       input.message,
       new Date()

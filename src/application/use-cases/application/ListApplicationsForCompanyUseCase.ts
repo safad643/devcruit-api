@@ -13,10 +13,10 @@ import { IListApplicationsForCompanyUseCase } from './interfaces';
 @injectable()
 export class ListApplicationsForCompanyUseCase implements IListApplicationsForCompanyUseCase {
   constructor(
-    @inject(TYPES.ApplicationRepository) private applicationRepository: IApplicationRepository,
-    @inject(TYPES.JobRepository) private jobRepository: IJobRepository,
-    @inject(TYPES.DeveloperProfileRepository) private developerProfileRepository: IDeveloperProfileRepository,
-    @inject(TYPES.UserRepository) private userRepository: IUserRepository
+    @inject(TYPES.ApplicationRepository) private _applicationRepository: IApplicationRepository,
+    @inject(TYPES.JobRepository) private _jobRepository: IJobRepository,
+    @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository,
+    @inject(TYPES.UserRepository) private _userRepository: IUserRepository
   ) {}
 
   async execute(input: ListApplicationsForCompanyInput & { companyId: string }): Promise<ListApplicationsForCompanyOutput> {
@@ -32,23 +32,23 @@ export class ListApplicationsForCompanyUseCase implements IListApplicationsForCo
     };
 
     // Get applications
-    const result = await this.applicationRepository.listWithFilters(filters);
+    const result = await this._applicationRepository.listWithFilters(filters);
 
     // Enrich applications with job and developer information
     const enrichedApplications: ApplicationListItem[] = await Promise.all(
       result.applications.map(async (application) => {
         // Get job information
-        const job = await this.jobRepository.findById(application.jobId);
+        const job = await this._jobRepository.findById(application.jobId);
         
         // Get developer profile
-        const developerProfile = await this.developerProfileRepository.findById(application.developerId);
+        const developerProfile = await this._developerProfileRepository.findById(application.developerId);
         
         // Get developer user information
         let developerName: string | undefined;
         let developerEmail: string | undefined;
         let developerUserId: string | undefined;
         if (developerProfile) {
-          const developerUser = await this.userRepository.findById(developerProfile.userId);
+          const developerUser = await this._userRepository.findById(developerProfile.userId);
           developerName = developerUser?.name;
           developerEmail = developerUser?.email;
           developerUserId = developerUser?.id;

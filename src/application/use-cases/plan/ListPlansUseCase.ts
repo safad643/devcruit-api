@@ -7,13 +7,13 @@ import { ListPlansOutput, PlanListItem } from '../../dtos/plan.dto';
 @injectable()
 export class ListPlansUseCase implements IListPlansUseCase {
     constructor(
-        @inject(TYPES.PlanRepository) private planRepository: IPlanRepository
+        @inject(TYPES.PlanRepository) private _planRepository: IPlanRepository
     ) { }
 
     async execute(activeOnly: boolean): Promise<ListPlansOutput> {
         const plans = activeOnly
-            ? await this.planRepository.findActive()
-            : await this.planRepository.findAll();
+            ? await this._planRepository.findActive()
+            : await this._planRepository.findAll();
 
         const planItems: PlanListItem[] = plans.map(plan => ({
             id: plan.id,

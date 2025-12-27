@@ -8,22 +8,22 @@ import { IEmailService } from '../../services';
 @injectable()
 export class BlockUserUseCase {
   constructor(
-    @inject(TYPES.UserRepository) private userRepository: IUserRepository,
-    @inject(TYPES.EmailService) private emailService: IEmailService
+    @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
+    @inject(TYPES.EmailService) private _emailService: IEmailService
   ) { }
 
   async execute(input: BlockUserInput): Promise<BlockUserOutput> {
     // 1. Verify user exists
-    const user = await this.userRepository.findById(input.userId);
+    const user = await this._userRepository.findById(input.userId);
     if (!user) {
       throw new NotFoundError('User not found');
     }
 
     // 2. Block the user
-    await this.userRepository.update(input.userId, user.block());
+    await this._userRepository.update(input.userId, user.block());
 
     // 3. Notify user via email
-    this.emailService.sendUserBlocked(user.email);
+    this._emailService.sendUserBlocked(user.email);
 
     return {
       userId: input.userId,

@@ -8,13 +8,13 @@ import { CompanyProfile } from '../../../domain/entities/CompanyProfile';
 @injectable()
 export class CreateCompanyProfileUseCase {
   constructor(
-    @inject(TYPES.CompanyProfileRepository) private profileRepository: ICompanyProfileRepository,
-    @inject(TYPES.UserRepository) private userRepository: IUserRepository
+    @inject(TYPES.CompanyProfileRepository) private _profileRepository: ICompanyProfileRepository,
+    @inject(TYPES.UserRepository) private _userRepository: IUserRepository
   ) { }
 
   async execute(input: CreateCompanyProfileInput): Promise<CreateCompanyProfileOutput> {
     // 1. Verify user exists
-    const user = await this.userRepository.findById(input.userId);
+    const user = await this._userRepository.findById(input.userId);
     if (!user) {
       throw new NotFoundError('User not found');
     }
@@ -25,7 +25,7 @@ export class CreateCompanyProfileUseCase {
     }
 
     // 3. Check if profile already exists
-    const existingProfile = await this.profileRepository.findByUserId(input.userId);
+    const existingProfile = await this._profileRepository.findByUserId(input.userId);
     if (existingProfile) {
       throw new ValidationError('A company profile already exists for this user');
     }
@@ -46,10 +46,10 @@ export class CreateCompanyProfileUseCase {
     });
 
     // 5. Save to database
-    const createdProfile = await this.profileRepository.create(profile);
+    const createdProfile = await this._profileRepository.create(profile);
 
     // 6. Mark user's profile as completed
-    await this.userRepository.update(input.userId, user.withProfileCompleted(true));
+    await this._userRepository.update(input.userId, user.withProfileCompleted(true));
 
     return {
       id: createdProfile.id,

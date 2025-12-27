@@ -22,12 +22,12 @@ import { ForbiddenError } from '../../domain/errors';
 @injectable()
 export class InterviewController {
     constructor(
-        @inject(TYPES.ScheduleInterviewRoundUseCase) private scheduleInterviewRoundUseCase: IScheduleInterviewRoundUseCase,
-        @inject(TYPES.UpdateInterviewResultUseCase) private updateInterviewResultUseCase: IUpdateInterviewResultUseCase,
-        @inject(TYPES.GetInterviewsForInterviewerUseCase) private getInterviewsForInterviewerUseCase: IGetInterviewsForInterviewerUseCase,
-        @inject(TYPES.GetOrCreateVideoCallUseCase) private getOrCreateVideoCallUseCase: IGetOrCreateVideoCallUseCase,
-        @inject(TYPES.StartVideoCallUseCase) private startVideoCallUseCase: IStartVideoCallUseCase,
-        @inject(TYPES.EndVideoCallUseCase) private endVideoCallUseCase: IEndVideoCallUseCase
+        @inject(TYPES.ScheduleInterviewRoundUseCase) private _scheduleInterviewRoundUseCase: IScheduleInterviewRoundUseCase,
+        @inject(TYPES.UpdateInterviewResultUseCase) private _updateInterviewResultUseCase: IUpdateInterviewResultUseCase,
+        @inject(TYPES.GetInterviewsForInterviewerUseCase) private _getInterviewsForInterviewerUseCase: IGetInterviewsForInterviewerUseCase,
+        @inject(TYPES.GetOrCreateVideoCallUseCase) private _getOrCreateVideoCallUseCase: IGetOrCreateVideoCallUseCase,
+        @inject(TYPES.StartVideoCallUseCase) private _startVideoCallUseCase: IStartVideoCallUseCase,
+        @inject(TYPES.EndVideoCallUseCase) private _endVideoCallUseCase: IEndVideoCallUseCase
     ) { }
 
     // Company/HR endpoint: Schedule interview round
@@ -35,10 +35,10 @@ export class InterviewController {
         request: FastifyRequest<{ Params: { id: string }; Body: ScheduleInterviewRoundInput }>,
         reply: FastifyReply
     ): Promise<void> => {
-        const companyContext = this.getCompanyContext(request);
+        const companyContext = this._getCompanyContext(request);
         const companyId = companyContext.companyUserId;
         const applicationId = request.params.id;
-        const result = await this.scheduleInterviewRoundUseCase.execute({
+        const result = await this._scheduleInterviewRoundUseCase.execute({
             applicationId,
             companyId,
             ...request.body,
@@ -53,7 +53,7 @@ export class InterviewController {
     ): Promise<void> => {
         const interviewerId = request.user?.id as string;
         const applicationId = request.params.id;
-        const result = await this.updateInterviewResultUseCase.execute({
+        const result = await this._updateInterviewResultUseCase.execute({
             applicationId,
             interviewerId,
             ...request.body,
@@ -67,7 +67,7 @@ export class InterviewController {
         reply: FastifyReply
     ): Promise<void> => {
         const interviewerId = request.user?.id as string;
-        const result = await this.getInterviewsForInterviewerUseCase.execute(interviewerId);
+        const result = await this._getInterviewsForInterviewerUseCase.execute(interviewerId);
         reply.status(HttpStatus.OK).send(wrapSuccess(result));
     };
 
@@ -80,7 +80,7 @@ export class InterviewController {
         const applicationId = request.params.id;
         const { roundName } = request.params;
 
-        const result = await this.getOrCreateVideoCallUseCase.execute({
+        const result = await this._getOrCreateVideoCallUseCase.execute({
             applicationId,
             roundName,
             userId,
@@ -98,7 +98,7 @@ export class InterviewController {
         const applicationId = request.params.id;
         const { roundName } = request.params;
 
-        const result = await this.startVideoCallUseCase.execute({
+        const result = await this._startVideoCallUseCase.execute({
             applicationId,
             roundName,
             userId,
@@ -116,7 +116,7 @@ export class InterviewController {
         const applicationId = request.params.id;
         const { roundName } = request.params;
 
-        const result = await this.endVideoCallUseCase.execute({
+        const result = await this._endVideoCallUseCase.execute({
             applicationId,
             roundName,
             userId,
@@ -125,7 +125,7 @@ export class InterviewController {
         reply.status(HttpStatus.OK).send(wrapSuccess(result));
     };
 
-    private getCompanyContext(request: FastifyRequest) {
+    private _getCompanyContext(request: FastifyRequest) {
         const companyContext = request.companyContext;
         if (!companyContext) {
             throw new ForbiddenError('Company context missing. Ensure checkCompanyPaid middleware is applied.');

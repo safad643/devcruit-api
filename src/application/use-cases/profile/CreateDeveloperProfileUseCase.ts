@@ -9,14 +9,14 @@ import { DateValidator } from '../../validators/date-validator';
 @injectable()
 export class CreateDeveloperProfileUseCase {
   constructor(
-    @inject(TYPES.DeveloperProfileRepository) private profileRepository: IDeveloperProfileRepository,
-    @inject(TYPES.UserRepository) private userRepository: IUserRepository
+    @inject(TYPES.DeveloperProfileRepository) private _profileRepository: IDeveloperProfileRepository,
+    @inject(TYPES.UserRepository) private _userRepository: IUserRepository
   ) { }
 
   async execute(input: CreateDeveloperProfileInput): Promise<CreateDeveloperProfileOutput> {
 
     // 1. Verify user exists
-    const user = await this.userRepository.findById(input.userId);
+    const user = await this._userRepository.findById(input.userId);
     if (!user) {
       throw new NotFoundError('User not found');
     }
@@ -27,7 +27,7 @@ export class CreateDeveloperProfileUseCase {
     }
 
     // 3. Check if profile already exists
-    const existingProfile = await this.profileRepository.findByUserId(input.userId);
+    const existingProfile = await this._profileRepository.findByUserId(input.userId);
     if (existingProfile) {
       throw new ValidationError('A developer profile already exists for this user');
     }
@@ -62,10 +62,10 @@ export class CreateDeveloperProfileUseCase {
     });
 
     // 5. Save to database
-    const createdProfile = await this.profileRepository.create(profile);
+    const createdProfile = await this._profileRepository.create(profile);
 
     // 6. Mark user's profile as completed
-    await this.userRepository.update(input.userId, user.withProfileCompleted(true));
+    await this._userRepository.update(input.userId, user.withProfileCompleted(true));
 
     return {
       id: createdProfile.id,

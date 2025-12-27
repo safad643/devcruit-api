@@ -20,18 +20,18 @@ import { HttpStatus } from '../../utils/statusCodes';
 @injectable()
 export class PlanController {
     constructor(
-        @inject(TYPES.CreatePlanUseCase) private createPlanUseCase: ICreatePlanUseCase,
-        @inject(TYPES.UpdatePlanUseCase) private updatePlanUseCase: IUpdatePlanUseCase,
-        @inject(TYPES.DeletePlanUseCase) private deletePlanUseCase: IDeletePlanUseCase,
-        @inject(TYPES.ListPlansUseCase) private listPlansUseCase: IListPlansUseCase,
-        @inject(TYPES.GetPlanByIdUseCase) private getPlanByIdUseCase: IGetPlanByIdUseCase
+        @inject(TYPES.CreatePlanUseCase) private _createPlanUseCase: ICreatePlanUseCase,
+        @inject(TYPES.UpdatePlanUseCase) private _updatePlanUseCase: IUpdatePlanUseCase,
+        @inject(TYPES.DeletePlanUseCase) private _deletePlanUseCase: IDeletePlanUseCase,
+        @inject(TYPES.ListPlansUseCase) private _listPlansUseCase: IListPlansUseCase,
+        @inject(TYPES.GetPlanByIdUseCase) private _getPlanByIdUseCase: IGetPlanByIdUseCase
     ) { }
 
     create = async (
         request: FastifyRequest<{ Body: CreatePlanInput }>,
         reply: FastifyReply
     ): Promise<void> => {
-        const result = await this.createPlanUseCase.execute(request.body);
+        const result = await this._createPlanUseCase.execute(request.body);
         reply.status(HttpStatus.CREATED).send(wrapSuccess(result));
     };
 
@@ -39,7 +39,7 @@ export class PlanController {
         request: FastifyRequest<{ Params: PlanIdParams; Body: UpdatePlanInput }>,
         reply: FastifyReply
     ): Promise<void> => {
-        const result = await this.updatePlanUseCase.execute(request.params.id, request.body);
+        const result = await this._updatePlanUseCase.execute(request.params.id, request.body);
         reply.status(HttpStatus.OK).send(wrapSuccess(result));
     };
 
@@ -47,7 +47,7 @@ export class PlanController {
         request: FastifyRequest<{ Params: PlanIdParams }>,
         reply: FastifyReply
     ): Promise<void> => {
-        const result = await this.deletePlanUseCase.execute(request.params.id);
+        const result = await this._deletePlanUseCase.execute(request.params.id);
         reply.status(HttpStatus.OK).send(wrapSuccess(result));
     };
 
@@ -55,7 +55,7 @@ export class PlanController {
         _request: FastifyRequest,
         reply: FastifyReply
     ): Promise<void> => {
-        const result = await this.listPlansUseCase.execute(false); // All plans for admin
+        const result = await this._listPlansUseCase.execute(false); // All plans for admin
         reply.status(HttpStatus.OK).send(wrapSuccess(result));
     };
 
@@ -63,7 +63,7 @@ export class PlanController {
         _request: FastifyRequest,
         reply: FastifyReply
     ): Promise<void> => {
-        const result = await this.listPlansUseCase.execute(true); // Active only for public
+        const result = await this._listPlansUseCase.execute(true); // Active only for public
         reply.status(HttpStatus.OK).send(wrapSuccess(result));
     };
 
@@ -71,7 +71,7 @@ export class PlanController {
         request: FastifyRequest<{ Params: PlanIdParams }>,
         reply: FastifyReply
     ): Promise<void> => {
-        const result = await this.getPlanByIdUseCase.execute(request.params.id);
+        const result = await this._getPlanByIdUseCase.execute(request.params.id);
         reply.status(HttpStatus.OK).send(wrapSuccess(result));
     };
 }

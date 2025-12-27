@@ -9,7 +9,7 @@ import { ValidationError } from '../../../domain/errors';
 @injectable()
 export class CreatePlanUseCase implements ICreatePlanUseCase {
     constructor(
-        @inject(TYPES.PlanRepository) private planRepository: IPlanRepository
+        @inject(TYPES.PlanRepository) private _planRepository: IPlanRepository
     ) { }
 
     async execute(input: CreatePlanInput): Promise<CreatePlanOutput> {
@@ -42,7 +42,7 @@ export class CreatePlanUseCase implements ICreatePlanUseCase {
             discountValue: input.discountValue,
         });
 
-        const created = await this.planRepository.create(planData);
+        const created = await this._planRepository.create(planData);
 
         return {
             id: created.id,

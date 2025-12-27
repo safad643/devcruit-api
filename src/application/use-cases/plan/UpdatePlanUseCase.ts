@@ -8,12 +8,12 @@ import { NotFoundError, ValidationError } from '../../../domain/errors';
 @injectable()
 export class UpdatePlanUseCase implements IUpdatePlanUseCase {
     constructor(
-        @inject(TYPES.PlanRepository) private planRepository: IPlanRepository
+        @inject(TYPES.PlanRepository) private _planRepository: IPlanRepository
     ) { }
 
     async execute(id: string, input: UpdatePlanInput): Promise<UpdatePlanOutput> {
         // Find existing plan
-        const existing = await this.planRepository.findById(id);
+        const existing = await this._planRepository.findById(id);
         if (!existing) {
             throw new NotFoundError('Plan not found');
         }
@@ -51,7 +51,7 @@ export class UpdatePlanUseCase implements IUpdatePlanUseCase {
         if (input.discountType !== undefined) updateData.discountType = input.discountType;
         if (input.discountValue !== undefined) updateData.discountValue = input.discountValue;
 
-        const updated = await this.planRepository.update(id, updateData);
+        const updated = await this._planRepository.update(id, updateData);
 
         return {
             id: updated.id,

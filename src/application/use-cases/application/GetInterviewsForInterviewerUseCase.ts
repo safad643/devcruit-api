@@ -6,37 +6,37 @@ import { IGetInterviewsForInterviewerUseCase, GetInterviewsForInterviewerOutput,
 @injectable()
 export class GetInterviewsForInterviewerUseCase implements IGetInterviewsForInterviewerUseCase {
   constructor(
-    @inject(TYPES.ApplicationRepository) private applicationRepository: IApplicationRepository,
-    @inject(TYPES.JobRepository) private jobRepository: IJobRepository,
-    @inject(TYPES.DeveloperProfileRepository) private developerProfileRepository: IDeveloperProfileRepository,
-    @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository,
-    @inject(TYPES.UserRepository) private userRepository: IUserRepository
+    @inject(TYPES.ApplicationRepository) private _applicationRepository: IApplicationRepository,
+    @inject(TYPES.JobRepository) private _jobRepository: IJobRepository,
+    @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository,
+    @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository,
+    @inject(TYPES.UserRepository) private _userRepository: IUserRepository
   ) {}
 
   async execute(interviewerId: string): Promise<GetInterviewsForInterviewerOutput> {
     // 1. Get all applications where interviewer is assigned
-    const applications = await this.applicationRepository.findByInterviewerId(interviewerId);
+    const applications = await this._applicationRepository.findByInterviewerId(interviewerId);
 
     // 2. Build interview list
     const interviews: InterviewForInterviewer[] = [];
 
     for (const application of applications) {
       // Get job info
-      const job = await this.jobRepository.findById(application.jobId);
+      const job = await this._jobRepository.findById(application.jobId);
       if (!job) continue;
 
       // Get developer info
-      const developerProfile = await this.developerProfileRepository.findById(application.developerId);
+      const developerProfile = await this._developerProfileRepository.findById(application.developerId);
       let developerName: string | undefined;
       let developerEmail: string | undefined;
       if (developerProfile) {
-        const developerUser = await this.userRepository.findById(developerProfile.userId);
+        const developerUser = await this._userRepository.findById(developerProfile.userId);
         developerName = developerUser?.name;
         developerEmail = developerUser?.email;
       }
 
       // Get company info
-      const companyProfile = await this.companyProfileRepository.findByUserId(application.companyId);
+      const companyProfile = await this._companyProfileRepository.findByUserId(application.companyId);
       const companyName = companyProfile?.companyName;
 
       // Find all rounds where this interviewer is assigned

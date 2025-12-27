@@ -11,22 +11,22 @@ export class PaymentTransactionRepository
     extends MongoGenericRepository<PaymentTransaction, CreatePaymentTransactionData, never>
     implements IPaymentTransactionRepository {
 
-    protected collection: Collection;
+    protected _collection: Collection;
 
     constructor() {
         super();
-        this.collection = getMongoDb().collection('payment_transactions');
+        this._collection = getMongoDb().collection('payment_transactions');
         // Indexes for common queries
-        this.collection.createIndex({ userId: 1 }).catch(() => { });
-        this.collection.createIndex({ companyId: 1 }).catch(() => { });
-        this.collection.createIndex({ stripeSessionId: 1 }, { unique: true }).catch(() => { });
+        this._collection.createIndex({ userId: 1 }).catch(() => { });
+        this._collection.createIndex({ companyId: 1 }).catch(() => { });
+        this._collection.createIndex({ stripeSessionId: 1 }, { unique: true }).catch(() => { });
     }
 
-    protected getEntityName(): string {
+    protected _getEntityName(): string {
         return 'Payment transaction';
     }
 
-    protected mapToEntity(doc: WithId<Document>): PaymentTransaction {
+    protected _mapToEntity(doc: WithId<Document>): PaymentTransaction {
         return new PaymentTransaction({
             id: doc._id.toString(),
             userId: doc.userId,
@@ -54,12 +54,12 @@ export class PaymentTransactionRepository
             const now = new Date();
             const txData = PaymentTransaction.create(data);
 
-            const result = await this.collection.insertOne({
+            const result = await this._collection.insertOne({
                 ...txData,
                 createdAt: now,
             });
 
-            return this.mapToEntity({
+            return this._mapToEntity({
                 _id: result.insertedId,
                 ...txData,
                 createdAt: now,
@@ -71,11 +71,11 @@ export class PaymentTransactionRepository
 
     async findByUserId(userId: string): Promise<PaymentTransaction[]> {
         try {
-            const docs = await this.collection
+            const docs = await this._collection
                 .find({ userId })
                 .sort({ createdAt: -1 })
                 .toArray();
-            return docs.map(doc => this.mapToEntity(doc));
+            return docs.map(doc => this._mapToEntity(doc));
         } catch (error) {
             throw new InternalError('Failed to fetch payment transactions', error as Error);
         }
@@ -83,11 +83,11 @@ export class PaymentTransactionRepository
 
     async findByCompanyId(companyId: string): Promise<PaymentTransaction[]> {
         try {
-            const docs = await this.collection
+            const docs = await this._collection
                 .find({ companyId })
                 .sort({ createdAt: -1 })
                 .toArray();
-            return docs.map(doc => this.mapToEntity(doc));
+            return docs.map(doc => this._mapToEntity(doc));
         } catch (error) {
             throw new InternalError('Failed to fetch payment transactions', error as Error);
         }
@@ -95,9 +95,9 @@ export class PaymentTransactionRepository
 
     async findByStripeSessionId(sessionId: string): Promise<PaymentTransaction | null> {
         try {
-            const doc = await this.collection.findOne({ stripeSessionId: sessionId });
+            const doc = await this._collection.findOne({ stripeSessionId: sessionId });
             if (!doc) return null;
-            return this.mapToEntity(doc);
+            return this._mapToEntity(doc);
         } catch (error) {
             throw new InternalError('Failed to fetch payment transaction', error as Error);
         }

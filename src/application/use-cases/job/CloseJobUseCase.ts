@@ -8,11 +8,11 @@ import { ICloseJobUseCase } from './interfaces';
 @injectable()
 export class CloseJobUseCase implements ICloseJobUseCase {
   constructor(
-    @inject(TYPES.JobRepository) private jobRepository: IJobRepository
+    @inject(TYPES.JobRepository) private _jobRepository: IJobRepository
   ) {}
 
   async execute(input: CloseJobInput): Promise<CloseJobOutput> {
-    const job = await this.jobRepository.findById(input.jobId);
+    const job = await this._jobRepository.findById(input.jobId);
     if (!job) {
       throw new NotFoundError('Job not found');
     }
@@ -23,7 +23,7 @@ export class CloseJobUseCase implements ICloseJobUseCase {
       throw new ValidationError('Job is already closed');
     }
 
-    await this.jobRepository.update(input.jobId, { status: 'closed' });
+    await this._jobRepository.update(input.jobId, { status: 'closed' });
     return { message: 'Job closed successfully' };
   }
 }

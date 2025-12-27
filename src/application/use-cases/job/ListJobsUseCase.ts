@@ -7,8 +7,8 @@ import { IListJobsUseCase } from './interfaces';
 @injectable()
 export class ListJobsUseCase implements IListJobsUseCase {
   constructor(
-    @inject(TYPES.JobRepository) private jobRepository: IJobRepository,
-    @inject(TYPES.ApplicationRepository) private applicationRepository: IApplicationRepository
+    @inject(TYPES.JobRepository) private _jobRepository: IJobRepository,
+    @inject(TYPES.ApplicationRepository) private _applicationRepository: IApplicationRepository
   ) {}
 
   async execute(input: ListJobsInput & { companyId: string }): Promise<ListJobsOutput> {
@@ -24,12 +24,12 @@ export class ListJobsUseCase implements IListJobsUseCase {
     };
 
     // Call repository
-    const result = await this.jobRepository.listWithFilters(filters);
+    const result = await this._jobRepository.listWithFilters(filters);
 
     // Map to lightweight output DTO with only fields used in list view
     const jobs: JobListSummary[] = await Promise.all(
       result.jobs.map(async (job) => {
-        const applications = await this.applicationRepository.findByJobId(job.id);
+        const applications = await this._applicationRepository.findByJobId(job.id);
         return {
           id: job.id,
           title: job.title,

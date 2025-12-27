@@ -19,17 +19,17 @@ import { HttpStatus } from '../../utils/statusCodes';
 @injectable()
 export class JobFieldController {
     constructor(
-        @inject(TYPES.CreateJobFieldUseCase) private createJobFieldUseCase: ICreateJobFieldUseCase,
-        @inject(TYPES.GetJobFieldsUseCase) private getJobFieldsUseCase: IGetJobFieldsUseCase,
-        @inject(TYPES.UpdateJobFieldUseCase) private updateJobFieldUseCase: IUpdateJobFieldUseCase,
-        @inject(TYPES.DeleteJobFieldUseCase) private deleteJobFieldUseCase: IDeleteJobFieldUseCase
+        @inject(TYPES.CreateJobFieldUseCase) private _createJobFieldUseCase: ICreateJobFieldUseCase,
+        @inject(TYPES.GetJobFieldsUseCase) private _getJobFieldsUseCase: IGetJobFieldsUseCase,
+        @inject(TYPES.UpdateJobFieldUseCase) private _updateJobFieldUseCase: IUpdateJobFieldUseCase,
+        @inject(TYPES.DeleteJobFieldUseCase) private _deleteJobFieldUseCase: IDeleteJobFieldUseCase
     ) { }
 
     create = async (
         request: FastifyRequest<{ Body: CreateJobFieldInput }>,
         reply: FastifyReply
     ): Promise<void> => {
-        const result = await this.createJobFieldUseCase.execute(request.body);
+        const result = await this._createJobFieldUseCase.execute(request.body);
         reply.status(HttpStatus.CREATED).send(wrapSuccess(result));
     };
 
@@ -37,7 +37,7 @@ export class JobFieldController {
         request: FastifyRequest<{ Querystring: GetJobFieldsInput }>,
         reply: FastifyReply
     ): Promise<void> => {
-        const result = await this.getJobFieldsUseCase.execute(request.query);
+        const result = await this._getJobFieldsUseCase.execute(request.query);
         reply.status(HttpStatus.OK).send(wrapSuccess(result));
     };
 
@@ -45,7 +45,7 @@ export class JobFieldController {
         request: FastifyRequest<{ Params: JobFieldIdParams; Body: UpdateJobFieldInput }>,
         reply: FastifyReply
     ): Promise<void> => {
-        const result = await this.updateJobFieldUseCase.execute({
+        const result = await this._updateJobFieldUseCase.execute({
             id: request.params.id,
             name: request.body.name,
         });
@@ -56,7 +56,7 @@ export class JobFieldController {
         request: FastifyRequest<{ Params: JobFieldIdParams }>,
         reply: FastifyReply
     ): Promise<void> => {
-        const result = await this.deleteJobFieldUseCase.execute({ id: request.params.id });
+        const result = await this._deleteJobFieldUseCase.execute({ id: request.params.id });
         reply.status(HttpStatus.OK).send(wrapSuccess(result));
     };
 }

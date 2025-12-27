@@ -14,16 +14,16 @@ import { IGetApplicationDetailsUseCase } from './interfaces';
 @injectable()
 export class GetApplicationDetailsUseCase implements IGetApplicationDetailsUseCase {
   constructor(
-    @inject(TYPES.ApplicationRepository) private applicationRepository: IApplicationRepository,
-    @inject(TYPES.JobRepository) private jobRepository: IJobRepository,
-    @inject(TYPES.DeveloperProfileRepository) private developerProfileRepository: IDeveloperProfileRepository,
-    @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository,
-    @inject(TYPES.UserRepository) private userRepository: IUserRepository
+    @inject(TYPES.ApplicationRepository) private _applicationRepository: IApplicationRepository,
+    @inject(TYPES.JobRepository) private _jobRepository: IJobRepository,
+    @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository,
+    @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository,
+    @inject(TYPES.UserRepository) private _userRepository: IUserRepository
   ) {}
 
   async execute(applicationId: string, companyId?: string, interviewerId?: string): Promise<GetApplicationDetailsOutput> {
     // Get application
-    const application = await this.applicationRepository.findById(applicationId);
+    const application = await this._applicationRepository.findById(applicationId);
     if (!application) {
       throw new NotFoundError('Application not found');
     }
@@ -47,25 +47,25 @@ export class GetApplicationDetailsUseCase implements IGetApplicationDetailsUseCa
     }
 
     // Get job information
-    const job = await this.jobRepository.findById(application.jobId);
+    const job = await this._jobRepository.findById(application.jobId);
     if (!job) {
       throw new NotFoundError('Job not found');
     }
 
     // Get developer profile
-    const developerProfile = await this.developerProfileRepository.findById(application.developerId);
+    const developerProfile = await this._developerProfileRepository.findById(application.developerId);
     
     // Get developer user information
     let developerName: string | undefined;
     let developerEmail: string | undefined;
     if (developerProfile) {
-      const developerUser = await this.userRepository.findById(developerProfile.userId);
+      const developerUser = await this._userRepository.findById(developerProfile.userId);
       developerName = developerUser?.name;
       developerEmail = developerUser?.email;
     }
 
     // Get company profile
-    const companyProfile = await this.companyProfileRepository.findByUserId(application.companyId);
+    const companyProfile = await this._companyProfileRepository.findByUserId(application.companyId);
 
     return {
       id: application.id,

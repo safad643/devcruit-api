@@ -15,18 +15,18 @@ export class OfferLetterRepository
     extends MongoGenericRepository<OfferLetter, CreateOfferLetterProps, UpdateOfferLetterProps>
     implements IOfferLetterRepository {
 
-    protected collection: Collection;
+    protected _collection: Collection;
 
     constructor() {
         super();
-        this.collection = getMongoDb().collection('offerLetters');
+        this._collection = getMongoDb().collection('offerLetters');
     }
 
-    protected getEntityName(): string {
+    protected _getEntityName(): string {
         return 'OfferLetter';
     }
 
-    protected mapToEntity(doc: WithId<Document>): OfferLetter {
+    protected _mapToEntity(doc: WithId<Document>): OfferLetter {
         return new OfferLetter({
             id: doc._id.toString(),
             applicationId: doc.applicationId,
@@ -64,7 +64,7 @@ export class OfferLetterRepository
     async create(offerLetter: CreateOfferLetterProps): Promise<OfferLetter> {
         try {
             const now = new Date();
-            const result = await this.collection.insertOne({
+            const result = await this._collection.insertOne({
                 applicationId: offerLetter.applicationId,
                 version: offerLetter.version,
                 jobTitle: offerLetter.jobTitle,
@@ -96,7 +96,7 @@ export class OfferLetterRepository
                 declinedAt: offerLetter.declinedAt,
             });
 
-            return this.mapToEntity({
+            return this._mapToEntity({
                 _id: result.insertedId,
                 ...offerLetter,
                 status: offerLetter.status || 'pending',
@@ -114,7 +114,7 @@ export class OfferLetterRepository
             }
 
             const { id: _id, createdAt, ...updateFields } = updates;
-            const result = await this.collection.findOneAndUpdate(
+            const result = await this._collection.findOneAndUpdate(
                 { _id: new ObjectId(id) },
                 { $set: updateFields },
                 { returnDocument: 'after' }
@@ -124,7 +124,7 @@ export class OfferLetterRepository
                 throw new NotFoundError('Offer letter not found');
             }
 
-            return this.mapToEntity(result);
+            return this._mapToEntity(result);
         } catch (error) {
             if (error instanceof NotFoundError) throw error;
             throw new InternalError('Failed to update offer letter', error as Error);
@@ -133,11 +133,11 @@ export class OfferLetterRepository
 
     async findByApplicationId(applicationId: string): Promise<OfferLetter[]> {
         try {
-            const docs = await this.collection
+            const docs = await this._collection
                 .find({ applicationId })
                 .sort({ version: -1 }) // Latest version first
                 .toArray();
-            return docs.map(doc => this.mapToEntity(doc));
+            return docs.map(doc => this._mapToEntity(doc));
         } catch (error) {
             throw new InternalError('Failed to find offer letters by application ID', error as Error);
         }
@@ -145,14 +145,14 @@ export class OfferLetterRepository
 
     async findLatestByApplicationId(applicationId: string): Promise<OfferLetter | null> {
         try {
-            const doc = await this.collection
+            const doc = await this._collection
                 .findOne(
                     { applicationId },
                     { sort: { version: -1 } } // Get the highest version
                 );
 
             if (!doc) return null;
-            return this.mapToEntity(doc);
+            return this._mapToEntity(doc);
         } catch (error) {
             throw new InternalError('Failed to find latest offer letter', error as Error);
         }

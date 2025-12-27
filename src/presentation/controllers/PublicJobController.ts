@@ -9,8 +9,8 @@ import { HttpStatus } from '../../utils/statusCodes';
 @injectable()
 export class PublicJobController {
   constructor(
-    @inject(TYPES.PublicListJobsUseCase) private listUseCase: IPublicListJobsUseCase,
-    @inject(TYPES.PublicGetJobUseCase) private getUseCase: IPublicGetJobUseCase
+    @inject(TYPES.PublicListJobsUseCase) private _listUseCase: IPublicListJobsUseCase,
+    @inject(TYPES.PublicGetJobUseCase) private _getUseCase: IPublicGetJobUseCase
   ) { }
 
   list = async (
@@ -21,7 +21,7 @@ export class PublicJobController {
     const page = q.page ?? 1;
     const limit = q.limit ?? 20;
 
-    const result = await this.listUseCase.execute({
+    const result = await this._listUseCase.execute({
       page,
       limit,
       query: q.query,
@@ -40,7 +40,7 @@ export class PublicJobController {
     request: FastifyRequest<{ Params: { id: string } }>,
     reply: FastifyReply
   ): Promise<void> => {
-    const job = await this.getUseCase.execute(request.params.id);
+    const job = await this._getUseCase.execute(request.params.id);
     reply.status(HttpStatus.OK).send(wrapSuccess(job));
   };
 }

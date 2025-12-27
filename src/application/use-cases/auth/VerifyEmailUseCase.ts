@@ -10,21 +10,21 @@ import { IVerifyEmailUseCase } from './interfaces';
 @injectable()
 export class VerifyEmailUseCase implements IVerifyEmailUseCase {
   constructor(
-    @inject(TYPES.UserRepository) private userRepository: IUserRepository,
-    @inject(TYPES.PendingUserRepository) private pendingUserRepository: IPendingUserRepository,
-    @inject(TYPES.OTPRepository) private otpRepository: IOTPRepository,
-    @inject(TYPES.AuthTokenService) private authTokenService: IAuthTokenService
+    @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
+    @inject(TYPES.PendingUserRepository) private _pendingUserRepository: IPendingUserRepository,
+    @inject(TYPES.OTPRepository) private _otpRepository: IOTPRepository,
+    @inject(TYPES.AuthTokenService) private _authTokenService: IAuthTokenService
   ) {}
 
   async execute(input: VerifyEmailInput): Promise<AuthTokensOutput> {
     // 1. Get pending user data
-    const pendingUser = await this.pendingUserRepository.findByEmail(input.email);
+    const pendingUser = await this._pendingUserRepository.findByEmail(input.email);
     if (!pendingUser) {
       throw new NotFoundError('Registration session expired or not found');
     }
 
     // 2. Verify OTP
-    const storedOtp = await this.otpRepository.find(input.email, 'register');
+    const storedOtp = await this._otpRepository.find(input.email, 'register');
     if (!storedOtp) {
       throw new UnauthorizedError('Verification code expired');
     }
@@ -46,15 +46,15 @@ export class VerifyEmailUseCase implements IVerifyEmailUseCase {
       authProviders: ['local'], // Default to local auth provider for email signup
     });
     
-    const user = await this.userRepository.create(userProps);
+    const user = await this._userRepository.create(userProps);
 
     // 4. Clean up Redis (pending user and OTP)
     await Promise.all([
-      this.pendingUserRepository.delete(input.email),
-      this.otpRepository.delete(input.email, 'register'),
+      this._pendingUserRepository.delete(input.email),
+      this._otpRepository.delete(input.email, 'register'),
     ]);
 
     // 5. Generate tokens and build auth response
-    return await this.authTokenService.generateAuthResponse(user);
+    return await this._authTokenService.generateAuthResponse(user);
   }
 }

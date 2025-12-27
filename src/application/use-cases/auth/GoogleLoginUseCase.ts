@@ -9,20 +9,20 @@ import { IGoogleLoginUseCase } from './interfaces';
 @injectable()
 export class GoogleLoginUseCase implements IGoogleLoginUseCase {
   constructor(
-    @inject(TYPES.GoogleAuthService) private googleAuthService: IGoogleAuthService,
-    @inject(TYPES.UserRepository) private userRepository: IUserRepository,
-    @inject(TYPES.AuthTokenService) private authTokenService: IAuthTokenService
+    @inject(TYPES.GoogleAuthService) private _googleAuthService: IGoogleAuthService,
+    @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
+    @inject(TYPES.AuthTokenService) private _authTokenService: IAuthTokenService
   ) { }
 
   async execute(input: GoogleLoginInput): Promise<GoogleLoginOutput> {
     // 1. Exchange code for Google access token
-    const googleAccessToken = await this.googleAuthService.exchangeCodeForTokens(input.code);
+    const googleAccessToken = await this._googleAuthService.exchangeCodeForTokens(input.code);
 
     // 2. Get user info from Google
-    const googleUser = await this.googleAuthService.getUserInfo(googleAccessToken);
+    const googleUser = await this._googleAuthService.getUserInfo(googleAccessToken);
 
     // 3. Find existing user by email
-    let user = await this.userRepository.findByEmail(googleUser.email);
+    let user = await this._userRepository.findByEmail(googleUser.email);
 
     if (!user) {
       throw new UnauthorizedError('No account found with this email. Please register first.');
@@ -35,16 +35,16 @@ export class GoogleLoginUseCase implements IGoogleLoginUseCase {
 
     // 5. Link Google account if not already linked
     if (!user.hasAuthProvider('google')) {
-      await this.userRepository.update(user.id, user.withGoogleLink(googleUser.sub));
+      await this._userRepository.update(user.id, user.withGoogleLink(googleUser.sub));
 
       // Refetch user to get updated data
-      user = await this.userRepository.findById(user.id);
+      user = await this._userRepository.findById(user.id);
       if (!user) {
         throw new UnauthorizedError('Failed to update user account');
       }
     }
 
     // 6. Generate tokens and build auth response
-    return await this.authTokenService.generateAuthResponse(user);
+    return await this._authTokenService.generateAuthResponse(user);
   }
 }

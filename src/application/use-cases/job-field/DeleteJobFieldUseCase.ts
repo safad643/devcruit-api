@@ -8,18 +8,18 @@ import { NotFoundError } from '../../../domain/errors';
 @injectable()
 export class DeleteJobFieldUseCase implements IDeleteJobFieldUseCase {
     constructor(
-        @inject(TYPES.JobFieldRepository) private jobFieldRepository: IJobFieldRepository
+        @inject(TYPES.JobFieldRepository) private _jobFieldRepository: IJobFieldRepository
     ) { }
 
     async execute(input: DeleteJobFieldInput): Promise<DeleteJobFieldOutput> {
         // Find the field to confirm it exists
-        const existing = await this.jobFieldRepository.findById(input.id);
+        const existing = await this._jobFieldRepository.findById(input.id);
         if (!existing) {
             throw new NotFoundError('Job field not found');
         }
 
         // Delete it
-        await this.jobFieldRepository.delete(input.id);
+        await this._jobFieldRepository.delete(input.id);
 
         return {
             id: input.id,

@@ -10,27 +10,27 @@ import { IForgotPasswordUseCase } from './interfaces';
 @injectable()
 export class ForgotPasswordUseCase implements IForgotPasswordUseCase {
   constructor(
-    @inject(TYPES.UserRepository) private userRepository: IUserRepository,
-    @inject(TYPES.OTPRepository) private otpRepository: IOTPRepository,
-    @inject(TYPES.EmailService) private emailService: IEmailService,
-    @inject(TYPES.CryptographicService) private cryptographicService: ICryptographicService
+    @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
+    @inject(TYPES.OTPRepository) private _otpRepository: IOTPRepository,
+    @inject(TYPES.EmailService) private _emailService: IEmailService,
+    @inject(TYPES.CryptographicService) private _cryptographicService: ICryptographicService
   ) {}
 
   async execute(input: ForgotPasswordInput): Promise<ForgotPasswordOutput> {
     // 1. Check if user exists
-    const user = await this.userRepository.findByEmail(input.email);
+    const user = await this._userRepository.findByEmail(input.email);
     if (!user) {
       throw new NotFoundError('Account not found with this email.');
     }
 
     // 2. Generate OTP
-    const otpCode = this.cryptographicService.generateOTP();
+    const otpCode = this._cryptographicService.generateOTP();
 
     // 3. Save OTP to Redis
-    await this.otpRepository.save(input.email, otpCode, 'reset', config.otp.ttl);
+    await this._otpRepository.save(input.email, otpCode, 'reset', config.otp.ttl);
 
     // 4. Send OTP via email
-    await this.emailService.sendOTP(input.email, otpCode, 'reset');
+    await this._emailService.sendOTP(input.email, otpCode, 'reset');
 
     // 5. Return success response
     return {

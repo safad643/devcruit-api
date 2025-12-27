@@ -3,10 +3,10 @@ import { EmailContent, IEmailContentBuilder } from './IEmailContentBuilder';
 type AccountStatus = 'blocked' | 'unblocked';
 
 export class AccountStatusEmailContentBuilder implements IEmailContentBuilder {
-    constructor(private readonly status: AccountStatus) { }
+    constructor(private readonly _status: AccountStatus) { }
 
     build(): EmailContent {
-        if (this.status === 'blocked') {
+        if (this._status === 'blocked') {
             return {
                 subject: '⚠️ Account Status Update - Devcruit',
                 heading: 'Account Access Suspended',

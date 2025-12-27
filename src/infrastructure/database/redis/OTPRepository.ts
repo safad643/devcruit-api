@@ -6,18 +6,18 @@ import { injectable } from 'inversify';
 
 @injectable()
 export class OTPRepository implements IOTPRepository {
-  private getKey(email: string, type: OTPType): string {
+  private _getKey(email: string, type: OTPType): string {
     return `otp:${type}:${email}`;
   }
 
-  private getResendKey(email: string, type: OTPType): string {
+  private _getResendKey(email: string, type: OTPType): string {
     return `otp:resend:${type}:${email}`;
   }
 
   async save(email: string, otpCode: string, type: OTPType, ttlSeconds: number): Promise<void> {
     try {
       const redis = getRedis();
-      const key = this.getKey(email, type);
+      const key = this._getKey(email, type);
       await redis.setex(key, ttlSeconds, otpCode);
     } catch (error) {
       throw new InternalError('Failed to save OTP to cache', error as Error);
@@ -27,7 +27,7 @@ export class OTPRepository implements IOTPRepository {
   async find(email: string, type: OTPType): Promise<string | null> {
     try {
       const redis = getRedis();
-      const key = this.getKey(email, type);
+      const key = this._getKey(email, type);
       return await redis.get(key);
     } catch (error) {
       throw new InternalError('Failed to retrieve OTP from cache', error as Error);
@@ -37,7 +37,7 @@ export class OTPRepository implements IOTPRepository {
   async delete(email: string, type: OTPType): Promise<void> {
     try {
       const redis = getRedis();
-      const key = this.getKey(email, type);
+      const key = this._getKey(email, type);
       await redis.del(key);
     } catch (error) {
       throw new InternalError('Failed to delete OTP from cache', error as Error);
@@ -47,7 +47,7 @@ export class OTPRepository implements IOTPRepository {
   async incrementResendCount(email: string, type: OTPType, ttlSeconds: number): Promise<number> {
     try {
       const redis = getRedis();
-      const key = this.getResendKey(email, type);
+      const key = this._getResendKey(email, type);
       
       const count = await redis.incr(key);
       

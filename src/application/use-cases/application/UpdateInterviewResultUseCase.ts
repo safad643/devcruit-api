@@ -8,14 +8,14 @@ import { IUpdateInterviewResultUseCase, UpdateInterviewResultInput, UpdateInterv
 @injectable()
 export class UpdateInterviewResultUseCase implements IUpdateInterviewResultUseCase {
   constructor(
-    @inject(TYPES.ApplicationRepository) private applicationRepository: IApplicationRepository,
-    @inject(TYPES.CompanyTeamRepository) private companyTeamRepository: ICompanyTeamRepository,
-    @inject(TYPES.JobRepository) private jobRepository: IJobRepository
+    @inject(TYPES.ApplicationRepository) private _applicationRepository: IApplicationRepository,
+    @inject(TYPES.CompanyTeamRepository) private _companyTeamRepository: ICompanyTeamRepository,
+    @inject(TYPES.JobRepository) private _jobRepository: IJobRepository
   ) {}
 
   async execute(input: UpdateInterviewResultInput & { interviewerId: string }): Promise<UpdateInterviewResultOutput> {
     // 1. Get application
-    const application = await this.applicationRepository.findById(input.applicationId);
+    const application = await this._applicationRepository.findById(input.applicationId);
     if (!application) {
       throw new NotFoundError('Application not found');
     }
@@ -61,7 +61,7 @@ export class UpdateInterviewResultUseCase implements IUpdateInterviewResultUseCa
     });
 
     // 7. Determine application status update based on result
-    const job = await this.jobRepository.findById(application.jobId);
+    const job = await this._jobRepository.findById(application.jobId);
     if (!job) {
       throw new NotFoundError('Job not found');
     }
@@ -98,7 +98,7 @@ export class UpdateInterviewResultUseCase implements IUpdateInterviewResultUseCa
     }
 
     // 8. Update application
-    const updatedApplication = await this.applicationRepository.update(input.applicationId, {
+    const updatedApplication = await this._applicationRepository.update(input.applicationId, {
       interviewRounds: updatedRounds,
       ...statusUpdate,
     });

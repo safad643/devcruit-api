@@ -11,18 +11,18 @@ export class CompanyProfileRepository
   extends MongoGenericRepository<CompanyProfile, CreateCompanyProfileProps, UpdateCompanyProfileProps>
   implements ICompanyProfileRepository {
 
-  protected collection: Collection;
+  protected _collection: Collection;
 
   constructor() {
     super();
-    this.collection = getMongoDb().collection('company_profiles');
+    this._collection = getMongoDb().collection('company_profiles');
   }
 
-  protected getEntityName(): string {
+  protected _getEntityName(): string {
     return 'Company profile';
   }
 
-  protected mapToEntity(doc: WithId<Document>): CompanyProfile {
+  protected _mapToEntity(doc: WithId<Document>): CompanyProfile {
     return new CompanyProfile({
       id: doc._id.toString(),
       userId: doc.userId,
@@ -47,7 +47,7 @@ export class CompanyProfileRepository
   async create(profile: CreateCompanyProfileProps): Promise<CompanyProfile> {
     try {
       const now = new Date();
-      const result = await this.collection.insertOne({
+      const result = await this._collection.insertOne({
         userId: profile.userId,
         fullName: profile.fullName,
         phoneNumber: profile.phoneNumber,
@@ -99,7 +99,7 @@ export class CompanyProfileRepository
       const { id: _id, userId, createdAt, updatedAt, ...updateFields } = updates;
       const updatePayload = { ...updateFields, updatedAt: new Date() };
 
-      const result = await this.collection.findOneAndUpdate(
+      const result = await this._collection.findOneAndUpdate(
         { _id: new ObjectId(id) },
         { $set: updatePayload },
         { returnDocument: 'after' }
@@ -109,7 +109,7 @@ export class CompanyProfileRepository
         throw new NotFoundError('Company profile not found');
       }
 
-      return this.mapToEntity(result);
+      return this._mapToEntity(result);
     } catch (error) {
       if (error instanceof NotFoundError) throw error;
       throw new InternalError('Failed to update company profile', error as Error);
@@ -119,9 +119,9 @@ export class CompanyProfileRepository
   async findByUserId(userId: string): Promise<CompanyProfile | null> {
     try {
       if (!ObjectId.isValid(userId)) return null;
-      const doc = await this.collection.findOne({ userId });
+      const doc = await this._collection.findOne({ userId });
       if (!doc) return null;
-      return this.mapToEntity(doc);
+      return this._mapToEntity(doc);
     } catch (error) {
       throw new InternalError('Database query failed', error as Error);
     }
@@ -186,7 +186,7 @@ export class CompanyProfileRepository
       const sortOrder = filters.sortOrder === 'asc' ? 1 : -1;
 
       const countPipeline = [...pipeline, { $count: 'total' }];
-      const countResult = await this.collection.aggregate(countPipeline).toArray();
+      const countResult = await this._collection.aggregate(countPipeline).toArray();
       const total = countResult.length > 0 ? countResult[0].total : 0;
 
       const skip = (filters.page - 1) * filters.limit;
@@ -207,10 +207,10 @@ export class CompanyProfileRepository
         }
       });
 
-      const docs = await this.collection.aggregate(pipeline).toArray();
+      const docs = await this._collection.aggregate(pipeline).toArray();
 
       const companies = docs.map(doc => ({
-        companyProfile: this.mapToEntity(doc as WithId<Document>),
+        companyProfile: this._mapToEntity(doc as WithId<Document>),
         userEmail: doc.userEmail,
         isBlocked: doc.isBlocked
       }));

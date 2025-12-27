@@ -13,17 +13,17 @@ import { VideoCallHelper } from './VideoCallHelper';
 @injectable()
 export class EndVideoCallUseCase implements IEndVideoCallUseCase {
   constructor(
-    @inject(TYPES.ApplicationRepository) private readonly applicationRepository: IApplicationRepository,
-    @inject(TYPES.VideoCallHelper) private readonly videoCallHelper: VideoCallHelper,
+    @inject(TYPES.ApplicationRepository) private readonly _applicationRepository: IApplicationRepository,
+    @inject(TYPES.VideoCallHelper) private readonly _videoCallHelper: VideoCallHelper,
   ) { }
 
   async execute(input: EndVideoCallInput): Promise<EndVideoCallOutput> {
-    const { application, round } = await this.videoCallHelper.getApplicationAndRound(
+    const { application, round } = await this._videoCallHelper.getApplicationAndRound(
       input.applicationId,
       input.roundName,
     );
 
-    await this.videoCallHelper.validateInterviewerAccess(application, round, input.userId);
+    await this._videoCallHelper.validateInterviewerAccess(application, round, input.userId);
 
     if (round.videoCallStatus !== 'in-progress') {
       throw new ValidationError('Video call is not in progress');
@@ -38,7 +38,7 @@ export class EndVideoCallUseCase implements IEndVideoCallUseCase {
         : r,
     );
 
-    const updatedApplication = await this.applicationRepository.update(application.id, {
+    const updatedApplication = await this._applicationRepository.update(application.id, {
       interviewRounds: updatedRounds,
     });
 

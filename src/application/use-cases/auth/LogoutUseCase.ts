@@ -9,8 +9,8 @@ import { UnauthorizedError } from '../../../domain/errors';
 @injectable()
 export class LogoutUseCase implements ILogoutUseCase {
   constructor(
-    @inject(TYPES.RefreshTokenRepository) private refreshTokenRepository: IRefreshTokenRepository,
-    @inject(TYPES.TokenService) private tokenService: ITokenService
+    @inject(TYPES.RefreshTokenRepository) private _refreshTokenRepository: IRefreshTokenRepository,
+    @inject(TYPES.TokenService) private _tokenService: ITokenService
   ) {}
 
   async execute(input: LogoutInput): Promise<LogoutOutput> {
@@ -19,10 +19,10 @@ export class LogoutUseCase implements ILogoutUseCase {
     }
 
     // 1. Verify and decode refresh token
-    const decoded = this.tokenService.verifyRefreshToken(input.refreshToken);
+    const decoded = this._tokenService.verifyRefreshToken(input.refreshToken);
 
     // 2. Delete refresh token from Redis
-    await this.refreshTokenRepository.delete(decoded.tokenId, decoded.userId);
+    await this._refreshTokenRepository.delete(decoded.tokenId, decoded.userId);
 
     // 3. Return success response
     return {

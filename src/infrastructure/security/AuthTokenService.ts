@@ -11,25 +11,25 @@ import { config } from '../../config';
 @injectable()
 export class AuthTokenService implements IAuthTokenService {
   constructor(
-    @inject(TYPES.TokenService) private tokenService: ITokenService,
-    @inject(TYPES.RefreshTokenRepository) private refreshTokenRepository: IRefreshTokenRepository,
-    @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository
+    @inject(TYPES.TokenService) private _tokenService: ITokenService,
+    @inject(TYPES.RefreshTokenRepository) private _refreshTokenRepository: IRefreshTokenRepository,
+    @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository
   ) { }
 
   async generateAuthResponse(user: User): Promise<AuthTokensOutput> {
     // 1. Generate tokens
-    const accessToken = this.tokenService.generateAccessToken({
+    const accessToken = this._tokenService.generateAccessToken({
       userId: user.id,
       role: user.role,
     });
 
-    const { token: refreshToken, tokenId } = this.tokenService.generateRefreshToken({
+    const { token: refreshToken, tokenId } = this._tokenService.generateRefreshToken({
       userId: user.id,
       role: user.role,
     });
 
     // 2. Save refresh token to Redis
-    await this.refreshTokenRepository.save(
+    await this._refreshTokenRepository.save(
       tokenId,
       user.id,
       config.jwt.refreshTokenExpiry
@@ -42,7 +42,7 @@ export class AuthTokenService implements IAuthTokenService {
     let neededDocuments: Array<{ documentKey: CompanyDocumentKey; note?: string }> | undefined;
 
     if (user.role === 'company') {
-      const companyProfile = await this.companyProfileRepository.findByUserId(user.id);
+      const companyProfile = await this._companyProfileRepository.findByUserId(user.id);
       if (companyProfile) {
         status = companyProfile.status;
         hasActivePlan = companyProfile.hasActivePlan();

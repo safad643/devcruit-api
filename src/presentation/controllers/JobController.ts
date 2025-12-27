@@ -19,23 +19,23 @@ import { HRProfile } from '../../domain/entities/HRProfile';
 @injectable()
 export class JobController {
   constructor(
-    @inject(TYPES.CreateJobUseCase) private createJobUseCase: ICreateJobUseCase,
-    @inject(TYPES.ListJobsUseCase) private listJobsUseCase: IListJobsUseCase,
-    @inject(TYPES.DeleteJobUseCase) private deleteJobUseCase: IDeleteJobUseCase,
-    @inject(TYPES.CloseJobUseCase) private closeJobUseCase: ICloseJobUseCase,
-    @inject(TYPES.OpenJobUseCase) private openJobUseCase: IOpenJobUseCase,
-    @inject(TYPES.UpdateJobUseCase) private updateJobUseCase: IUpdateJobUseCase,
-    @inject(TYPES.GetJobUseCase) private getJobUseCase: IGetJobUseCase
+    @inject(TYPES.CreateJobUseCase) private _createJobUseCase: ICreateJobUseCase,
+    @inject(TYPES.ListJobsUseCase) private _listJobsUseCase: IListJobsUseCase,
+    @inject(TYPES.DeleteJobUseCase) private _deleteJobUseCase: IDeleteJobUseCase,
+    @inject(TYPES.CloseJobUseCase) private _closeJobUseCase: ICloseJobUseCase,
+    @inject(TYPES.OpenJobUseCase) private _openJobUseCase: IOpenJobUseCase,
+    @inject(TYPES.UpdateJobUseCase) private _updateJobUseCase: IUpdateJobUseCase,
+    @inject(TYPES.GetJobUseCase) private _getJobUseCase: IGetJobUseCase
   ) { }
 
   createJob = async (
     request: FastifyRequest<{ Body: CreateJobInput }>,
     reply: FastifyReply
   ): Promise<void> => {
-    this.ensureJobManagementPermission(request);
-    const companyContext = this.getCompanyContext(request);
+    this._ensureJobManagementPermission(request);
+    const companyContext = this._getCompanyContext(request);
     const companyId = companyContext.companyUserId;
-    const result = await this.createJobUseCase.execute({ ...request.body, companyId });
+    const result = await this._createJobUseCase.execute({ ...request.body, companyId });
     reply.status(HttpStatus.CREATED).send(wrapSuccess(result));
   };
 
@@ -43,7 +43,7 @@ export class JobController {
     request: FastifyRequest<{ Querystring: ListJobsQueryInput }>,
     reply: FastifyReply
   ): Promise<void> => {
-    const companyContext = this.getCompanyContext(request);
+    const companyContext = this._getCompanyContext(request);
     const companyId = companyContext.companyUserId;
     const query = request.query;
     const page = query.page ?? 1;
@@ -52,7 +52,7 @@ export class JobController {
     // Default status to 'open' if not provided
     const status = query.status === undefined ? 'open' : query.status;
 
-    const result = await this.listJobsUseCase.execute({
+    const result = await this._listJobsUseCase.execute({
       companyId,
       page,
       limit,
@@ -69,11 +69,11 @@ export class JobController {
     request: FastifyRequest<{ Params: { id: string } }>,
     reply: FastifyReply
   ): Promise<void> => {
-    this.ensureJobManagementPermission(request);
-    const companyContext = this.getCompanyContext(request);
+    this._ensureJobManagementPermission(request);
+    const companyContext = this._getCompanyContext(request);
     const companyId = companyContext.companyUserId;
     const jobId = request.params.id;
-    const result = await this.deleteJobUseCase.execute({ jobId, companyId });
+    const result = await this._deleteJobUseCase.execute({ jobId, companyId });
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
@@ -81,11 +81,11 @@ export class JobController {
     request: FastifyRequest<{ Params: { id: string } }>,
     reply: FastifyReply
   ): Promise<void> => {
-    this.ensureJobManagementPermission(request);
-    const companyContext = this.getCompanyContext(request);
+    this._ensureJobManagementPermission(request);
+    const companyContext = this._getCompanyContext(request);
     const companyId = companyContext.companyUserId;
     const jobId = request.params.id;
-    const result = await this.closeJobUseCase.execute({ jobId, companyId });
+    const result = await this._closeJobUseCase.execute({ jobId, companyId });
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
@@ -93,20 +93,20 @@ export class JobController {
     request: FastifyRequest<{ Params: { id: string } }>,
     reply: FastifyReply
   ): Promise<void> => {
-    this.ensureJobManagementPermission(request);
-    const companyContext = this.getCompanyContext(request);
+    this._ensureJobManagementPermission(request);
+    const companyContext = this._getCompanyContext(request);
     const companyId = companyContext.companyUserId;
     const jobId = request.params.id;
-    const result = await this.openJobUseCase.execute({ jobId, companyId });
+    const result = await this._openJobUseCase.execute({ jobId, companyId });
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
   getJob = async (
     request: FastifyRequest<{ Params: { id: string } }>,
     reply: FastifyReply
   ): Promise<void> => {
-    const companyContext = this.getCompanyContext(request);
+    const companyContext = this._getCompanyContext(request);
     const companyId = companyContext.companyUserId;
-    const job = await this.getJobUseCase.execute({
+    const job = await this._getJobUseCase.execute({
       jobId: request.params.id,
       companyId,
     });
@@ -117,12 +117,12 @@ export class JobController {
     request: FastifyRequest<{ Params: { id: string }, Body: UpdateJobInput }>,
     reply: FastifyReply
   ): Promise<void> => {
-    this.ensureJobManagementPermission(request);
-    const companyContext = this.getCompanyContext(request);
+    this._ensureJobManagementPermission(request);
+    const companyContext = this._getCompanyContext(request);
     const companyId = companyContext.companyUserId;
     const jobId = request.params.id;
 
-    const result = await this.updateJobUseCase.execute({
+    const result = await this._updateJobUseCase.execute({
       jobId,
       companyId,
       updates: request.body
@@ -130,12 +130,12 @@ export class JobController {
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
-  private ensureJobManagementPermission(request: FastifyRequest): void {
+  private _ensureJobManagementPermission(request: FastifyRequest): void {
     if (request.user?.role !== 'hr') {
       return;
     }
 
-    const companyContext = this.getCompanyContext(request);
+    const companyContext = this._getCompanyContext(request);
     const teamMember = companyContext.teamMember;
 
     if (!teamMember || !(teamMember instanceof HRProfile)) {
@@ -147,7 +147,7 @@ export class JobController {
     }
   }
 
-  private getCompanyContext(request: FastifyRequest) {
+  private _getCompanyContext(request: FastifyRequest) {
     const companyContext = request.companyContext;
     if (!companyContext) {
       throw new ForbiddenError('Company context missing. Ensure checkCompanyPaid middleware is applied.');

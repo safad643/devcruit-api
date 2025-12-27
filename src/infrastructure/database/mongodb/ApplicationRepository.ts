@@ -11,18 +11,18 @@ export class ApplicationRepository
   extends MongoGenericRepository<Application, CreateApplicationProps, UpdateApplicationProps>
   implements IApplicationRepository {
 
-  protected collection: Collection;
+  protected _collection: Collection;
 
   constructor() {
     super();
-    this.collection = getMongoDb().collection('applications');
+    this._collection = getMongoDb().collection('applications');
   }
 
-  protected getEntityName(): string {
+  protected _getEntityName(): string {
     return 'Application';
   }
 
-  protected mapToEntity(doc: WithId<Document>): Application {
+  protected _mapToEntity(doc: WithId<Document>): Application {
     const mapInterviewRounds = (rounds: InterviewRound[]): InterviewRound[] => {
       if (!Array.isArray(rounds)) return [];
       return rounds.map(round => ({
@@ -66,7 +66,7 @@ export class ApplicationRepository
   async create(application: CreateApplicationProps): Promise<Application> {
     try {
       const now = new Date();
-      const result = await this.collection.insertOne({
+      const result = await this._collection.insertOne({
         jobId: application.jobId,
         developerId: application.developerId,
         companyId: application.companyId,
@@ -81,7 +81,7 @@ export class ApplicationRepository
         lastUpdatedAt: now,
       });
 
-      return this.mapToEntity({
+      return this._mapToEntity({
         _id: result.insertedId,
         ...application,
         status: application.status || 'applied',
@@ -106,7 +106,7 @@ export class ApplicationRepository
         lastUpdatedAt: new Date(),
       };
 
-      const result = await this.collection.findOneAndUpdate(
+      const result = await this._collection.findOneAndUpdate(
         { _id: new ObjectId(id) },
         { $set: updatePayload },
         { returnDocument: 'after' }
@@ -116,7 +116,7 @@ export class ApplicationRepository
         throw new NotFoundError('Application not found');
       }
 
-      return this.mapToEntity(result);
+      return this._mapToEntity(result);
     } catch (error) {
       if (error instanceof NotFoundError) throw error;
       throw new InternalError('Failed to update application', error as Error);
@@ -125,8 +125,8 @@ export class ApplicationRepository
 
   async findByJobId(jobId: string): Promise<Application[]> {
     try {
-      const docs = await this.collection.find({ jobId }).toArray();
-      return docs.map(doc => this.mapToEntity(doc));
+      const docs = await this._collection.find({ jobId }).toArray();
+      return docs.map(doc => this._mapToEntity(doc));
     } catch (error) {
       throw new InternalError('Database query failed', error as Error);
     }
@@ -134,8 +134,8 @@ export class ApplicationRepository
 
   async findByDeveloperId(developerId: string): Promise<Application[]> {
     try {
-      const docs = await this.collection.find({ developerId }).toArray();
-      return docs.map(doc => this.mapToEntity(doc));
+      const docs = await this._collection.find({ developerId }).toArray();
+      return docs.map(doc => this._mapToEntity(doc));
     } catch (error) {
       throw new InternalError('Database query failed', error as Error);
     }
@@ -143,9 +143,9 @@ export class ApplicationRepository
 
   async findByJobIdAndDeveloperId(jobId: string, developerId: string): Promise<Application | null> {
     try {
-      const doc = await this.collection.findOne({ jobId, developerId });
+      const doc = await this._collection.findOne({ jobId, developerId });
       if (!doc) return null;
-      return this.mapToEntity(doc);
+      return this._mapToEntity(doc);
     } catch (error) {
       throw new InternalError('Database query failed', error as Error);
     }
@@ -162,17 +162,17 @@ export class ApplicationRepository
       const sortField = filters.sortBy ?? 'appliedAt';
       const sortOrder = filters.sortOrder === 'asc' ? 1 : -1;
 
-      const total = await this.collection.countDocuments(matchQuery);
+      const total = await this._collection.countDocuments(matchQuery);
 
       const skip = (filters.page - 1) * filters.limit;
-      const docs = await this.collection
+      const docs = await this._collection
         .find(matchQuery)
         .sort({ [sortField]: sortOrder })
         .skip(skip)
         .limit(filters.limit)
         .toArray();
 
-      const applications = docs.map(doc => this.mapToEntity(doc));
+      const applications = docs.map(doc => this._mapToEntity(doc));
 
       return { applications, total };
     } catch (error) {
@@ -196,7 +196,7 @@ export class ApplicationRepository
         { $group: { _id: '$status', count: { $sum: 1 } } }
       ];
 
-      const results = await this.collection.aggregate(pipeline).toArray();
+      const results = await this._collection.aggregate(pipeline).toArray();
 
       const metrics: ApplicationMetrics = {
         total: 0, applied: 0, shortlisted: 0, interviewing: 0, rejected: 0,
@@ -219,10 +219,10 @@ export class ApplicationRepository
 
   async findByInterviewerId(interviewerId: string): Promise<Application[]> {
     try {
-      const docs = await this.collection.find({
+      const docs = await this._collection.find({
         'interviewRounds.interviewerIds': interviewerId
       }).toArray();
-      return docs.map(doc => this.mapToEntity(doc));
+      return docs.map(doc => this._mapToEntity(doc));
     } catch (error) {
       throw new InternalError('Database query failed', error as Error);
     }
@@ -233,7 +233,7 @@ export class ApplicationRepository
       const oneHourBefore = new Date(scheduledAt.getTime() - 60 * 60 * 1000);
       const oneHourAfter = new Date(scheduledAt.getTime() + 60 * 60 * 1000);
 
-      const docs = await this.collection.find({
+      const docs = await this._collection.find({
         'interviewRounds': {
           $elemMatch: {
             'interviewerIds': interviewerId,
@@ -243,7 +243,7 @@ export class ApplicationRepository
         }
       }).toArray();
 
-      return docs.map(doc => this.mapToEntity(doc));
+      return docs.map(doc => this._mapToEntity(doc));
     } catch (error) {
       throw new InternalError('Failed to check for conflicting interviews', error as Error);
     }

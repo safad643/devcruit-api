@@ -9,12 +9,12 @@ import { NotFoundError, ForbiddenError } from '../../../domain/errors';
 @injectable()
 export class MarkMessageAsReadUseCase implements IMarkMessageAsReadUseCase {
   constructor(
-    @inject(TYPES.MessageRepository) private messageRepository: IMessageRepository,
-    @inject(TYPES.ConversationRepository) private conversationRepository: IConversationRepository
+    @inject(TYPES.MessageRepository) private _messageRepository: IMessageRepository,
+    @inject(TYPES.ConversationRepository) private _conversationRepository: IConversationRepository
   ) {}
 
   async execute(input: MarkMessageAsReadInput & { userId: string }): Promise<MarkMessageAsReadOutput> {
-    const conversation = await this.conversationRepository.findById(input.conversationId);
+    const conversation = await this._conversationRepository.findById(input.conversationId);
     
     if (!conversation) {
       throw new NotFoundError('Conversation not found');
@@ -25,9 +25,9 @@ export class MarkMessageAsReadUseCase implements IMarkMessageAsReadUseCase {
     }
 
     if (input.messageIds && input.messageIds.length > 0) {
-      await this.messageRepository.markAsRead(input.messageIds, input.conversationId, input.userId);
+      await this._messageRepository.markAsRead(input.messageIds, input.conversationId, input.userId);
     } else {
-      await this.messageRepository.markConversationAsRead(input.conversationId, input.userId);
+      await this._messageRepository.markConversationAsRead(input.conversationId, input.userId);
     }
 
     return {

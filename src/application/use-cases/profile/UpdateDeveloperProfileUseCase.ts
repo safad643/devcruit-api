@@ -9,12 +9,12 @@ import { DateValidator } from '../../validators/date-validator';
 @injectable()
 export class UpdateDeveloperProfileUseCase {
   constructor(
-    @inject(TYPES.DeveloperProfileRepository) private profileRepository: IDeveloperProfileRepository
+    @inject(TYPES.DeveloperProfileRepository) private _profileRepository: IDeveloperProfileRepository
   ) { }
 
   async execute(userId: string, input: UpdateDeveloperProfileInput): Promise<UpdateDeveloperProfileOutput> {
     // 1. Verify profile exists
-    const existingProfile = await this.profileRepository.findByUserId(userId);
+    const existingProfile = await this._profileRepository.findByUserId(userId);
     if (!existingProfile) {
       throw new NotFoundError('Developer profile not found');
     }
@@ -28,7 +28,7 @@ export class UpdateDeveloperProfileUseCase {
     const updateData = { ...input } as Partial<DeveloperProfileProps>;
 
     // 3. Update the profile
-    const updatedProfile = await this.profileRepository.update(existingProfile.id, updateData);
+    const updatedProfile = await this._profileRepository.update(existingProfile.id, updateData);
 
     return {
       id: updatedProfile.id,

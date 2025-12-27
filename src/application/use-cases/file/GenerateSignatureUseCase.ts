@@ -8,13 +8,13 @@ import { config } from '../../../config';
 @injectable()
 export class GenerateSignatureUseCase {
   constructor(
-    @inject(TYPES.FileService) private fileService: IFileService
+    @inject(TYPES.FileService) private _fileService: IFileService
   ) {}
 
   async execute(input: GenerateSignatureInput): Promise<GenerateSignatureOutput> {
-    this.validateTimestamp(input.timestamp);
+    this._validateTimestamp(input.timestamp);
 
-    const result = await this.fileService.generateSignature({
+    const result = await this._fileService.generateSignature({
       timestamp: input.timestamp,
       category: input.category,
       userId: input.userId,
@@ -28,7 +28,7 @@ export class GenerateSignatureUseCase {
     };
   }
 
-  private validateTimestamp(timestamp: number): void {
+  private _validateTimestamp(timestamp: number): void {
     const now = Math.floor(Date.now() / 1000);
     const maxAge = config.security.signatureTimestampMaxAgeSeconds;
     if (timestamp < now - maxAge || timestamp > now + maxAge) {

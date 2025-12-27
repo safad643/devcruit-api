@@ -9,10 +9,10 @@ interface TeamInviteDetails {
 }
 
 export class TeamInviteEmailContentBuilder implements IEmailContentBuilder {
-    constructor(private readonly details: TeamInviteDetails) { }
+    constructor(private readonly _details: TeamInviteDetails) { }
 
     build(): EmailContent {
-        const { email, temporaryPassword, companyName, role, loginUrl } = this.details;
+        const { email, temporaryPassword, companyName, role, loginUrl } = this._details;
         const roleLabel = role === 'hr' ? 'HR Manager' : 'Interviewer';
 
         const subject = `You're invited to join ${companyName} on Devcruit`;

@@ -7,11 +7,11 @@ import { GetJobFieldsInput, GetJobFieldsOutput } from '../../dtos/jobField.dto';
 @injectable()
 export class GetJobFieldsUseCase implements IGetJobFieldsUseCase {
     constructor(
-        @inject(TYPES.JobFieldRepository) private jobFieldRepository: IJobFieldRepository
+        @inject(TYPES.JobFieldRepository) private _jobFieldRepository: IJobFieldRepository
     ) { }
 
     async execute(input: GetJobFieldsInput): Promise<GetJobFieldsOutput> {
-        const fields = await this.jobFieldRepository.findAllByType(input.type);
+        const fields = await this._jobFieldRepository.findAllByType(input.type);
 
         return {
             fields: fields.map(field => ({

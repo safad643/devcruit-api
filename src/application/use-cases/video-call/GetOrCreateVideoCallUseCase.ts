@@ -12,17 +12,17 @@ import { VideoCallHelper } from './VideoCallHelper';
 @injectable()
 export class GetOrCreateVideoCallUseCase implements IGetOrCreateVideoCallUseCase {
   constructor(
-    @inject(TYPES.ApplicationRepository) private readonly applicationRepository: IApplicationRepository,
-    @inject(TYPES.VideoCallHelper) private readonly videoCallHelper: VideoCallHelper,
+    @inject(TYPES.ApplicationRepository) private readonly _applicationRepository: IApplicationRepository,
+    @inject(TYPES.VideoCallHelper) private readonly _videoCallHelper: VideoCallHelper,
   ) { }
 
   async execute(input: GetOrCreateVideoCallInput): Promise<GetOrCreateVideoCallOutput> {
-    const { application, round } = await this.videoCallHelper.getApplicationAndRound(
+    const { application, round } = await this._videoCallHelper.getApplicationAndRound(
       input.applicationId,
       input.roundName,
     );
 
-    await this.videoCallHelper.validateParticipantAccess(application, round, input.userId);
+    await this._videoCallHelper.validateParticipantAccess(application, round, input.userId);
 
     const currentStatus: VideoCallStatus = round.videoCallStatus ?? 'not-started';
 
@@ -48,7 +48,7 @@ export class GetOrCreateVideoCallUseCase implements IGetOrCreateVideoCallUseCase
         : r,
     );
 
-    const updatedApplication = await this.applicationRepository.update(application.id, {
+    const updatedApplication = await this._applicationRepository.update(application.id, {
       interviewRounds: updatedRounds,
     });
 

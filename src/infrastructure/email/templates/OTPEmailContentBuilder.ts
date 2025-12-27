@@ -3,12 +3,12 @@ import { OTPType } from '../../../domain/types';
 
 export class OTPEmailContentBuilder implements IEmailContentBuilder {
     constructor(
-        private readonly otpCode: string,
-        private readonly type: OTPType
+        private readonly _otpCode: string,
+        private readonly _type: OTPType
     ) { }
 
     build(): EmailContent {
-        const isRegistration = this.type === 'register';
+        const isRegistration = this._type === 'register';
 
         const subject = isRegistration
             ? '🔐 Verify Your Email - Devcruit'
@@ -32,7 +32,7 @@ export class OTPEmailContentBuilder implements IEmailContentBuilder {
           <td align="center" style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; border: 2px dashed #667eea;">
             <p style="margin: 0 0 10px 0; font-size: 14px; color: #666666; text-transform: uppercase; letter-spacing: 1px;">Your verification code</p>
             <p class="otp-code" style="margin: 0; font-size: 36px; font-weight: 700; color: #667eea; letter-spacing: 8px; font-family: 'Courier New', monospace;">
-              ${this.otpCode}
+              ${this._otpCode}
             </p>
           </td>
         </tr>
@@ -43,7 +43,7 @@ export class OTPEmailContentBuilder implements IEmailContentBuilder {
       </p>
     `;
 
-        const textContent = `${message}\n\nYour verification code: ${this.otpCode}\n\nThis code will expire in 1 minute.`;
+        const textContent = `${message}\n\nYour verification code: ${this._otpCode}\n\nThis code will expire in 1 minute.`;
 
         return { subject, heading, htmlContent, textContent };
     }

@@ -8,12 +8,12 @@ import { RejectCompanyInput, RejectCompanyOutput } from '../../dtos/admin.dto';
 @injectable()
 export class RejectCompanyUseCase {
   constructor(
-    @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository
+    @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository
   ) { }
 
   async execute(input: RejectCompanyInput): Promise<RejectCompanyOutput> {
     // 1. Verify company profile exists
-    const existingProfile = await this.companyProfileRepository.findById(input.companyId);
+    const existingProfile = await this._companyProfileRepository.findById(input.companyId);
     if (!existingProfile) {
       throw new NotFoundError('Company profile not found');
     }
@@ -30,7 +30,7 @@ export class RejectCompanyUseCase {
     };
 
     // 4. Reject the company profile with reupload requests
-    const rejectedProfile = await this.companyProfileRepository.update(
+    const rejectedProfile = await this._companyProfileRepository.update(
       input.companyId,
       existingProfile.reject(documentReuploadRequest)
     );

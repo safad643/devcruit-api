@@ -13,16 +13,16 @@ import { IListApplicationsForDeveloperUseCase } from './interfaces';
 @injectable()
 export class ListApplicationsForDeveloperUseCase implements IListApplicationsForDeveloperUseCase {
   constructor(
-    @inject(TYPES.ApplicationRepository) private applicationRepository: IApplicationRepository,
-    @inject(TYPES.JobRepository) private jobRepository: IJobRepository,
-    @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository,
-    @inject(TYPES.DeveloperProfileRepository) private developerProfileRepository: IDeveloperProfileRepository
+    @inject(TYPES.ApplicationRepository) private _applicationRepository: IApplicationRepository,
+    @inject(TYPES.JobRepository) private _jobRepository: IJobRepository,
+    @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository,
+    @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository
   ) {}
 
   async execute(input: ListApplicationsForDeveloperInput & { developerId: string }): Promise<ListApplicationsForDeveloperOutput> {
     // Get developer profile to get the developerId (profile ID)
     // Note: input.developerId is the userId, we need to get the profile ID
-    const developerProfile = await this.developerProfileRepository.findByUserId(input.developerId);
+    const developerProfile = await this._developerProfileRepository.findByUserId(input.developerId);
     if (!developerProfile) {
       throw new NotFoundError('Developer profile not found');
     }
@@ -39,16 +39,16 @@ export class ListApplicationsForDeveloperUseCase implements IListApplicationsFor
     };
 
     // Get applications
-    const result = await this.applicationRepository.listWithFilters(filters);
+    const result = await this._applicationRepository.listWithFilters(filters);
 
     // Enrich applications with job and company information
     const enrichedApplications: DeveloperApplicationListItem[] = await Promise.all(
       result.applications.map(async (application) => {
         // Get job information
-        const job = await this.jobRepository.findById(application.jobId);
+        const job = await this._jobRepository.findById(application.jobId);
         
         // Get company profile
-        const companyProfile = await this.companyProfileRepository.findByUserId(application.companyId);
+        const companyProfile = await this._companyProfileRepository.findByUserId(application.companyId);
 
         return {
           id: application.id,

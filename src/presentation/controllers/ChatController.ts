@@ -15,16 +15,16 @@ import { ConversationIdParams, GetMessagesQuery, MarkMessagesAsReadInput, UserId
 @injectable()
 export class ChatController {
   constructor(
-    @inject(TYPES.GetConversationsUseCase) private getConversationsUseCase: IGetConversationsUseCase,
-    @inject(TYPES.GetMessagesUseCase) private getMessagesUseCase: IGetMessagesUseCase,
-    @inject(TYPES.MarkMessageAsReadUseCase) private markMessageAsReadUseCase: IMarkMessageAsReadUseCase,
-    @inject(TYPES.CheckCanMessageUseCase) private checkCanMessageUseCase: ICheckCanMessageUseCase,
-    @inject(TYPES.GetConversationUseCase) private getConversationUseCase: IGetConversationUseCase
+    @inject(TYPES.GetConversationsUseCase) private _getConversationsUseCase: IGetConversationsUseCase,
+    @inject(TYPES.GetMessagesUseCase) private _getMessagesUseCase: IGetMessagesUseCase,
+    @inject(TYPES.MarkMessageAsReadUseCase) private _markMessageAsReadUseCase: IMarkMessageAsReadUseCase,
+    @inject(TYPES.CheckCanMessageUseCase) private _checkCanMessageUseCase: ICheckCanMessageUseCase,
+    @inject(TYPES.GetConversationUseCase) private _getConversationUseCase: IGetConversationUseCase
   ) {}
 
   getConversations = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     const userId = request.user?.id as string;
-    const result = await this.getConversationsUseCase.execute({ userId });
+    const result = await this._getConversationsUseCase.execute({ userId });
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
@@ -36,7 +36,7 @@ export class ChatController {
     const limit = request.query.limit ?? 10;
     const beforeDate = request.query.beforeDate ? new Date(request.query.beforeDate) : undefined;
 
-    const result = await this.getMessagesUseCase.execute({
+    const result = await this._getMessagesUseCase.execute({
       conversationId: request.params.conversationId,
       limit,
       beforeDate: beforeDate && !isNaN(beforeDate.getTime()) ? beforeDate : undefined,
@@ -51,7 +51,7 @@ export class ChatController {
     reply: FastifyReply
   ): Promise<void> => {
     const userId = request.user?.id as string;
-    const result = await this.markMessageAsReadUseCase.execute({
+    const result = await this._markMessageAsReadUseCase.execute({
       conversationId: request.params.conversationId,
       messageIds: request.body.messageIds,
       userId,
@@ -66,7 +66,7 @@ export class ChatController {
   ): Promise<void> => {
     const requesterId = request.user?.id as string;
     const requesterRole = request.user?.role as string;
-    const result = await this.checkCanMessageUseCase.execute({
+    const result = await this._checkCanMessageUseCase.execute({
       requesterUserId: requesterId,
       requesterRole,
       targetUserId: request.params.userId,
@@ -80,7 +80,7 @@ export class ChatController {
     reply: FastifyReply
   ): Promise<void> => {
     const requesterId = request.user?.id as string;
-    const result = await this.getConversationUseCase.execute({
+    const result = await this._getConversationUseCase.execute({
       participant1Id: requesterId,
       participant2Id: request.params.userId,
     });

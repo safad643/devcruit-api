@@ -11,18 +11,18 @@ export class ConversationRepository
   extends MongoGenericRepository<Conversation, CreateConversationProps, UpdateConversationProps>
   implements IConversationRepository {
 
-  protected collection: Collection;
+  protected _collection: Collection;
 
   constructor() {
     super();
-    this.collection = getMongoDb().collection('conversations');
+    this._collection = getMongoDb().collection('conversations');
   }
 
-  protected getEntityName(): string {
+  protected _getEntityName(): string {
     return 'Conversation';
   }
 
-  protected mapToEntity(doc: WithId<Document>): Conversation {
+  protected _mapToEntity(doc: WithId<Document>): Conversation {
     return new Conversation({
       id: doc._id.toString(),
       participant1Id: doc.participant1Id,
@@ -52,8 +52,8 @@ export class ConversationRepository
         updatedAt: conversation.updatedAt,
       };
 
-      const result = await this.collection.insertOne(doc as OptionalId<Document>);
-      return this.mapToEntity({ _id: result.insertedId, ...doc });
+      const result = await this._collection.insertOne(doc as OptionalId<Document>);
+      return this._mapToEntity({ _id: result.insertedId, ...doc });
     } catch (error) {
       throw new InternalError('Failed to create conversation', error as Error);
     }
@@ -68,7 +68,7 @@ export class ConversationRepository
       const { id: _id, createdAt, participant1Id, participant2Id, companyId, ...updateFields } = updates;
       const updatePayload = { ...updateFields, updatedAt: new Date() };
 
-      const result = await this.collection.findOneAndUpdate(
+      const result = await this._collection.findOneAndUpdate(
         { _id: new ObjectId(id) },
         { $set: updatePayload },
         { returnDocument: 'after' }
@@ -78,7 +78,7 @@ export class ConversationRepository
         throw new NotFoundError('Conversation not found');
       }
 
-      return this.mapToEntity(result);
+      return this._mapToEntity(result);
     } catch (error) {
       if (error instanceof NotFoundError) throw error;
       throw new InternalError('Failed to update conversation', error as Error);
@@ -91,9 +91,9 @@ export class ConversationRepository
         ? [participant1Id, participant2Id]
         : [participant2Id, participant1Id];
 
-      const doc = await this.collection.findOne({ participant1Id: p1, participant2Id: p2 });
+      const doc = await this._collection.findOne({ participant1Id: p1, participant2Id: p2 });
       if (!doc) return null;
-      return this.mapToEntity(doc);
+      return this._mapToEntity(doc);
     } catch (error) {
       throw new InternalError('Database query failed', error as Error);
     }
@@ -101,11 +101,11 @@ export class ConversationRepository
 
   async findByUserId(userId: string): Promise<Conversation[]> {
     try {
-      const docs = await this.collection
+      const docs = await this._collection
         .find({ $or: [{ participant1Id: userId }, { participant2Id: userId }] })
         .sort({ lastMessageAt: -1 })
         .toArray();
-      return docs.map(doc => this.mapToEntity(doc));
+      return docs.map(doc => this._mapToEntity(doc));
     } catch (error) {
       throw new InternalError('Database query failed', error as Error);
     }
@@ -117,7 +117,7 @@ export class ConversationRepository
         throw new NotFoundError('Conversation not found');
       }
 
-      const result = await this.collection.findOneAndUpdate(
+      const result = await this._collection.findOneAndUpdate(
         { _id: new ObjectId(id) },
         { $set: { lastMessage, lastMessageAt, updatedAt: new Date() } },
         { returnDocument: 'after' }
@@ -127,7 +127,7 @@ export class ConversationRepository
         throw new NotFoundError('Conversation not found');
       }
 
-      return this.mapToEntity(result);
+      return this._mapToEntity(result);
     } catch (error) {
       if (error instanceof NotFoundError) throw error;
       throw new InternalError('Failed to update last message', error as Error);

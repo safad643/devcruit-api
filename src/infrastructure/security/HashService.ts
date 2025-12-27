@@ -5,11 +5,11 @@ import { injectable } from 'inversify';
 
 @injectable()
 export class HashService implements IHashService {
-  private readonly saltRounds = 10;
+  private readonly _saltRounds = 10;
 
   async hash(password: string): Promise<string> {
     try {
-      return await bcrypt.hash(password, this.saltRounds);
+      return await bcrypt.hash(password, this._saltRounds);
     } catch (error) {
       throw new InternalError('Failed to hash password', error as Error);
     }

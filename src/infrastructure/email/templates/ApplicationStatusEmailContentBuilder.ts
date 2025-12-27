@@ -10,14 +10,14 @@ interface ApplicationDetails {
 
 export class ApplicationStatusEmailContentBuilder implements IEmailContentBuilder {
     constructor(
-        private readonly status: ApplicationStatus,
-        private readonly details: ApplicationDetails
+        private readonly _status: ApplicationStatus,
+        private readonly _details: ApplicationDetails
     ) { }
 
     build(): EmailContent {
-        const { companyName, jobTitle, rejectionNote } = this.details;
+        const { companyName, jobTitle, rejectionNote } = this._details;
 
-        if (this.status === 'shortlisted') {
+        if (this._status === 'shortlisted') {
             return {
                 subject: '🎉 Congratulations! You\'ve Been Shortlisted - Devcruit',
                 heading: 'Application Shortlisted',

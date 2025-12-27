@@ -18,18 +18,18 @@ import { OfferLetter } from '../../../domain/entities/OfferLetter';
 @injectable()
 export class CreateOfferLetterUseCase implements ICreateOfferLetterUseCase {
     constructor(
-        @inject(TYPES.ApplicationRepository) private applicationRepository: IApplicationRepository,
-        @inject(TYPES.JobRepository) private jobRepository: IJobRepository,
-        @inject(TYPES.DeveloperProfileRepository) private developerProfileRepository: IDeveloperProfileRepository,
-        @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository,
-        @inject(TYPES.UserRepository) private userRepository: IUserRepository,
-        @inject(TYPES.OfferLetterRepository) private offerLetterRepository: IOfferLetterRepository,
-        @inject(TYPES.EmailService) private emailService: IEmailService
+        @inject(TYPES.ApplicationRepository) private _applicationRepository: IApplicationRepository,
+        @inject(TYPES.JobRepository) private _jobRepository: IJobRepository,
+        @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository,
+        @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository,
+        @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
+        @inject(TYPES.OfferLetterRepository) private _offerLetterRepository: IOfferLetterRepository,
+        @inject(TYPES.EmailService) private _emailService: IEmailService
     ) { }
 
     async execute(input: CreateOfferLetterInput): Promise<CreateOfferLetterOutput> {
         // 1. Get application
-        const application = await this.applicationRepository.findById(input.applicationId);
+        const application = await this._applicationRepository.findById(input.applicationId);
         if (!application) {
             throw new NotFoundError('Application not found');
         }
@@ -49,35 +49,35 @@ export class CreateOfferLetterUseCase implements ICreateOfferLetterUseCase {
         }
 
         // 4. Get job details
-        const job = await this.jobRepository.findById(application.jobId);
+        const job = await this._jobRepository.findById(application.jobId);
         if (!job) {
             throw new NotFoundError('Job not found');
         }
 
         // 5. Get company profile
-        const companyProfile = await this.companyProfileRepository.findByUserId(input.companyId);
+        const companyProfile = await this._companyProfileRepository.findByUserId(input.companyId);
         if (!companyProfile) {
             throw new NotFoundError('Company profile not found');
         }
 
         // 6. Get developer profile and user
-        const developerProfile = await this.developerProfileRepository.findById(application.developerId);
+        const developerProfile = await this._developerProfileRepository.findById(application.developerId);
         if (!developerProfile) {
             throw new NotFoundError('Developer profile not found');
         }
 
-        const developerUser = await this.userRepository.findById(developerProfile.userId);
+        const developerUser = await this._userRepository.findById(developerProfile.userId);
         if (!developerUser) {
             throw new NotFoundError('Developer user not found');
         }
 
         // 7. Check if there's already an offer letter - get next version
-        const existingOffer = await this.offerLetterRepository.findLatestByApplicationId(input.applicationId);
+        const existingOffer = await this._offerLetterRepository.findLatestByApplicationId(input.applicationId);
         const version = existingOffer ? existingOffer.version + 1 : 1;
 
         // If there's an existing pending offer, mark it as revised
         if (existingOffer && existingOffer.status === 'pending') {
-            await this.offerLetterRepository.update(existingOffer.id, { status: 'revised' });
+            await this._offerLetterRepository.update(existingOffer.id, { status: 'revised' });
         }
 
         // 8. Create offer letter with auto-filled data
@@ -113,7 +113,7 @@ export class CreateOfferLetterUseCase implements ICreateOfferLetterUseCase {
             additionalTerms: input.additionalTerms,
         });
 
-        const createdOfferLetter = await this.offerLetterRepository.create(offerLetterData);
+        const createdOfferLetter = await this._offerLetterRepository.create(offerLetterData);
 
         // 9. Update application status to offer_extended and link offer letter
         const updateData: Partial<ApplicationProps> = {
@@ -122,7 +122,7 @@ export class CreateOfferLetterUseCase implements ICreateOfferLetterUseCase {
             currentOfferLetterId: createdOfferLetter.id,
         };
 
-        await this.applicationRepository.update(input.applicationId, updateData);
+        await this._applicationRepository.update(input.applicationId, updateData);
 
         // 10. Send email notification
         try {

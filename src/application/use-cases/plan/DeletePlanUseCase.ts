@@ -8,16 +8,16 @@ import { NotFoundError } from '../../../domain/errors';
 @injectable()
 export class DeletePlanUseCase implements IDeletePlanUseCase {
     constructor(
-        @inject(TYPES.PlanRepository) private planRepository: IPlanRepository
+        @inject(TYPES.PlanRepository) private _planRepository: IPlanRepository
     ) { }
 
     async execute(id: string): Promise<DeletePlanOutput> {
-        const existing = await this.planRepository.findById(id);
+        const existing = await this._planRepository.findById(id);
         if (!existing) {
             throw new NotFoundError('Plan not found');
         }
 
-        await this.planRepository.delete(id);
+        await this._planRepository.delete(id);
 
         return {
             id,

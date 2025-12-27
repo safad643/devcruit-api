@@ -27,15 +27,15 @@ import { ForbiddenError } from '../../domain/errors';
 @injectable()
 export class ProfileController {
   constructor(
-    @inject(TYPES.CreateDeveloperProfileUseCase) private createProfileUseCase: ICreateDeveloperProfileUseCase,
-    @inject(TYPES.GetDeveloperProfileUseCase) private getDeveloperProfileUseCase: IGetDeveloperProfileUseCase,
-    @inject(TYPES.GetCompanyProfileUseCase) private getCompanyProfileUseCase: IGetCompanyProfileUseCase,
-    @inject(TYPES.CreateCompanyProfileUseCase) private createCompanyProfileUseCase: ICreateCompanyProfileUseCase,
-    @inject(TYPES.UpdateDeveloperProfileUseCase) private updateDeveloperProfileUseCase: IUpdateDeveloperProfileUseCase,
-    @inject(TYPES.UpdateCompanyProfileUseCase) private updateCompanyProfileUseCase: IUpdateCompanyProfileUseCase,
-    @inject(TYPES.ResubmitDocumentsUseCase) private resubmitDocumentsUseCase: IResubmitDocumentsUseCase,
-    @inject(TYPES.InviteCompanyTeamMemberUseCase) private inviteCompanyTeamMemberUseCase: IInviteCompanyTeamMemberUseCase,
-    @inject(TYPES.ListCompanyTeamMembersUseCase) private listCompanyTeamMembersUseCase: IListCompanyTeamMembersUseCase
+    @inject(TYPES.CreateDeveloperProfileUseCase) private _createProfileUseCase: ICreateDeveloperProfileUseCase,
+    @inject(TYPES.GetDeveloperProfileUseCase) private _getDeveloperProfileUseCase: IGetDeveloperProfileUseCase,
+    @inject(TYPES.GetCompanyProfileUseCase) private _getCompanyProfileUseCase: IGetCompanyProfileUseCase,
+    @inject(TYPES.CreateCompanyProfileUseCase) private _createCompanyProfileUseCase: ICreateCompanyProfileUseCase,
+    @inject(TYPES.UpdateDeveloperProfileUseCase) private _updateDeveloperProfileUseCase: IUpdateDeveloperProfileUseCase,
+    @inject(TYPES.UpdateCompanyProfileUseCase) private _updateCompanyProfileUseCase: IUpdateCompanyProfileUseCase,
+    @inject(TYPES.ResubmitDocumentsUseCase) private _resubmitDocumentsUseCase: IResubmitDocumentsUseCase,
+    @inject(TYPES.InviteCompanyTeamMemberUseCase) private _inviteCompanyTeamMemberUseCase: IInviteCompanyTeamMemberUseCase,
+    @inject(TYPES.ListCompanyTeamMembersUseCase) private _listCompanyTeamMembersUseCase: IListCompanyTeamMembersUseCase
   ) { }
 
   createProfile = async (
@@ -44,7 +44,7 @@ export class ProfileController {
   ): Promise<void> => {
 
     const userId = request.user?.id as string; //wont reach here is req.user is not avaible so its fine to assert
-    const result = await this.createProfileUseCase.execute({
+    const result = await this._createProfileUseCase.execute({
       ...request.body,
       userId,
       workHistory: request.body.workHistory ?? [],
@@ -60,7 +60,7 @@ export class ProfileController {
   ): Promise<void> => {
 
     const userId = request.user?.id as string;
-    const result = await this.createCompanyProfileUseCase.execute({ ...request.body, userId });
+    const result = await this._createCompanyProfileUseCase.execute({ ...request.body, userId });
     reply.status(HttpStatus.CREATED).send(wrapSuccess(result));
   };
 
@@ -69,10 +69,10 @@ export class ProfileController {
     const role = request.user?.role;
 
     if (role === 'company') {
-      const result = await this.getCompanyProfileUseCase.execute(userId);
+      const result = await this._getCompanyProfileUseCase.execute(userId);
       reply.status(HttpStatus.OK).send(wrapSuccess(result));
     } else if (role === 'developer') {
-      const result = await this.getDeveloperProfileUseCase.execute(userId);
+      const result = await this._getDeveloperProfileUseCase.execute(userId);
       reply.status(HttpStatus.OK).send(wrapSuccess(result));
     } else {
       reply.status(HttpStatus.BAD_REQUEST).send({ success: false, error: { message: 'Invalid user role for profile endpoint' } });
@@ -85,7 +85,7 @@ export class ProfileController {
   ): Promise<void> => {
     const userId = request.user?.id as string;
 
-    const result = await this.updateDeveloperProfileUseCase.execute(userId, request.body);
+    const result = await this._updateDeveloperProfileUseCase.execute(userId, request.body);
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
@@ -95,7 +95,7 @@ export class ProfileController {
   ): Promise<void> => {
     const userId = request.user?.id as string;
 
-    const result = await this.updateCompanyProfileUseCase.execute(userId, request.body);
+    const result = await this._updateCompanyProfileUseCase.execute(userId, request.body);
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
@@ -104,7 +104,7 @@ export class ProfileController {
     reply: FastifyReply
   ): Promise<void> => {
     const userId = request.user?.id as string;
-    const result = await this.resubmitDocumentsUseCase.execute({
+    const result = await this._resubmitDocumentsUseCase.execute({
       userId,
       documents: request.body.documents
     });
@@ -115,9 +115,9 @@ export class ProfileController {
     request: FastifyRequest,
     reply: FastifyReply
   ): Promise<void> => {
-    const companyContext = this.getCompanyContext(request);
+    const companyContext = this._getCompanyContext(request);
     const companyUserId = companyContext.companyUserId;
-    const result = await this.listCompanyTeamMembersUseCase.execute(companyUserId);
+    const result = await this._listCompanyTeamMembersUseCase.execute(companyUserId);
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
@@ -126,7 +126,7 @@ export class ProfileController {
     reply: FastifyReply
   ): Promise<void> => {
     const inviterUserId = request.user?.id as string;
-    const result = await this.inviteCompanyTeamMemberUseCase.execute({
+    const result = await this._inviteCompanyTeamMemberUseCase.execute({
       inviterUserId,
       email: request.body.email,
       role: request.body.role,
@@ -136,7 +136,7 @@ export class ProfileController {
     reply.status(HttpStatus.CREATED).send(wrapSuccess(result));
   };
 
-  private getCompanyContext(request: FastifyRequest) {
+  private _getCompanyContext(request: FastifyRequest) {
     const companyContext = request.companyContext;
     if (!companyContext) {
       throw new ForbiddenError('Company context missing. Ensure checkCompanyPaid middleware is applied.');

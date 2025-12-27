@@ -7,8 +7,8 @@ import { IPublicListJobsUseCase } from './interfaces';
 @injectable()
 export class PublicListJobsUseCase implements IPublicListJobsUseCase {
   constructor(
-    @inject(TYPES.JobRepository) private jobRepository: IJobRepository,
-    @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository
+    @inject(TYPES.JobRepository) private _jobRepository: IJobRepository,
+    @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository
   ) {}
 
   async execute(input: PublicListJobsInput): Promise<PublicListJobsOutput> {
@@ -25,11 +25,11 @@ export class PublicListJobsUseCase implements IPublicListJobsUseCase {
       sortOrder: input.sortOrder,
     };
 
-    const result = await this.jobRepository.listPublicWithFilters(filters);
+    const result = await this._jobRepository.listPublicWithFilters(filters);
 
     const items = await Promise.all(result.jobs.map(async (job) => {
       // Fetch company profile for name/logo through repository
-      const companyProfile = await this.companyProfileRepository.findByUserId(job.companyId);
+      const companyProfile = await this._companyProfileRepository.findByUserId(job.companyId);
       return {
         id: job.id,
         title: job.title,

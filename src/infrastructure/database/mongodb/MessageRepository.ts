@@ -11,18 +11,18 @@ export class MessageRepository
   extends MongoGenericRepository<Message, CreateMessageProps, UpdateMessageProps>
   implements IMessageRepository {
 
-  protected collection: Collection;
+  protected _collection: Collection;
 
   constructor() {
     super();
-    this.collection = getMongoDb().collection('messages');
+    this._collection = getMongoDb().collection('messages');
   }
 
-  protected getEntityName(): string {
+  protected _getEntityName(): string {
     return 'Message';
   }
 
-  protected mapToEntity(doc: WithId<Document>): Message {
+  protected _mapToEntity(doc: WithId<Document>): Message {
     return new Message({
       id: doc._id.toString(),
       conversationId: doc.conversationId,
@@ -35,7 +35,7 @@ export class MessageRepository
 
   async create(message: CreateMessageProps): Promise<Message> {
     try {
-      const result = await this.collection.insertOne({
+      const result = await this._collection.insertOne({
         conversationId: message.conversationId,
         senderId: message.senderId,
         message: message.message,
@@ -43,11 +43,11 @@ export class MessageRepository
         createdAt: message.createdAt,
       });
 
-      const doc = await this.collection.findOne({ _id: result.insertedId });
+      const doc = await this._collection.findOne({ _id: result.insertedId });
       if (!doc) {
         throw new InternalError('Failed to retrieve created message');
       }
-      return this.mapToEntity(doc);
+      return this._mapToEntity(doc);
     } catch (error) {
       if (error instanceof InternalError) throw error;
       throw new InternalError('Failed to create message', error as Error);
@@ -61,7 +61,7 @@ export class MessageRepository
       }
 
       const { id: _id, ...updateFields } = updates;
-      const result = await this.collection.findOneAndUpdate(
+      const result = await this._collection.findOneAndUpdate(
         { _id: new ObjectId(id) },
         { $set: updateFields },
         { returnDocument: 'after' }
@@ -71,7 +71,7 @@ export class MessageRepository
         throw new NotFoundError('Message not found');
       }
 
-      return this.mapToEntity(result);
+      return this._mapToEntity(result);
     } catch (error) {
       if (error instanceof NotFoundError) throw error;
       throw new InternalError('Failed to update message', error as Error);
@@ -84,9 +84,9 @@ export class MessageRepository
       const query: Filter<Document> = { conversationId };
       if (beforeDate) query.createdAt = { $lt: beforeDate };
 
-      const total = await this.collection.countDocuments({ conversationId });
+      const total = await this._collection.countDocuments({ conversationId });
 
-      const docs = await this.collection
+      const docs = await this._collection
         .find(query)
         .sort({ createdAt: -1 })
         .limit(limit + 1)
@@ -94,7 +94,7 @@ export class MessageRepository
 
       const hasMore = docs.length > limit;
       const messagesToReturn = hasMore ? docs.slice(0, limit) : docs;
-      const messages = messagesToReturn.reverse().map(doc => this.mapToEntity(doc));
+      const messages = messagesToReturn.reverse().map(doc => this._mapToEntity(doc));
 
       return { messages, total, hasMore };
     } catch (error) {
@@ -109,7 +109,7 @@ export class MessageRepository
       const objectIds = messageIds.filter(id => ObjectId.isValid(id)).map(id => new ObjectId(id));
       if (objectIds.length === 0) return;
 
-      await this.collection.updateMany(
+      await this._collection.updateMany(
         { _id: { $in: objectIds }, conversationId, senderId: { $ne: userId }, readAt: null },
         { $set: { readAt: new Date() } }
       );
@@ -120,7 +120,7 @@ export class MessageRepository
 
   async markConversationAsRead(conversationId: string, userId: string): Promise<void> {
     try {
-      await this.collection.updateMany(
+      await this._collection.updateMany(
         { conversationId, senderId: { $ne: userId }, readAt: null },
         { $set: { readAt: new Date() } }
       );
@@ -131,7 +131,7 @@ export class MessageRepository
 
   async getUnreadCount(conversationId: string, userId: string): Promise<number> {
     try {
-      return await this.collection.countDocuments({
+      return await this._collection.countDocuments({
         conversationId,
         senderId: { $ne: userId },
         readAt: null,

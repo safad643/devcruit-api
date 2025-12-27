@@ -15,10 +15,10 @@ import { IEmailContentBuilder } from './templates/IEmailContentBuilder';
 
 @injectable()
 export class EmailService implements IEmailService {
-  private transporter: Transporter;
+  private _transporter: Transporter;
 
   constructor() {
-    this.transporter = nodemailer.createTransport({
+    this._transporter = nodemailer.createTransport({
       host: config.email.host,
       port: config.email.port,
       secure: false,
@@ -29,12 +29,12 @@ export class EmailService implements IEmailService {
     });
   }
 
-  private async sendEmail(to: string, contentBuilder: IEmailContentBuilder): Promise<void> {
+  private async _sendEmail(to: string, contentBuilder: IEmailContentBuilder): Promise<void> {
     try {
       const { subject, heading, htmlContent, textContent } = contentBuilder.build();
       const html = EmailTemplate.build(subject, heading, htmlContent);
 
-      await this.transporter.sendMail({
+      await this._transporter.sendMail({
         from: `"Devcruit" <${config.email.from}>`,
         to,
         subject,
@@ -47,12 +47,12 @@ export class EmailService implements IEmailService {
   }
 
   async sendOTP(email: string, otpCode: string, type: OTPType): Promise<void> {
-    await this.sendEmail(email, new OTPEmailContentBuilder(otpCode, type));
+    await this._sendEmail(email, new OTPEmailContentBuilder(otpCode, type));
   }
 
   async sendUserBlocked(email: string): Promise<void> {
     try {
-      await this.sendEmail(email, new AccountStatusEmailContentBuilder('blocked'));
+      await this._sendEmail(email, new AccountStatusEmailContentBuilder('blocked'));
     } catch (error) {
       console.error('Failed to send block email to', email, error);
       // Silently fail - don't throw
@@ -61,7 +61,7 @@ export class EmailService implements IEmailService {
 
   async sendUserUnblocked(email: string): Promise<void> {
     try {
-      await this.sendEmail(email, new AccountStatusEmailContentBuilder('unblocked'));
+      await this._sendEmail(email, new AccountStatusEmailContentBuilder('unblocked'));
     } catch (error) {
       console.error('Failed to send unblock email to', email, error);
       // Silently fail - don't throw
@@ -70,7 +70,7 @@ export class EmailService implements IEmailService {
 
   async sendShortlistNotification(email: string, companyName: string, jobTitle: string): Promise<void> {
     try {
-      await this.sendEmail(
+      await this._sendEmail(
         email,
         new ApplicationStatusEmailContentBuilder('shortlisted', { companyName, jobTitle })
       );
@@ -82,7 +82,7 @@ export class EmailService implements IEmailService {
 
   async sendRejectionNotification(email: string, companyName: string, jobTitle: string, rejectionNote?: string): Promise<void> {
     try {
-      await this.sendEmail(
+      await this._sendEmail(
         email,
         new ApplicationStatusEmailContentBuilder('rejected', { companyName, jobTitle, rejectionNote })
       );
@@ -94,7 +94,7 @@ export class EmailService implements IEmailService {
 
   async sendTeamInvite(email: string, temporaryPassword: string, companyName: string, role: 'hr' | 'interviewer'): Promise<void> {
     try {
-      await this.sendEmail(
+      await this._sendEmail(
         email,
         new TeamInviteEmailContentBuilder({
           email,
@@ -119,7 +119,7 @@ export class EmailService implements IEmailService {
     interviewerName: string
   ): Promise<void> {
     try {
-      await this.sendEmail(
+      await this._sendEmail(
         email,
         new InterviewScheduledEmailContentBuilder({
           developerName,

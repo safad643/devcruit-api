@@ -11,13 +11,13 @@ import { IGetApplicationMetricsUseCase } from './interfaces';
 @injectable()
 export class GetApplicationMetricsUseCase implements IGetApplicationMetricsUseCase {
   constructor(
-    @inject(TYPES.ApplicationRepository) private applicationRepository: IApplicationRepository,
-    @inject(TYPES.JobRepository) private jobRepository: IJobRepository
+    @inject(TYPES.ApplicationRepository) private _applicationRepository: IApplicationRepository,
+    @inject(TYPES.JobRepository) private _jobRepository: IJobRepository
   ) {}
 
   async execute(jobId: string, companyId: string): Promise<ApplicationMetricsOutput> {
     // Verify the job exists and belongs to the company
-    const job = await this.jobRepository.findById(jobId);
+    const job = await this._jobRepository.findById(jobId);
     if (!job) {
       throw new NotFoundError('Job not found');
     }
@@ -27,7 +27,7 @@ export class GetApplicationMetricsUseCase implements IGetApplicationMetricsUseCa
     }
 
     // Get metrics
-    const metrics = await this.applicationRepository.getMetricsByJobId(jobId, companyId);
+    const metrics = await this._applicationRepository.getMetricsByJobId(jobId, companyId);
 
     return metrics;
   }

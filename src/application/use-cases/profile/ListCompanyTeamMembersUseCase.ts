@@ -6,15 +6,15 @@ import { CompanyTeamMemberDTO, IListCompanyTeamMembersUseCase } from './interfac
 @injectable()
 export class ListCompanyTeamMembersUseCase implements IListCompanyTeamMembersUseCase {
   constructor(
-    @inject(TYPES.CompanyTeamRepository) private companyTeamRepository: ICompanyTeamRepository
+    @inject(TYPES.CompanyTeamRepository) private _companyTeamRepository: ICompanyTeamRepository
   ) {}
 
   async execute(companyUserId: string): Promise<CompanyTeamMemberDTO[]> {
-    const membersWithRole = await this.companyTeamRepository.listMembers(companyUserId);
-    return membersWithRole.map(({ member, role }) => this.toDTO(member, role));
+    const membersWithRole = await this._companyTeamRepository.listMembers(companyUserId);
+    return membersWithRole.map(({ member, role }) => this._toDTO(member, role));
   }
 
-  private toDTO(member: CompanyTeamMember, role: 'hr' | 'interviewer'): CompanyTeamMemberDTO {
+  private _toDTO(member: CompanyTeamMember, role: 'hr' | 'interviewer'): CompanyTeamMemberDTO {
     return {
       id: member.id,
       userId: member.userId,

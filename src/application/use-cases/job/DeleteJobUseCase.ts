@@ -8,18 +8,18 @@ import { DeleteJobInput, DeleteJobOutput } from '../../dtos/job.dto';
 @injectable()
 export class DeleteJobUseCase implements IDeleteJobUseCase {
   constructor(
-    @inject(TYPES.JobRepository) private jobRepository: IJobRepository
+    @inject(TYPES.JobRepository) private _jobRepository: IJobRepository
   ) {}
 
   async execute(input: DeleteJobInput): Promise<DeleteJobOutput> {
-    const job = await this.jobRepository.findById(input.jobId);
+    const job = await this._jobRepository.findById(input.jobId);
     if (!job) {
       throw new NotFoundError('Job not found');
     }
     if (job.companyId !== input.companyId) {
       throw new ForbiddenError('You do not have permission to delete this job');
     }
-    await this.jobRepository.delete(input.jobId);
+    await this._jobRepository.delete(input.jobId);
     return { message: 'Job deleted successfully' };
   }
 }

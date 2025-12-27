@@ -10,8 +10,8 @@ import { IRefreshTokenUseCase } from './interfaces';
 @injectable()
 export class RefreshTokenUseCase implements IRefreshTokenUseCase {
   constructor(
-    @inject(TYPES.RefreshTokenRepository) private refreshTokenRepository: IRefreshTokenRepository,
-    @inject(TYPES.TokenService) private tokenService: ITokenService
+    @inject(TYPES.RefreshTokenRepository) private _refreshTokenRepository: IRefreshTokenRepository,
+    @inject(TYPES.TokenService) private _tokenService: ITokenService
   ) {}
 
   async execute(input: RefreshTokenInput): Promise<RefreshTokenOutput> {
@@ -20,31 +20,31 @@ export class RefreshTokenUseCase implements IRefreshTokenUseCase {
     }
 
     // 1. Verify and decode refresh token JWT
-    const decoded = this.tokenService.verifyRefreshToken(input.refreshToken);
+    const decoded = this._tokenService.verifyRefreshToken(input.refreshToken);
 
     // 2. Check if token exists in Redis (whitelist check)
-    const exists = await this.refreshTokenRepository.exists(decoded.tokenId);
+    const exists = await this._refreshTokenRepository.exists(decoded.tokenId);
     if (!exists) {
       throw new UnauthorizedError('Refresh token has been revoked or expired.');
     }
 
     // 3. Generate new access token
-    const accessToken = this.tokenService.generateAccessToken({
+    const accessToken = this._tokenService.generateAccessToken({
       userId: decoded.userId,
       role: decoded.role,
     });
 
     // 4. Generate new refresh token
-    const { token: newRefreshToken, tokenId: newTokenId } = this.tokenService.generateRefreshToken({
+    const { token: newRefreshToken, tokenId: newTokenId } = this._tokenService.generateRefreshToken({
       userId: decoded.userId,
       role: decoded.role,
     });
 
     // 5. Delete old refresh token from Redis (rotation)
-    await this.refreshTokenRepository.delete(decoded.tokenId, decoded.userId);
+    await this._refreshTokenRepository.delete(decoded.tokenId, decoded.userId);
 
     // 6. Save new refresh token to Redis
-    await this.refreshTokenRepository.save(
+    await this._refreshTokenRepository.save(
       newTokenId,
       decoded.userId,
       config.jwt.refreshTokenExpiry

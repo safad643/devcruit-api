@@ -6,12 +6,12 @@ import { InternalError, UnauthorizedError } from '../../domain/errors';
 
 @injectable()
 export class GoogleAuthService implements IGoogleAuthService {
-  private readonly tokenUrl = 'https://oauth2.googleapis.com/token';
-  private readonly userInfoUrl = 'https://www.googleapis.com/oauth2/v3/userinfo';
+  private readonly _tokenUrl = 'https://oauth2.googleapis.com/token';
+  private readonly _userInfoUrl = 'https://www.googleapis.com/oauth2/v3/userinfo';
 
   async exchangeCodeForTokens(code: string): Promise<string> {
     try {
-      const response = await axios.post(this.tokenUrl, {
+      const response = await axios.post(this._tokenUrl, {
         code,
         client_id: config.google.clientId,
         client_secret: config.google.clientSecret,
@@ -30,7 +30,7 @@ export class GoogleAuthService implements IGoogleAuthService {
 
   async getUserInfo(accessToken: string): Promise<GoogleUserInfo> {
     try {
-      const response = await axios.get(this.userInfoUrl, {
+      const response = await axios.get(this._userInfoUrl, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
 

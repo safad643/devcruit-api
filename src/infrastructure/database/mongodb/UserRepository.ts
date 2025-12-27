@@ -11,18 +11,18 @@ export class UserRepository
   extends MongoGenericRepository<User, CreateUserProps, UpdateUserProps>
   implements IUserRepository {
 
-  protected collection: Collection;
+  protected _collection: Collection;
 
   constructor() {
     super();
-    this.collection = getMongoDb().collection('users');
+    this._collection = getMongoDb().collection('users');
   }
 
-  protected getEntityName(): string {
+  protected _getEntityName(): string {
     return 'User';
   }
 
-  protected mapToEntity(doc: WithId<Document>): User {
+  protected _mapToEntity(doc: WithId<Document>): User {
     return new User({
       id: doc._id.toString(),
       email: doc.email,
@@ -39,7 +39,7 @@ export class UserRepository
 
   async create(user: CreateUserProps): Promise<User> {
     try {
-      const result = await this.collection.insertOne({
+      const result = await this._collection.insertOne({
         email: user.email,
         name: user.name,
         password: user.password,
@@ -71,7 +71,7 @@ export class UserRepository
 
       const { id: _id, createdAt, ...updateFields } = updates;
 
-      const result = await this.collection.findOneAndUpdate(
+      const result = await this._collection.findOneAndUpdate(
         { _id: new ObjectId(id) },
         { $set: updateFields },
         { returnDocument: 'after' }
@@ -81,7 +81,7 @@ export class UserRepository
         throw new NotFoundError('User not found');
       }
 
-      return this.mapToEntity(result);
+      return this._mapToEntity(result);
     } catch (error) {
       if (error instanceof NotFoundError) throw error;
       throw new InternalError('Failed to update user', error as Error);
@@ -90,9 +90,9 @@ export class UserRepository
 
   async findByEmail(email: string): Promise<User | null> {
     try {
-      const doc = await this.collection.findOne({ email });
+      const doc = await this._collection.findOne({ email });
       if (!doc) return null;
-      return this.mapToEntity(doc);
+      return this._mapToEntity(doc);
     } catch (error) {
       throw new InternalError('Database query failed', error as Error);
     }
@@ -100,9 +100,9 @@ export class UserRepository
 
   async findByGoogleId(googleId: string): Promise<User | null> {
     try {
-      const doc = await this.collection.findOne({ googleId });
+      const doc = await this._collection.findOne({ googleId });
       if (!doc) return null;
-      return this.mapToEntity(doc);
+      return this._mapToEntity(doc);
     } catch (error) {
       throw new InternalError('Database query failed', error as Error);
     }

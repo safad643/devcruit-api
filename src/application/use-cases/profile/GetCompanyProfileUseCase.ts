@@ -7,11 +7,11 @@ import { NotFoundError } from '../../../domain/errors';
 @injectable()
 export class GetCompanyProfileUseCase {
   constructor(
-    @inject(TYPES.CompanyProfileRepository) private profileRepository: ICompanyProfileRepository
+    @inject(TYPES.CompanyProfileRepository) private _profileRepository: ICompanyProfileRepository
   ) {}
 
   async execute(userId: string): Promise<GetCompanyProfileOutput> {
-    const profile = await this.profileRepository.findByUserId(userId);
+    const profile = await this._profileRepository.findByUserId(userId);
     
     if (!profile) {
       throw new NotFoundError('Company profile not found');

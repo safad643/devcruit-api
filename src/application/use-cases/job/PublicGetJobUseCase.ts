@@ -8,17 +8,17 @@ import { IPublicGetJobUseCase } from './interfaces';
 @injectable()
 export class PublicGetJobUseCase implements IPublicGetJobUseCase {
   constructor(
-    @inject(TYPES.JobRepository) private jobRepository: IJobRepository,
-    @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository
+    @inject(TYPES.JobRepository) private _jobRepository: IJobRepository,
+    @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository
   ) {}
 
   async execute(id: string): Promise<PublicJobDetail> {
-    const job = await this.jobRepository.findById(id);
+    const job = await this._jobRepository.findById(id);
     if (!job || job.status !== 'open') {
       throw new NotFoundError('Job not found');
     }
 
-    const companyProfile = await this.companyProfileRepository.findByUserId(job.companyId);
+    const companyProfile = await this._companyProfileRepository.findByUserId(job.companyId);
 
     return {
       id: job.id,

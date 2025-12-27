@@ -8,11 +8,11 @@ import { Conversation } from '../../../domain/entities/Conversation';
 @injectable()
 export class GetConversationUseCase implements IGetConversationUseCase {
   constructor(
-    @inject(TYPES.ConversationRepository) private conversationRepository: IConversationRepository
+    @inject(TYPES.ConversationRepository) private _conversationRepository: IConversationRepository
   ) {}
 
   async execute(input: GetConversationInput): Promise<GetConversationOutput> {
-    let conversation = await this.conversationRepository.findByParticipants(
+    let conversation = await this._conversationRepository.findByParticipants(
       input.participant1Id,
       input.participant2Id
     );
@@ -27,7 +27,7 @@ export class GetConversationUseCase implements IGetConversationUseCase {
         lastMessage: '',
         lastMessageAt: new Date(),
       });
-      conversation = await this.conversationRepository.create(conversationData);
+      conversation = await this._conversationRepository.create(conversationData);
       isNew = true;
     }
 

@@ -6,14 +6,14 @@ import { injectable } from 'inversify';
 
 @injectable()
 export class PendingUserRepository implements IPendingUserRepository {
-  private getKey(email: string): string {
+  private _getKey(email: string): string {
     return `pending:user:${email}`;
   }
 
   async save(email: string, data: PendingUserData, ttlSeconds: number): Promise<void> {
     try {
       const redis = getRedis();
-      const key = this.getKey(email);
+      const key = this._getKey(email);
       await redis.setex(key, ttlSeconds, JSON.stringify(data));
     } catch (error) {
       throw new InternalError('Failed to save pending user to cache', error as Error);
@@ -23,7 +23,7 @@ export class PendingUserRepository implements IPendingUserRepository {
   async findByEmail(email: string): Promise<PendingUserData | null> {
     try {
       const redis = getRedis();
-      const key = this.getKey(email);
+      const key = this._getKey(email);
       const data = await redis.get(key);
       
       if (!data) return null;
@@ -36,7 +36,7 @@ export class PendingUserRepository implements IPendingUserRepository {
   async delete(email: string): Promise<void> {
     try {
       const redis = getRedis();
-      const key = this.getKey(email);
+      const key = this._getKey(email);
       await redis.del(key);
     } catch (error) {
       throw new InternalError('Failed to delete pending user from cache', error as Error);

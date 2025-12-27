@@ -10,10 +10,10 @@ interface InterviewDetails {
 }
 
 export class InterviewScheduledEmailContentBuilder implements IEmailContentBuilder {
-    constructor(private readonly details: InterviewDetails) { }
+    constructor(private readonly _details: InterviewDetails) { }
 
     build(): EmailContent {
-        const { developerName, companyName, jobTitle, roundName, scheduledAt, interviewerName } = this.details;
+        const { developerName, companyName, jobTitle, roundName, scheduledAt, interviewerName } = this._details;
 
         // Format the scheduled date and time
         const scheduledDate = new Date(scheduledAt);

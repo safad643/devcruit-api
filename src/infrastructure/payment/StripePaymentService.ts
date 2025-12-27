@@ -6,16 +6,16 @@ import { config } from '../../config';
 
 @injectable()
 export class StripePaymentService implements IPaymentService {
-  private readonly secretKey: string;
-  private readonly webhookSecret: string;
-  private readonly defaultCurrency: string;
-  private readonly stripe: Stripe;
+  private readonly _secretKey: string;
+  private readonly _webhookSecret: string;
+  private readonly _defaultCurrency: string;
+  private readonly _stripe: Stripe;
 
   constructor() {
-    this.secretKey = config.stripe.secretKey;
-    this.webhookSecret = config.stripe.webhookSecret;
-    this.defaultCurrency = config.stripe.currency;
-    this.stripe = new Stripe(this.secretKey);
+    this._secretKey = config.stripe.secretKey;
+    this._webhookSecret = config.stripe.webhookSecret;
+    this._defaultCurrency = config.stripe.currency;
+    this._stripe = new Stripe(this._secretKey);
   }
 
   async createCheckoutSession(params: {
@@ -28,14 +28,14 @@ export class StripePaymentService implements IPaymentService {
     currency?: string;
   }): Promise<CheckoutSessionResult> {
     const { planId, planName, amount, userId, successUrl, cancelUrl } = params;
-    const currency = (params.currency ?? this.defaultCurrency).toLowerCase();
+    const currency = (params.currency ?? this._defaultCurrency).toLowerCase();
 
     if (amount <= 0) {
       throw new ValidationError('Invalid plan amount');
     }
 
     try {
-      const session = await this.stripe.checkout.sessions.create({
+      const session = await this._stripe.checkout.sessions.create({
         mode: 'payment',
         payment_method_types: ['card'],
         line_items: [
@@ -74,7 +74,7 @@ export class StripePaymentService implements IPaymentService {
 
     let event: Stripe.Event;
     try {
-      event = this.stripe.webhooks.constructEvent(rawBody, signature, this.webhookSecret);
+      event = this._stripe.webhooks.constructEvent(rawBody, signature, this._webhookSecret);
     } catch (error) {
       throw new ValidationError('Invalid Stripe webhook signature');
     }

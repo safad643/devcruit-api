@@ -9,14 +9,14 @@ import { ILoginUseCase } from './interfaces';
 @injectable()
 export class LoginUseCase implements ILoginUseCase {
   constructor(
-    @inject(TYPES.UserRepository) private userRepository: IUserRepository,
-    @inject(TYPES.HashService) private hashService: IHashService,
-    @inject(TYPES.AuthTokenService) private authTokenService: IAuthTokenService
+    @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
+    @inject(TYPES.HashService) private _hashService: IHashService,
+    @inject(TYPES.AuthTokenService) private _authTokenService: IAuthTokenService
   ) {}
 
   async execute(input: LoginInput): Promise<AuthTokensOutput> {
     // 1. Find user by email
-    const user = await this.userRepository.findByEmail(input.email);
+    const user = await this._userRepository.findByEmail(input.email);
     if (!user) {
       throw new UnauthorizedError('Invalid email or password');
     }
@@ -31,12 +31,12 @@ export class LoginUseCase implements ILoginUseCase {
       throw new UnauthorizedError('Invalid email or password');
     }
     
-    const isPasswordValid = await this.hashService.compare(input.password, user.password);
+    const isPasswordValid = await this._hashService.compare(input.password, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedError('Invalid email or password');
     }
 
     // 4. Generate tokens and build auth response
-    return await this.authTokenService.generateAuthResponse(user);
+    return await this._authTokenService.generateAuthResponse(user);
   }
 }

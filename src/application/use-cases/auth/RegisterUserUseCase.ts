@@ -11,12 +11,12 @@ import { IRegisterUserUseCase } from './interfaces';
 @injectable()
 export class RegisterUserUseCase implements IRegisterUserUseCase {
   constructor(
-    @inject(TYPES.UserRepository) private userRepository: IUserRepository,
-    @inject(TYPES.PendingUserRepository) private pendingUserRepository: IPendingUserRepository,
-    @inject(TYPES.OTPRepository) private otpRepository: IOTPRepository,
-    @inject(TYPES.HashService) private hashService: IHashService,
-    @inject(TYPES.EmailService) private emailService: IEmailService,
-    @inject(TYPES.CryptographicService) private cryptographicService: ICryptographicService
+    @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
+    @inject(TYPES.PendingUserRepository) private _pendingUserRepository: IPendingUserRepository,
+    @inject(TYPES.OTPRepository) private _otpRepository: IOTPRepository,
+    @inject(TYPES.HashService) private _hashService: IHashService,
+    @inject(TYPES.EmailService) private _emailService: IEmailService,
+    @inject(TYPES.CryptographicService) private _cryptographicService: ICryptographicService
   ) {}
 
   async execute(input: RegisterUserInput): Promise<RegisterUserOutput> {
@@ -24,16 +24,16 @@ export class RegisterUserUseCase implements IRegisterUserUseCase {
     PasswordValidator.validate(input.password);
 
     // 2. Check if user already exists
-    const existingUser = await this.userRepository.findByEmail(input.email);
+    const existingUser = await this._userRepository.findByEmail(input.email);
     if (existingUser) {
       throw new ConflictError('Email already registered');
     }
 
     // 3. Hash password
-    const hashedPassword = await this.hashService.hash(input.password);
+    const hashedPassword = await this._hashService.hash(input.password);
 
     // 4. Save pending user to Redis (overwrites if exists)
-    await this.pendingUserRepository.save(
+    await this._pendingUserRepository.save(
       input.email,
       {
         email: input.email,
@@ -45,13 +45,13 @@ export class RegisterUserUseCase implements IRegisterUserUseCase {
     );
 
     // 5. Generate OTP
-    const otpCode = this.cryptographicService.generateOTP();
+    const otpCode = this._cryptographicService.generateOTP();
 
     // 6. Save OTP to Redis
-    await this.otpRepository.save(input.email, otpCode, 'register', config.otp.ttl);
+    await this._otpRepository.save(input.email, otpCode, 'register', config.otp.ttl);
 
     // 7. Send OTP via email
-    await this.emailService.sendOTP(input.email, otpCode, 'register');
+    await this._emailService.sendOTP(input.email, otpCode, 'register');
 
     // 8. Return success response
     return {

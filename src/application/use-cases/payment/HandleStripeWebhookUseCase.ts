@@ -6,11 +6,11 @@ import { HandleStripeWebhookInput, HandleStripeWebhookOutput } from '../../dtos/
 @injectable()
 export class HandleStripeWebhookUseCase {
   constructor(
-    @inject(TYPES.PaymentService) private paymentService: IPaymentService
+    @inject(TYPES.PaymentService) private _paymentService: IPaymentService
   ) { }
 
   async execute(input: HandleStripeWebhookInput): Promise<HandleStripeWebhookOutput> {
-    const verified = await this.paymentService.verifyWebhookAndExtractEvent({
+    const verified = await this._paymentService.verifyWebhookAndExtractEvent({
       rawBody: input.rawBody,
       signature: input.signature,
     });

@@ -9,20 +9,20 @@ import { GetConversationsInput, GetConversationsOutput, ConversationListItem } f
 @injectable()
 export class GetConversationsUseCase implements IGetConversationsUseCase {
   constructor(
-    @inject(TYPES.ConversationRepository) private conversationRepository: IConversationRepository,
-    @inject(TYPES.MessageRepository) private messageRepository: IMessageRepository,
-    @inject(TYPES.UserRepository) private userRepository: IUserRepository
+    @inject(TYPES.ConversationRepository) private _conversationRepository: IConversationRepository,
+    @inject(TYPES.MessageRepository) private _messageRepository: IMessageRepository,
+    @inject(TYPES.UserRepository) private _userRepository: IUserRepository
   ) {}
 
   async execute(input: GetConversationsInput): Promise<GetConversationsOutput> {
-    const conversations = await this.conversationRepository.findByUserId(input.userId);
+    const conversations = await this._conversationRepository.findByUserId(input.userId);
 
     const conversationListItems: ConversationListItem[] = await Promise.all(
       conversations.map(async (conversation) => {
         const otherParticipantId = conversation.getOtherParticipantId(input.userId);
-        const otherUser = await this.userRepository.findById(otherParticipantId);
+        const otherUser = await this._userRepository.findById(otherParticipantId);
         
-        const unreadCount = await this.messageRepository.getUnreadCount(
+        const unreadCount = await this._messageRepository.getUnreadCount(
           conversation.id,
           input.userId
         );

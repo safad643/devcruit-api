@@ -10,18 +10,18 @@ import { IEmailService } from '../../services';
 @injectable()
 export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUseCase {
   constructor(
-    @inject(TYPES.ApplicationRepository) private applicationRepository: IApplicationRepository,
-    @inject(TYPES.JobRepository) private jobRepository: IJobRepository,
-    @inject(TYPES.CompanyTeamRepository) private companyTeamRepository: ICompanyTeamRepository,
-    @inject(TYPES.EmailService) private emailService: IEmailService,
-    @inject(TYPES.UserRepository) private userRepository: IUserRepository,
-    @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository,
-    @inject(TYPES.DeveloperProfileRepository) private developerProfileRepository: IDeveloperProfileRepository
+    @inject(TYPES.ApplicationRepository) private _applicationRepository: IApplicationRepository,
+    @inject(TYPES.JobRepository) private _jobRepository: IJobRepository,
+    @inject(TYPES.CompanyTeamRepository) private _companyTeamRepository: ICompanyTeamRepository,
+    @inject(TYPES.EmailService) private _emailService: IEmailService,
+    @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
+    @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository,
+    @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository
   ) { }
 
   async execute(input: ScheduleInterviewRoundInput & { companyId: string }): Promise<ScheduleInterviewRoundOutput> {
     // 1. Get application
-    const application = await this.applicationRepository.findById(input.applicationId);
+    const application = await this._applicationRepository.findById(input.applicationId);
     if (!application) {
       throw new NotFoundError('Application not found');
     }
@@ -37,7 +37,7 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
     }
 
     // 4. Get job to verify round name exists
-    const job = await this.jobRepository.findById(application.jobId);
+    const job = await this._jobRepository.findById(application.jobId);
     if (!job) {
       throw new NotFoundError('Job not found');
     }
@@ -59,7 +59,7 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
         continue;
       }
 
-      const teamMember = await this.companyTeamRepository.findByUserId(interviewerId);
+      const teamMember = await this._companyTeamRepository.findByUserId(interviewerId);
       if (!teamMember || teamMember.companyId !== input.companyId) {
         throw new ValidationError(`Interviewer ${interviewerId} is not part of your company team`);
       }
@@ -82,7 +82,7 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
     }
 
     // 7. Check for scheduling conflicts
-    const conflicts = await this.applicationRepository.findConflictingInterviews(input.interviewerId, scheduledAt);
+    const conflicts = await this._applicationRepository.findConflictingInterviews(input.interviewerId, scheduledAt);
     if (conflicts.length > 0) {
       // Format the scheduled time for display
       const timeStr = scheduledAt.toLocaleString('en-US', {
@@ -125,13 +125,13 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
     const newStatus = application.status === 'shortlisted' ? 'interviewing' : application.status;
 
     // 10. Update application
-    const updatedApplication = await this.applicationRepository.update(input.applicationId, {
+    const updatedApplication = await this._applicationRepository.update(input.applicationId, {
       interviewRounds: updatedRounds,
       status: newStatus,
     });
 
     // 11. Send email notification to developer
-    await this.sendInterviewScheduledEmail(
+    await this._sendInterviewScheduledEmail(
       application.developerId,
       input.companyId,
       input.interviewerId,
@@ -154,7 +154,7 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
     };
   }
 
-  private async sendInterviewScheduledEmail(
+  private async _sendInterviewScheduledEmail(
     developerId: string,
     companyId: string,
     interviewerId: string,
@@ -165,25 +165,25 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
   ): Promise<void> {
     try {
       // Get developer profile and user
-      const developerProfile = await this.developerProfileRepository.findById(developerId);
+      const developerProfile = await this._developerProfileRepository.findById(developerId);
       if (!developerProfile) return;
 
-      const developerUser = await this.userRepository.findById(developerProfile.userId);
+      const developerUser = await this._userRepository.findById(developerProfile.userId);
       if (!developerUser?.email) return;
 
       // Get company profile for company name
-      const companyProfile = await this.companyProfileRepository.findByUserId(companyId);
+      const companyProfile = await this._companyProfileRepository.findByUserId(companyId);
       const companyName = companyProfile?.companyName || 'the company';
 
       // Get interviewer name
       let interviewerName = 'Interviewer';
       if (interviewerId === companyId) {
         // Company owner is the interviewer
-        const companyUser = await this.userRepository.findById(companyId);
+        const companyUser = await this._userRepository.findById(companyId);
         interviewerName = companyUser?.name || companyProfile?.fullName || 'Company Representative';
       } else {
         // Team member is the interviewer
-        const teamMember = await this.companyTeamRepository.findByUserId(interviewerId);
+        const teamMember = await this._companyTeamRepository.findByUserId(interviewerId);
         if (teamMember instanceof InterviewerProfile || teamMember instanceof HRProfile) {
           interviewerName = teamMember.fullName || teamMember.email || 'Interviewer';
         }
@@ -194,7 +194,7 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
       const scheduledDate = scheduledRound?.scheduledAt || scheduledAt;
 
       // Send email
-      await this.emailService.sendInterviewScheduledNotification(
+      await this._emailService.sendInterviewScheduledNotification(
         developerUser.email,
         developerUser.name || 'Developer',
         companyName,

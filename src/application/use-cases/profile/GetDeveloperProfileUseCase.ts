@@ -7,11 +7,11 @@ import { NotFoundError } from '../../../domain/errors';
 @injectable()
 export class GetDeveloperProfileUseCase {
   constructor(
-    @inject(TYPES.DeveloperProfileRepository) private profileRepository: IDeveloperProfileRepository
+    @inject(TYPES.DeveloperProfileRepository) private _profileRepository: IDeveloperProfileRepository
   ) {}
 
   async execute(userId: string): Promise<GetDeveloperProfileOutput> {
-    const profile = await this.profileRepository.findByUserId(userId);
+    const profile = await this._profileRepository.findByUserId(userId);
     
     if (!profile) {
       throw new NotFoundError('Developer profile not found');

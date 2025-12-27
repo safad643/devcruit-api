@@ -25,14 +25,14 @@ import { ForbiddenError } from '../../domain/errors';
 @injectable()
 export class ApplicationController {
   constructor(
-    @inject(TYPES.CreateApplicationUseCase) private createApplicationUseCase: ICreateApplicationUseCase,
-    @inject(TYPES.ListApplicationsForCompanyUseCase) private listApplicationsForCompanyUseCase: IListApplicationsForCompanyUseCase,
-    @inject(TYPES.GetApplicationDetailsUseCase) private getApplicationDetailsUseCase: IGetApplicationDetailsUseCase,
-    @inject(TYPES.ListApplicationsForDeveloperUseCase) private listApplicationsForDeveloperUseCase: IListApplicationsForDeveloperUseCase,
-    @inject(TYPES.WithdrawApplicationUseCase) private withdrawApplicationUseCase: IWithdrawApplicationUseCase,
-    @inject(TYPES.GetApplicationMetricsUseCase) private getApplicationMetricsUseCase: IGetApplicationMetricsUseCase,
-    @inject(TYPES.ShortlistApplicationUseCase) private shortlistApplicationUseCase: IShortlistApplicationUseCase,
-    @inject(TYPES.RejectApplicationUseCase) private rejectApplicationUseCase: IRejectApplicationUseCase
+    @inject(TYPES.CreateApplicationUseCase) private _createApplicationUseCase: ICreateApplicationUseCase,
+    @inject(TYPES.ListApplicationsForCompanyUseCase) private _listApplicationsForCompanyUseCase: IListApplicationsForCompanyUseCase,
+    @inject(TYPES.GetApplicationDetailsUseCase) private _getApplicationDetailsUseCase: IGetApplicationDetailsUseCase,
+    @inject(TYPES.ListApplicationsForDeveloperUseCase) private _listApplicationsForDeveloperUseCase: IListApplicationsForDeveloperUseCase,
+    @inject(TYPES.WithdrawApplicationUseCase) private _withdrawApplicationUseCase: IWithdrawApplicationUseCase,
+    @inject(TYPES.GetApplicationMetricsUseCase) private _getApplicationMetricsUseCase: IGetApplicationMetricsUseCase,
+    @inject(TYPES.ShortlistApplicationUseCase) private _shortlistApplicationUseCase: IShortlistApplicationUseCase,
+    @inject(TYPES.RejectApplicationUseCase) private _rejectApplicationUseCase: IRejectApplicationUseCase
   ) { }
 
   // Developer endpoint: Apply to a job
@@ -41,7 +41,7 @@ export class ApplicationController {
     reply: FastifyReply
   ): Promise<void> => {
     const developerId = request.user?.id as string;
-    const result = await this.createApplicationUseCase.execute({
+    const result = await this._createApplicationUseCase.execute({
       ...request.body,
       developerId
     });
@@ -53,13 +53,13 @@ export class ApplicationController {
     request: FastifyRequest<{ Querystring: ListApplicationsForCompanyQueryInput }>,
     reply: FastifyReply
   ): Promise<void> => {
-    const companyContext = this.getCompanyContext(request);
+    const companyContext = this._getCompanyContext(request);
     const companyId = companyContext.companyUserId;
     const query = request.query;
     const page = query.page ?? 1;
     const limit = query.limit ?? 25;
 
-    const result = await this.listApplicationsForCompanyUseCase.execute({
+    const result = await this._listApplicationsForCompanyUseCase.execute({
       companyId,
       jobId: query.jobId,
       status: query.status,
@@ -84,13 +84,13 @@ export class ApplicationController {
     let interviewerId: string | undefined;
 
     if (userRole === 'company' || userRole === 'hr') {
-      const companyContext = this.getCompanyContext(request);
+      const companyContext = this._getCompanyContext(request);
       companyId = companyContext.companyUserId;
     } else if (userRole === 'interviewer') {
       interviewerId = request.user?.id as string;
     }
 
-    const result = await this.getApplicationDetailsUseCase.execute(applicationId, companyId, interviewerId);
+    const result = await this._getApplicationDetailsUseCase.execute(applicationId, companyId, interviewerId);
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
@@ -104,7 +104,7 @@ export class ApplicationController {
     const page = query.page ?? 1;
     const limit = query.limit ?? 25;
 
-    const result = await this.listApplicationsForDeveloperUseCase.execute({
+    const result = await this._listApplicationsForDeveloperUseCase.execute({
       developerId,
       jobId: query.jobId,
       status: query.status,
@@ -123,7 +123,7 @@ export class ApplicationController {
     reply: FastifyReply
   ): Promise<void> => {
     const developerId = request.user?.id as string;
-    const result = await this.withdrawApplicationUseCase.execute({
+    const result = await this._withdrawApplicationUseCase.execute({
       applicationId: request.body.applicationId,
       developerId,
     });
@@ -135,10 +135,10 @@ export class ApplicationController {
     request: FastifyRequest<{ Params: { jobId: string } }>,
     reply: FastifyReply
   ): Promise<void> => {
-    const companyContext = this.getCompanyContext(request);
+    const companyContext = this._getCompanyContext(request);
     const companyId = companyContext.companyUserId;
     const jobId = request.params.jobId;
-    const result = await this.getApplicationMetricsUseCase.execute(jobId, companyId);
+    const result = await this._getApplicationMetricsUseCase.execute(jobId, companyId);
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
@@ -147,11 +147,11 @@ export class ApplicationController {
     request: FastifyRequest<{ Params: { id: string }; Body?: { note?: string } }>,
     reply: FastifyReply
   ): Promise<void> => {
-    const companyContext = this.getCompanyContext(request);
+    const companyContext = this._getCompanyContext(request);
     const companyId = companyContext.companyUserId;
     const applicationId = request.params.id;
     const note = request.body?.note?.trim() || undefined;
-    const result = await this.shortlistApplicationUseCase.execute({
+    const result = await this._shortlistApplicationUseCase.execute({
       applicationId,
       companyId,
       note,
@@ -164,11 +164,11 @@ export class ApplicationController {
     request: FastifyRequest<{ Params: { id: string }; Body?: RejectApplicationInput }>,
     reply: FastifyReply
   ): Promise<void> => {
-    const companyContext = this.getCompanyContext(request);
+    const companyContext = this._getCompanyContext(request);
     const companyId = companyContext.companyUserId;
     const applicationId = request.params.id;
     const note = request.body?.note?.trim() || undefined;
-    const result = await this.rejectApplicationUseCase.execute({
+    const result = await this._rejectApplicationUseCase.execute({
       applicationId,
       companyId,
       note,
@@ -176,7 +176,7 @@ export class ApplicationController {
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 
-  private getCompanyContext(request: FastifyRequest) {
+  private _getCompanyContext(request: FastifyRequest) {
     const companyContext = request.companyContext;
     if (!companyContext) {
       throw new ForbiddenError('Company context missing. Ensure checkCompanyPaid middleware is applied.');

@@ -7,12 +7,12 @@ import { ApproveCompanyInput, ApproveCompanyOutput } from '../../dtos/admin.dto'
 @injectable()
 export class ApproveCompanyUseCase {
   constructor(
-    @inject(TYPES.CompanyProfileRepository) private companyProfileRepository: ICompanyProfileRepository
+    @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository
   ) { }
 
   async execute(input: ApproveCompanyInput): Promise<ApproveCompanyOutput> {
     // 1. Verify company profile exists
-    const existingProfile = await this.companyProfileRepository.findById(input.companyId);
+    const existingProfile = await this._companyProfileRepository.findById(input.companyId);
     if (!existingProfile) {
       throw new NotFoundError('Company profile not found');
     }
@@ -23,7 +23,7 @@ export class ApproveCompanyUseCase {
     }
 
     // 3. Approve the company profile
-    const approvedProfile = await this.companyProfileRepository.update(input.companyId, existingProfile.approve());
+    const approvedProfile = await this._companyProfileRepository.update(input.companyId, existingProfile.approve());
 
     return {
       companyId: approvedProfile.id,

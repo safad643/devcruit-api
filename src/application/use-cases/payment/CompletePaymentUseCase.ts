@@ -12,20 +12,20 @@ export interface CompletePaymentWithSessionInput extends CompletePaymentInput {
 @injectable()
 export class CompletePaymentUseCase {
   constructor(
-    @inject(TYPES.CompanyProfileRepository) private companyRepo: ICompanyProfileRepository,
-    @inject(TYPES.PlanRepository) private planRepo: IPlanRepository,
-    @inject(TYPES.PaymentTransactionRepository) private txRepo: IPaymentTransactionRepository
+    @inject(TYPES.CompanyProfileRepository) private _companyRepo: ICompanyProfileRepository,
+    @inject(TYPES.PlanRepository) private _planRepo: IPlanRepository,
+    @inject(TYPES.PaymentTransactionRepository) private _txRepo: IPaymentTransactionRepository
   ) { }
 
   async execute(input: CompletePaymentWithSessionInput): Promise<void> {
     // Fetch the plan from database
-    const plan = await this.planRepo.findById(input.planId);
+    const plan = await this._planRepo.findById(input.planId);
     if (!plan) {
       throw new NotFoundError('Plan not found');
     }
 
     // Fetch company profile
-    const profile = await this.companyRepo.findByUserId(input.userId);
+    const profile = await this._companyRepo.findByUserId(input.userId);
     if (!profile) {
       throw new NotFoundError('Company profile not found');
     }
@@ -57,7 +57,7 @@ export class CompletePaymentUseCase {
     updatedHistory.push(newHistoryItem);
 
     // Update company profile using the profile's document ID, not userId
-    const updated = await this.companyRepo.update(profile.id, {
+    const updated = await this._companyRepo.update(profile.id, {
       planHistory: updatedHistory
     } as Partial<CompanyProfileProps>);
 
@@ -66,7 +66,7 @@ export class CompletePaymentUseCase {
     }
 
     // Create payment transaction record
-    await this.txRepo.create({
+    await this._txRepo.create({
       userId: input.userId,
       companyId: profile.id,
       planSnapshot,

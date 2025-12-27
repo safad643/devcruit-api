@@ -11,18 +11,18 @@ export class DeveloperProfileRepository
   extends MongoGenericRepository<DeveloperProfile, CreateDeveloperProfileProps, UpdateDeveloperProfileProps>
   implements IDeveloperProfileRepository {
 
-  protected collection: Collection;
+  protected _collection: Collection;
 
   constructor() {
     super();
-    this.collection = getMongoDb().collection('developer_profiles');
+    this._collection = getMongoDb().collection('developer_profiles');
   }
 
-  protected getEntityName(): string {
+  protected _getEntityName(): string {
     return 'Developer profile';
   }
 
-  protected mapToEntity(doc: WithId<Document>): DeveloperProfile {
+  protected _mapToEntity(doc: WithId<Document>): DeveloperProfile {
     return new DeveloperProfile({
       id: doc._id.toString(),
       userId: doc.userId,
@@ -53,7 +53,7 @@ export class DeveloperProfileRepository
   async create(profile: CreateDeveloperProfileProps): Promise<DeveloperProfile> {
     try {
       const now = new Date();
-      const result = await this.collection.insertOne({
+      const result = await this._collection.insertOne({
         userId: profile.userId,
         profilePhotoUrl: profile.profilePhotoUrl,
         bio: profile.bio,
@@ -98,7 +98,7 @@ export class DeveloperProfileRepository
       const { id: _id, userId, createdAt, updatedAt, ...updateFields } = updates;
       const updatePayload = { ...updateFields, updatedAt: new Date() };
 
-      const result = await this.collection.findOneAndUpdate(
+      const result = await this._collection.findOneAndUpdate(
         { _id: new ObjectId(id) },
         { $set: updatePayload },
         { returnDocument: 'after' }
@@ -108,7 +108,7 @@ export class DeveloperProfileRepository
         throw new NotFoundError('Developer profile not found');
       }
 
-      return this.mapToEntity(result);
+      return this._mapToEntity(result);
     } catch (error) {
       if (error instanceof NotFoundError) throw error;
       throw new InternalError('Failed to update developer profile', error as Error);
@@ -118,9 +118,9 @@ export class DeveloperProfileRepository
   async findByUserId(userId: string): Promise<DeveloperProfile | null> {
     try {
       if (!ObjectId.isValid(userId)) return null;
-      const doc = await this.collection.findOne({ userId });
+      const doc = await this._collection.findOne({ userId });
       if (!doc) return null;
-      return this.mapToEntity(doc);
+      return this._mapToEntity(doc);
     } catch (error) {
       throw new InternalError('Database query failed', error as Error);
     }
@@ -167,8 +167,8 @@ export class DeveloperProfileRepository
         }
       }
 
-      const docs = await this.collection.find(query).toArray();
-      return docs.map(doc => this.mapToEntity(doc));
+      const docs = await this._collection.find(query).toArray();
+      return docs.map(doc => this._mapToEntity(doc));
     } catch (error) {
       throw new InternalError('Database query failed', error as Error);
     }
@@ -218,7 +218,7 @@ export class DeveloperProfileRepository
       const sortOrder = filters.sortOrder === 'asc' ? 1 : -1;
 
       const countPipeline = [...pipeline, { $count: 'total' }];
-      const countResult = await this.collection.aggregate(countPipeline).toArray();
+      const countResult = await this._collection.aggregate(countPipeline).toArray();
       const total = countResult.length > 0 ? countResult[0].total : 0;
 
       const skip = (filters.page - 1) * filters.limit;
@@ -240,10 +240,10 @@ export class DeveloperProfileRepository
         }
       });
 
-      const docs = await this.collection.aggregate(pipeline).toArray();
+      const docs = await this._collection.aggregate(pipeline).toArray();
 
       const developers = docs.map(doc => ({
-        developerProfile: this.mapToEntity(doc as WithId<Document>),
+        developerProfile: this._mapToEntity(doc as WithId<Document>),
         userEmail: doc.userEmail,
         isBlocked: doc.isBlocked
       }));

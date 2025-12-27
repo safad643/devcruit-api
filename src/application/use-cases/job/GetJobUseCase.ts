@@ -8,11 +8,11 @@ import { GetJobInput } from '../../dtos/job.dto';
 @injectable()
 export class GetJobUseCase implements IGetJobUseCase {
   constructor(
-    @inject(TYPES.JobRepository) private jobRepository: IJobRepository
+    @inject(TYPES.JobRepository) private _jobRepository: IJobRepository
   ) {}
 
   async execute(input: GetJobInput) {
-    const job = await this.jobRepository.findById(input.jobId);
+    const job = await this._jobRepository.findById(input.jobId);
     if (!job) {
       throw new NotFoundError('Job not found');
     }
