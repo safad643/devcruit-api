@@ -14,8 +14,8 @@ const DiscountTypeEnum = Type.Union([
 
 // Create Plan Schema
 export const CreatePlanSchema = Type.Object({
-    name: Type.String({ minLength: 1, maxLength: 100 }),
-    description: Type.String({ minLength: 1, maxLength: 500 }),
+    name: Type.String({ minLength: 1, maxLength: 100, pattern: '\\S' }),
+    description: Type.String({ minLength: 1, maxLength: 500, pattern: '\\S' }),
     price: Type.Integer({ minimum: 0 }),
     currency: Type.String({ minLength: 3, maxLength: 3 }),
     durationMonths: Type.Integer({ minimum: 1 }),
@@ -30,8 +30,8 @@ export const CreatePlanSchema = Type.Object({
 
 // Update Plan Schema
 export const UpdatePlanSchema = Type.Object({
-    name: Type.Optional(Type.String({ minLength: 1, maxLength: 100 })),
-    description: Type.Optional(Type.String({ minLength: 1, maxLength: 500 })),
+    name: Type.Optional(Type.String({ minLength: 1, maxLength: 100, pattern: '\\S' })),
+    description: Type.Optional(Type.String({ minLength: 1, maxLength: 500, pattern: '\\S' })),
     price: Type.Optional(Type.Integer({ minimum: 0 })),
     currency: Type.Optional(Type.String({ minLength: 3, maxLength: 3 })),
     durationMonths: Type.Optional(Type.Integer({ minimum: 1 })),
