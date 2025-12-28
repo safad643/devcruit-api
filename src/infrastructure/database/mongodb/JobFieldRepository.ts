@@ -5,6 +5,7 @@ import { getMongoDb } from './client';
 import { InternalError, NotFoundError } from '../../../domain/errors';
 import { injectable } from 'inversify';
 import { MongoGenericRepository } from './MongoGenericRepository';
+import { toDate } from './utils/mapperUtils';
 
 @injectable()
 export class JobFieldRepository
@@ -28,8 +29,8 @@ export class JobFieldRepository
             id: doc._id.toString(),
             type: doc.type,
             name: doc.name,
-            createdAt: doc.createdAt instanceof Date ? doc.createdAt : new Date(doc.createdAt),
-            updatedAt: doc.updatedAt instanceof Date ? doc.updatedAt : new Date(doc.updatedAt),
+            createdAt: toDate(doc.createdAt),
+            updatedAt: toDate(doc.updatedAt),
         });
     }
 

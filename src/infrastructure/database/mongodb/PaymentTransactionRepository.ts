@@ -5,6 +5,7 @@ import { getMongoDb } from './client';
 import { InternalError } from '../../../domain/errors';
 import { injectable } from 'inversify';
 import { MongoGenericRepository } from './MongoGenericRepository';
+import { toDate } from './utils/mapperUtils';
 
 @injectable()
 export class PaymentTransactionRepository
@@ -44,8 +45,8 @@ export class PaymentTransactionRepository
             stripeSessionId: doc.stripeSessionId,
             stripePaymentIntentId: doc.stripePaymentIntentId,
             status: doc.status,
-            paidAt: doc.paidAt instanceof Date ? doc.paidAt : new Date(doc.paidAt),
-            createdAt: doc.createdAt instanceof Date ? doc.createdAt : new Date(doc.createdAt),
+            paidAt: toDate(doc.paidAt),
+            createdAt: toDate(doc.createdAt),
         });
     }
 

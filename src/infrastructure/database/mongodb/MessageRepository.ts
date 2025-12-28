@@ -5,6 +5,7 @@ import { Message, MessageProps } from '../../../domain/entities/Message';
 import { getMongoDb } from './client';
 import { InternalError, NotFoundError } from '../../../domain/errors';
 import { MongoGenericRepository } from './MongoGenericRepository';
+import { toDate, toDateOptional } from './utils/mapperUtils';
 
 @injectable()
 export class MessageRepository
@@ -28,8 +29,8 @@ export class MessageRepository
       conversationId: doc.conversationId,
       senderId: doc.senderId,
       message: doc.message,
-      readAt: doc.readAt ? (doc.readAt instanceof Date ? doc.readAt : new Date(doc.readAt)) : null,
-      createdAt: doc.createdAt instanceof Date ? doc.createdAt : new Date(doc.createdAt),
+      readAt: toDateOptional(doc.readAt) ?? null,
+      createdAt: toDate(doc.createdAt),
     });
   }
 

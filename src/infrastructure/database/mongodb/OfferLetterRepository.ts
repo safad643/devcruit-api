@@ -9,6 +9,7 @@ import { getMongoDb } from './client';
 import { InternalError, NotFoundError } from '../../../domain/errors';
 import { injectable } from 'inversify';
 import { MongoGenericRepository } from './MongoGenericRepository';
+import { toDate, toDateOptional, toArray } from './utils/mapperUtils';
 
 @injectable()
 export class OfferLetterRepository
@@ -47,17 +48,17 @@ export class OfferLetterRepository
             offeredSalary: doc.offeredSalary,
             salaryCurrency: doc.salaryCurrency,
             salaryFrequency: doc.salaryFrequency as SalaryFrequency,
-            proposedStartDate: doc.proposedStartDate instanceof Date ? doc.proposedStartDate : new Date(doc.proposedStartDate),
-            offerExpirationDate: doc.offerExpirationDate instanceof Date ? doc.offerExpirationDate : new Date(doc.offerExpirationDate),
+            proposedStartDate: toDate(doc.proposedStartDate),
+            offerExpirationDate: toDate(doc.offerExpirationDate),
             probationPeriodMonths: doc.probationPeriodMonths,
             noticePeriodDays: doc.noticePeriodDays,
             reportingManager: doc.reportingManager,
-            documentsRequired: doc.documentsRequired || [],
+            documentsRequired: toArray(doc.documentsRequired),
             additionalTerms: doc.additionalTerms,
             status: doc.status as OfferLetterStatus,
-            createdAt: doc.createdAt instanceof Date ? doc.createdAt : new Date(doc.createdAt),
-            acceptedAt: doc.acceptedAt ? (doc.acceptedAt instanceof Date ? doc.acceptedAt : new Date(doc.acceptedAt)) : undefined,
-            declinedAt: doc.declinedAt ? (doc.declinedAt instanceof Date ? doc.declinedAt : new Date(doc.declinedAt)) : undefined,
+            createdAt: toDate(doc.createdAt),
+            acceptedAt: toDateOptional(doc.acceptedAt),
+            declinedAt: toDateOptional(doc.declinedAt),
         });
     }
 

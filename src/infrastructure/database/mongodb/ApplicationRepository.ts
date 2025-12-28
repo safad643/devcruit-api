@@ -5,6 +5,7 @@ import { getMongoDb } from './client';
 import { InternalError, ForbiddenError, NotFoundError } from '../../../domain/errors';
 import { injectable } from 'inversify';
 import { MongoGenericRepository } from './MongoGenericRepository';
+import { toDate, toDateOptional, toArray } from './utils/mapperUtils';
 
 @injectable()
 export class ApplicationRepository
@@ -28,11 +29,11 @@ export class ApplicationRepository
       return rounds.map(round => ({
         roundName: round.roundName,
         status: round.status || 'pending',
-        scheduledAt: round.scheduledAt ? (round.scheduledAt instanceof Date ? round.scheduledAt : new Date(round.scheduledAt)) : undefined,
-        completedAt: round.completedAt ? (round.completedAt instanceof Date ? round.completedAt : new Date(round.completedAt)) : undefined,
+        scheduledAt: toDateOptional(round.scheduledAt),
+        completedAt: toDateOptional(round.completedAt),
         result: round.result,
         feedback: round.feedback,
-        interviewerIds: round.interviewerIds || [],
+        interviewerIds: toArray(round.interviewerIds),
         videoCallId: round.videoCallId,
         videoCallStatus: round.videoCallStatus,
         rescheduleRequest: round.rescheduleRequest,
@@ -55,11 +56,11 @@ export class ApplicationRepository
       status: doc.status || 'applied',
       shortlistMethod: doc.shortlistMethod,
       statusNotes,
-      appliedAt: doc.appliedAt instanceof Date ? doc.appliedAt : new Date(doc.appliedAt),
-      lastUpdatedAt: doc.lastUpdatedAt instanceof Date ? doc.lastUpdatedAt : new Date(doc.lastUpdatedAt),
-      rejectedAt: doc.rejectedAt ? (doc.rejectedAt instanceof Date ? doc.rejectedAt : new Date(doc.rejectedAt)) : undefined,
+      appliedAt: toDate(doc.appliedAt),
+      lastUpdatedAt: toDate(doc.lastUpdatedAt),
+      rejectedAt: toDateOptional(doc.rejectedAt),
       rejectedAtStage: doc.rejectedAtStage,
-      interviewRounds: mapInterviewRounds(doc.interviewRounds || []),
+      interviewRounds: mapInterviewRounds(toArray(doc.interviewRounds)),
       resumeUrl: doc.resumeUrl,
       currentOfferLetterId: doc.currentOfferLetterId,
     });

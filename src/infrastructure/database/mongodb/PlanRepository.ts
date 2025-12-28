@@ -5,6 +5,7 @@ import { getMongoDb } from './client';
 import { InternalError } from '../../../domain/errors';
 import { injectable } from 'inversify';
 import { MongoGenericRepository } from './MongoGenericRepository';
+import { toDate, toArray } from './utils/mapperUtils';
 
 @injectable()
 export class PlanRepository
@@ -38,15 +39,15 @@ export class PlanRepository
                 maxActiveJobs: doc.limits?.maxActiveJobs ?? null,
                 maxTeamMembers: doc.limits?.maxTeamMembers ?? null,
             },
-            features: doc.features ?? [],
+            features: toArray(doc.features),
             displayOrder: doc.displayOrder ?? 0,
             isActive: doc.isActive ?? true,
             isOffer: doc.isOffer ?? false,
             offerLabel: doc.offerLabel,
             discountType: doc.discountType,
             discountValue: doc.discountValue,
-            createdAt: doc.createdAt instanceof Date ? doc.createdAt : new Date(doc.createdAt),
-            updatedAt: doc.updatedAt instanceof Date ? doc.updatedAt : new Date(doc.updatedAt),
+            createdAt: toDate(doc.createdAt),
+            updatedAt: toDate(doc.updatedAt),
         });
     }
 

@@ -5,6 +5,7 @@ import { Conversation, ConversationProps } from '../../../domain/entities/Conver
 import { getMongoDb } from './client';
 import { InternalError, NotFoundError } from '../../../domain/errors';
 import { MongoGenericRepository } from './MongoGenericRepository';
+import { toDate } from './utils/mapperUtils';
 
 @injectable()
 export class ConversationRepository
@@ -28,10 +29,10 @@ export class ConversationRepository
       participant1Id: doc.participant1Id,
       participant2Id: doc.participant2Id,
       companyId: doc.companyId,
-      lastMessageAt: doc.lastMessageAt instanceof Date ? doc.lastMessageAt : new Date(doc.lastMessageAt),
+      lastMessageAt: toDate(doc.lastMessageAt),
       lastMessage: doc.lastMessage,
-      createdAt: doc.createdAt instanceof Date ? doc.createdAt : new Date(doc.createdAt),
-      updatedAt: doc.updatedAt instanceof Date ? doc.updatedAt : new Date(doc.updatedAt),
+      createdAt: toDate(doc.createdAt),
+      updatedAt: toDate(doc.updatedAt),
     });
   }
 

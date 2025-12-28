@@ -5,6 +5,7 @@ import { getMongoDb } from './client';
 import { InternalError, NotFoundError } from '../../../domain/errors';
 import { injectable } from 'inversify';
 import { MongoGenericRepository } from './MongoGenericRepository';
+import { toArray } from './utils/mapperUtils';
 
 @injectable()
 export class DeveloperProfileRepository
@@ -28,19 +29,19 @@ export class DeveloperProfileRepository
       userId: doc.userId,
       profilePhotoUrl: doc.profilePhotoUrl,
       bio: doc.bio,
-      skills: doc.skills || [],
-      techs: doc.techs || [],
-      workHistory: doc.workHistory || [],
+      skills: toArray(doc.skills),
+      techs: toArray(doc.techs),
+      workHistory: toArray(doc.workHistory),
       employmentStatus: doc.employmentStatus,
-      education: doc.education || [],
-      certifications: doc.certifications || [],
+      education: toArray(doc.education),
+      certifications: toArray(doc.certifications),
       githubUrl: doc.githubUrl,
       portfolioUrl: doc.portfolioUrl,
-      projects: doc.projects || [],
+      projects: toArray(doc.projects),
       linkedinUrl: doc.linkedinUrl,
       desiredSalary: doc.desiredSalary,
-      jobTypePreferences: doc.jobTypePreferences || [],
-      workArrangement: doc.workArrangement || [],
+      jobTypePreferences: toArray(doc.jobTypePreferences),
+      workArrangement: toArray(doc.workArrangement),
       yearsExperience: doc.yearsExperience,
       seniorityLevel: doc.seniorityLevel,
       willingToRelocate: doc.willingToRelocate,

@@ -5,6 +5,7 @@ import { getMongoDb } from './client';
 import { InternalError, NotFoundError } from '../../../domain/errors';
 import { injectable } from 'inversify';
 import { MongoGenericRepository } from './MongoGenericRepository';
+import { toDate, toArray } from './utils/mapperUtils';
 
 @injectable()
 export class JobRepository
@@ -29,24 +30,24 @@ export class JobRepository
       title: doc.title,
       description: doc.description,
       category: doc.category,
-      requiredTech: doc.requiredTech ?? [],
-      requiredSkills: doc.requiredSkills ?? [],
-      interviewRounds: doc.interviewRounds ?? [],
+      requiredTech: toArray(doc.requiredTech),
+      requiredSkills: toArray(doc.requiredSkills),
+      interviewRounds: toArray(doc.interviewRounds),
       experienceLevel: doc.experienceLevel,
       minYears: doc.minYears,
-      niceTech: doc.niceTech ?? [],
-      niceSkills: doc.niceSkills ?? [],
+      niceTech: toArray(doc.niceTech),
+      niceSkills: toArray(doc.niceSkills),
       jobType: doc.jobType,
       workArrangement: doc.workArrangement,
       location: doc.location,
       relocation: doc.relocation ?? false,
       compensation: doc.compensation,
       benefits: doc.benefits,
-      validUntil: doc.validUntil instanceof Date ? doc.validUntil : new Date(doc.validUntil),
+      validUntil: toDate(doc.validUntil),
       autoShortlist: doc.autoShortlist ?? false,
       status: doc.status ?? 'draft',
-      createdAt: doc.createdAt instanceof Date ? doc.createdAt : new Date(doc.createdAt),
-      updatedAt: doc.updatedAt instanceof Date ? doc.updatedAt : new Date(doc.updatedAt),
+      createdAt: toDate(doc.createdAt),
+      updatedAt: toDate(doc.updatedAt),
     });
   }
 

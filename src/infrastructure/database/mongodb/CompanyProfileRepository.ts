@@ -5,6 +5,7 @@ import { getMongoDb } from './client';
 import { InternalError, NotFoundError } from '../../../domain/errors';
 import { injectable } from 'inversify';
 import { MongoGenericRepository } from './MongoGenericRepository';
+import { toArray } from './utils/mapperUtils';
 
 @injectable()
 export class CompanyProfileRepository
@@ -37,8 +38,8 @@ export class CompanyProfileRepository
       employmentVerificationUrl: doc.employmentVerificationUrl,
       logoUrl: doc.logoUrl,
       status: doc.status ?? 'pending',
-      planHistory: doc.planHistory ?? [],
-      documentReuploadRequests: doc.documentReuploadRequests ?? [],
+      planHistory: toArray(doc.planHistory),
+      documentReuploadRequests: toArray(doc.documentReuploadRequests),
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
     });
