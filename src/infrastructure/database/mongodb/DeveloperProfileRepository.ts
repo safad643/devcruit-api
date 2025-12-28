@@ -2,7 +2,7 @@ import { Collection, ObjectId, WithId, Document, Filter } from 'mongodb';
 import { IDeveloperProfileRepository, DeveloperListFilters, DeveloperListResult, CreateDeveloperProfileProps, UpdateDeveloperProfileProps, DeveloperProfileSearchFilters } from '../../../domain/repositories/IDeveloperProfileRepository';
 import { DeveloperProfile } from '../../../domain/entities/DeveloperProfile';
 import { getMongoDb } from './client';
-import { InternalError, NotFoundError } from '../../../domain/errors';
+import { InternalError, NotFoundError, BadRequestError } from '../../../domain/errors';
 import { injectable } from 'inversify';
 import { MongoGenericRepository } from './MongoGenericRepository';
 import { toArray } from './utils/mapperUtils';
@@ -54,7 +54,7 @@ export class DeveloperProfileRepository
   async create(profile: CreateDeveloperProfileProps): Promise<DeveloperProfile> {
     try {
       const now = new Date();
-      const result = await this._collection.insertOne({
+      const docToInsert = {
         userId: profile.userId,
         profilePhotoUrl: profile.profilePhotoUrl,
         bio: profile.bio,
@@ -77,14 +77,11 @@ export class DeveloperProfileRepository
         resumeUrl: profile.resumeUrl,
         createdAt: now,
         updatedAt: now,
-      });
+      };
 
-      return new DeveloperProfile({
-        id: result.insertedId.toString(),
-        ...profile,
-        createdAt: now,
-        updatedAt: now,
-      });
+      const result = await this._collection.insertOne(docToInsert);
+
+      return this._mapToEntity({ _id: result.insertedId, ...docToInsert });
     } catch (error) {
       throw new InternalError('Failed to create developer profile', error as Error);
     }
@@ -93,7 +90,7 @@ export class DeveloperProfileRepository
   async update(id: string, updates: UpdateDeveloperProfileProps): Promise<DeveloperProfile> {
     try {
       if (!ObjectId.isValid(id)) {
-        throw new NotFoundError('Developer profile not found');
+        throw new BadRequestError('Invalid ID format');
       }
 
       const { id: _id, userId, createdAt, updatedAt, ...updateFields } = updates;
@@ -111,18 +108,21 @@ export class DeveloperProfileRepository
 
       return this._mapToEntity(result);
     } catch (error) {
-      if (error instanceof NotFoundError) throw error;
+      if (error instanceof NotFoundError || error instanceof BadRequestError) throw error;
       throw new InternalError('Failed to update developer profile', error as Error);
     }
   }
 
   async findByUserId(userId: string): Promise<DeveloperProfile | null> {
     try {
-      if (!ObjectId.isValid(userId)) return null;
+      if (!ObjectId.isValid(userId)) {
+        throw new BadRequestError('Invalid user ID format');
+      }
       const doc = await this._collection.findOne({ userId });
       if (!doc) return null;
       return this._mapToEntity(doc);
     } catch (error) {
+      if (error instanceof BadRequestError) throw error;
       throw new InternalError('Database query failed', error as Error);
     }
   }

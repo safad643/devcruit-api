@@ -3,7 +3,7 @@ import { injectable } from 'inversify';
 import { IConversationRepository, CreateConversationProps, UpdateConversationProps } from '../../../domain/repositories/IConversationRepository';
 import { Conversation, ConversationProps } from '../../../domain/entities/Conversation';
 import { getMongoDb } from './client';
-import { InternalError, NotFoundError } from '../../../domain/errors';
+import { InternalError, NotFoundError, BadRequestError } from '../../../domain/errors';
 import { MongoGenericRepository } from './MongoGenericRepository';
 import { toDate } from './utils/mapperUtils';
 
@@ -63,7 +63,7 @@ export class ConversationRepository
   async update(id: string, updates: UpdateConversationProps): Promise<Conversation> {
     try {
       if (!ObjectId.isValid(id)) {
-        throw new NotFoundError('Conversation not found');
+        throw new BadRequestError('Invalid ID format');
       }
 
       const { id: _id, createdAt, participant1Id, participant2Id, companyId, ...updateFields } = updates;
@@ -81,7 +81,7 @@ export class ConversationRepository
 
       return this._mapToEntity(result);
     } catch (error) {
-      if (error instanceof NotFoundError) throw error;
+      if (error instanceof NotFoundError || error instanceof BadRequestError) throw error;
       throw new InternalError('Failed to update conversation', error as Error);
     }
   }
@@ -115,7 +115,7 @@ export class ConversationRepository
   async updateLastMessage(id: string, lastMessage: string, lastMessageAt: Date): Promise<Conversation> {
     try {
       if (!ObjectId.isValid(id)) {
-        throw new NotFoundError('Conversation not found');
+        throw new BadRequestError('Invalid ID format');
       }
 
       const result = await this._collection.findOneAndUpdate(
@@ -130,7 +130,7 @@ export class ConversationRepository
 
       return this._mapToEntity(result);
     } catch (error) {
-      if (error instanceof NotFoundError) throw error;
+      if (error instanceof NotFoundError || error instanceof BadRequestError) throw error;
       throw new InternalError('Failed to update last message', error as Error);
     }
   }

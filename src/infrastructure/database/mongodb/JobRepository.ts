@@ -2,7 +2,7 @@ import { Collection, ObjectId, WithId, Document, Filter } from 'mongodb';
 import { IJobRepository, JobListFilters, JobListResult, PublicJobListFilters, CreateJobProps, UpdateJobProps } from '../../../domain/repositories/IJobRepository';
 import { Job, JobProps } from '../../../domain/entities/Job';
 import { getMongoDb } from './client';
-import { InternalError, NotFoundError } from '../../../domain/errors';
+import { InternalError, NotFoundError, BadRequestError } from '../../../domain/errors';
 import { injectable } from 'inversify';
 import { MongoGenericRepository } from './MongoGenericRepository';
 import { toDate, toArray } from './utils/mapperUtils';
@@ -54,7 +54,7 @@ export class JobRepository
   async create(job: CreateJobProps): Promise<Job> {
     try {
       const now = new Date();
-      const result = await this._collection.insertOne({
+      const docToInsert = {
         companyId: job.companyId,
         title: job.title,
         description: job.description,
@@ -77,48 +77,16 @@ export class JobRepository
         status: job.status || 'draft',
         createdAt: now,
         updatedAt: now,
-      });
+      };
 
-      return this._mapToEntity({
-        _id: result.insertedId,
-        ...job,
-        status: job.status || 'draft',
-        createdAt: now,
-        updatedAt: now,
-      });
+      const result = await this._collection.insertOne(docToInsert);
+
+      return this._mapToEntity({ _id: result.insertedId, ...docToInsert });
     } catch (error) {
       throw new InternalError('Failed to create job', error as Error);
     }
   }
 
-  async update(id: string, updates: UpdateJobProps): Promise<Job> {
-    try {
-      if (!ObjectId.isValid(id)) {
-        throw new NotFoundError('Job not found');
-      }
-
-      const { id: _id, createdAt, updatedAt, ...updateFields } = updates;
-      const updatePayload = {
-        ...updateFields,
-        updatedAt: new Date(),
-      };
-
-      const result = await this._collection.findOneAndUpdate(
-        { _id: new ObjectId(id) },
-        { $set: updatePayload },
-        { returnDocument: 'after' }
-      );
-
-      if (!result) {
-        throw new NotFoundError('Job not found');
-      }
-
-      return this._mapToEntity(result);
-    } catch (error) {
-      if (error instanceof NotFoundError) throw error;
-      throw new InternalError('Failed to update job', error as Error);
-    }
-  }
 
   async findByCompanyId(companyId: string): Promise<Job[]> {
     try {

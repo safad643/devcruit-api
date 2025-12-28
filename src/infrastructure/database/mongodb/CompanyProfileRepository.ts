@@ -2,7 +2,7 @@ import { Collection, ObjectId, WithId, Document, Filter } from 'mongodb';
 import { ICompanyProfileRepository, CompanyListFilters, CompanyListResult, CreateCompanyProfileProps, UpdateCompanyProfileProps } from '../../../domain/repositories/ICompanyProfileRepository';
 import { CompanyProfile, CompanyProfileProps } from '../../../domain/entities/CompanyProfile';
 import { getMongoDb } from './client';
-import { InternalError, NotFoundError } from '../../../domain/errors';
+import { InternalError, NotFoundError, BadRequestError } from '../../../domain/errors';
 import { injectable } from 'inversify';
 import { MongoGenericRepository } from './MongoGenericRepository';
 import { toArray } from './utils/mapperUtils';
@@ -48,7 +48,7 @@ export class CompanyProfileRepository
   async create(profile: CreateCompanyProfileProps): Promise<CompanyProfile> {
     try {
       const now = new Date();
-      const result = await this._collection.insertOne({
+      const docToInsert = {
         userId: profile.userId,
         fullName: profile.fullName,
         phoneNumber: profile.phoneNumber,
@@ -60,32 +60,16 @@ export class CompanyProfileRepository
         businessRegistrationProofUrl: profile.businessRegistrationProofUrl,
         employmentVerificationUrl: profile.employmentVerificationUrl,
         logoUrl: profile.logoUrl,
-        status: 'pending',
+        status: 'pending' as const,
         planHistory: [],
         documentReuploadRequests: [],
         createdAt: now,
         updatedAt: now,
-      });
+      };
 
-      return new CompanyProfile({
-        id: result.insertedId.toString(),
-        userId: profile.userId,
-        fullName: profile.fullName,
-        phoneNumber: profile.phoneNumber,
-        companyName: profile.companyName,
-        companyWebsite: profile.companyWebsite,
-        companySize: profile.companySize,
-        businessRegistrationNumber: profile.businessRegistrationNumber,
-        businessAddress: profile.businessAddress,
-        businessRegistrationProofUrl: profile.businessRegistrationProofUrl,
-        employmentVerificationUrl: profile.employmentVerificationUrl,
-        logoUrl: profile.logoUrl,
-        status: 'pending',
-        planHistory: [],
-        documentReuploadRequests: [],
-        createdAt: now,
-        updatedAt: now,
-      });
+      const result = await this._collection.insertOne(docToInsert);
+
+      return this._mapToEntity({ _id: result.insertedId, ...docToInsert });
     } catch (error) {
       throw new InternalError('Failed to create company profile', error as Error);
     }
@@ -94,7 +78,7 @@ export class CompanyProfileRepository
   async update(id: string, updates: UpdateCompanyProfileProps): Promise<CompanyProfile> {
     try {
       if (!ObjectId.isValid(id)) {
-        throw new NotFoundError('Company profile not found');
+        throw new BadRequestError('Invalid ID format');
       }
 
       const { id: _id, userId, createdAt, updatedAt, ...updateFields } = updates;
@@ -112,18 +96,21 @@ export class CompanyProfileRepository
 
       return this._mapToEntity(result);
     } catch (error) {
-      if (error instanceof NotFoundError) throw error;
+      if (error instanceof NotFoundError || error instanceof BadRequestError) throw error;
       throw new InternalError('Failed to update company profile', error as Error);
     }
   }
 
   async findByUserId(userId: string): Promise<CompanyProfile | null> {
     try {
-      if (!ObjectId.isValid(userId)) return null;
+      if (!ObjectId.isValid(userId)) {
+        throw new BadRequestError('Invalid user ID format');
+      }
       const doc = await this._collection.findOne({ userId });
       if (!doc) return null;
       return this._mapToEntity(doc);
     } catch (error) {
+      if (error instanceof BadRequestError) throw error;
       throw new InternalError('Database query failed', error as Error);
     }
   }

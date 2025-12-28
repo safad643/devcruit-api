@@ -2,7 +2,7 @@ import { Collection, ObjectId, WithId, Document } from 'mongodb';
 import { IAdminRepository } from '../../../domain/repositories';
 import { Admin, AdminProps } from '../../../domain/entities/Admin';
 import { getMongoDb } from './client';
-import { InternalError } from '../../../domain/errors';
+import { InternalError, BadRequestError } from '../../../domain/errors';
 import { injectable } from 'inversify';
 
 @injectable()
@@ -25,11 +25,14 @@ export class AdminRepository implements IAdminRepository {
 
   async findById(id: string): Promise<Admin | null> {
     try {
-      if (!ObjectId.isValid(id)) return null;
+      if (!ObjectId.isValid(id)) {
+        throw new BadRequestError('Invalid ID format');
+      }
       const doc = await this._collection.findOne({ _id: new ObjectId(id) });
       if (!doc) return null;
       return this._mapToEntity(doc);
     } catch (error) {
+      if (error instanceof BadRequestError) throw error;
       throw new InternalError('Database query failed', error as Error);
     }
   }

@@ -1,8 +1,8 @@
-import { Collection, ObjectId, WithId, Document } from 'mongodb';
+import { Collection, ObjectId, WithId, Document, MongoServerError } from 'mongodb';
 import { IPlanRepository, CreatePlanData, UpdatePlanData } from '../../../domain/repositories/IPlanRepository';
 import { Plan, PlanProps } from '../../../domain/entities/Plan';
 import { getMongoDb } from './client';
-import { InternalError } from '../../../domain/errors';
+import { ConflictError, InternalError } from '../../../domain/errors';
 import { injectable } from 'inversify';
 import { MongoGenericRepository } from './MongoGenericRepository';
 import { toDate, toArray } from './utils/mapperUtils';
@@ -17,10 +17,7 @@ export class PlanRepository
     constructor() {
         super();
         this._collection = getMongoDb().collection('plans');
-        // Ensure unique plan names
-        this._collection.createIndex({ name: 1 }, { unique: true }).catch(() => { });
-        // Index for display order sorting
-        this._collection.createIndex({ displayOrder: 1 }).catch(() => { });
+
     }
 
     protected _getEntityName(): string {
@@ -55,20 +52,19 @@ export class PlanRepository
         try {
             const now = new Date();
             const planData = Plan.create(data);
-
-            const result = await this._collection.insertOne({
+            const docToInsert = {
                 ...planData,
                 createdAt: now,
                 updatedAt: now,
-            });
+            };
 
-            return this._mapToEntity({
-                _id: result.insertedId,
-                ...planData,
-                createdAt: now,
-                updatedAt: now,
-            });
+            const result = await this._collection.insertOne(docToInsert);
+
+            return this._mapToEntity({ _id: result.insertedId, ...docToInsert });
         } catch (error) {
+            if (error instanceof MongoServerError && error.code === 11000) {
+                throw new ConflictError('Plan with this name already exists');
+            }
             throw new InternalError('Failed to create plan', error instanceof Error ? error : undefined);
         }
     }

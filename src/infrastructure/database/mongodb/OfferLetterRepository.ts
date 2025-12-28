@@ -6,7 +6,7 @@ import {
 } from '../../../domain/repositories/IOfferLetterRepository';
 import { OfferLetter, OfferLetterProps, SalaryFrequency, OfferLetterStatus } from '../../../domain/entities/OfferLetter';
 import { getMongoDb } from './client';
-import { InternalError, NotFoundError } from '../../../domain/errors';
+import { InternalError, NotFoundError, BadRequestError } from '../../../domain/errors';
 import { injectable } from 'inversify';
 import { MongoGenericRepository } from './MongoGenericRepository';
 import { toDate, toDateOptional, toArray } from './utils/mapperUtils';
@@ -65,7 +65,7 @@ export class OfferLetterRepository
     async create(offerLetter: CreateOfferLetterProps): Promise<OfferLetter> {
         try {
             const now = new Date();
-            const result = await this._collection.insertOne({
+            const docToInsert = {
                 applicationId: offerLetter.applicationId,
                 version: offerLetter.version,
                 jobTitle: offerLetter.jobTitle,
@@ -95,40 +95,13 @@ export class OfferLetterRepository
                 createdAt: now,
                 acceptedAt: offerLetter.acceptedAt,
                 declinedAt: offerLetter.declinedAt,
-            });
+            };
 
-            return this._mapToEntity({
-                _id: result.insertedId,
-                ...offerLetter,
-                status: offerLetter.status || 'pending',
-                createdAt: now,
-            });
+            const result = await this._collection.insertOne(docToInsert);
+
+            return this._mapToEntity({ _id: result.insertedId, ...docToInsert });
         } catch (error) {
             throw new InternalError('Failed to create offer letter', error as Error);
-        }
-    }
-
-    async update(id: string, updates: UpdateOfferLetterProps): Promise<OfferLetter> {
-        try {
-            if (!ObjectId.isValid(id)) {
-                throw new NotFoundError('Offer letter not found');
-            }
-
-            const { id: _id, createdAt, ...updateFields } = updates;
-            const result = await this._collection.findOneAndUpdate(
-                { _id: new ObjectId(id) },
-                { $set: updateFields },
-                { returnDocument: 'after' }
-            );
-
-            if (!result) {
-                throw new NotFoundError('Offer letter not found');
-            }
-
-            return this._mapToEntity(result);
-        } catch (error) {
-            if (error instanceof NotFoundError) throw error;
-            throw new InternalError('Failed to update offer letter', error as Error);
         }
     }
 

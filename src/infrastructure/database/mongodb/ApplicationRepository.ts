@@ -2,7 +2,7 @@ import { Collection, ObjectId, WithId, Document, Filter } from 'mongodb';
 import { IApplicationRepository, ApplicationListFilters, ApplicationListResult, ApplicationMetrics, CreateApplicationProps, UpdateApplicationProps } from '../../../domain/repositories/IApplicationRepository';
 import { Application, ApplicationProps, InterviewRound, StatusNotes } from '../../../domain/entities/Application';
 import { getMongoDb } from './client';
-import { InternalError, ForbiddenError, NotFoundError } from '../../../domain/errors';
+import { InternalError, ForbiddenError, NotFoundError, BadRequestError } from '../../../domain/errors';
 import { injectable } from 'inversify';
 import { MongoGenericRepository } from './MongoGenericRepository';
 import { toDate, toDateOptional, toArray } from './utils/mapperUtils';
@@ -69,7 +69,7 @@ export class ApplicationRepository
   async create(application: CreateApplicationProps): Promise<Application> {
     try {
       const now = new Date();
-      const result = await this._collection.insertOne({
+      const docToInsert = {
         jobId: application.jobId,
         developerId: application.developerId,
         companyId: application.companyId,
@@ -82,25 +82,22 @@ export class ApplicationRepository
         resumeUrl: application.resumeUrl,
         appliedAt: now,
         lastUpdatedAt: now,
-      });
+      };
 
-      return this._mapToEntity({
-        _id: result.insertedId,
-        ...application,
-        status: application.status || 'applied',
-        interviewRounds: application.interviewRounds || [],
-        appliedAt: now,
-        lastUpdatedAt: now,
-      });
+      const result = await this._collection.insertOne(docToInsert);
+
+      return this._mapToEntity({ _id: result.insertedId, ...docToInsert });
     } catch (error) {
       throw new InternalError('Failed to create application', error as Error);
     }
   }
 
+  // Override needed: Application uses 'lastUpdatedAt' instead of 'updatedAt'
+  // Also protects immutable field 'appliedAt' from accidental updates
   async update(id: string, updates: UpdateApplicationProps): Promise<Application> {
     try {
       if (!ObjectId.isValid(id)) {
-        throw new NotFoundError('Application not found');
+        throw new BadRequestError('Invalid ID format');
       }
 
       const { id: _id, appliedAt, lastUpdatedAt, ...updateFields } = updates;
@@ -121,7 +118,7 @@ export class ApplicationRepository
 
       return this._mapToEntity(result);
     } catch (error) {
-      if (error instanceof NotFoundError) throw error;
+      if (error instanceof NotFoundError || error instanceof BadRequestError) throw error;
       throw new InternalError('Failed to update application', error as Error);
     }
   }

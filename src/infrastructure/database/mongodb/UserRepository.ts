@@ -2,7 +2,7 @@ import { Collection, ObjectId, WithId, Document, MongoServerError } from 'mongod
 import { IUserRepository, CreateUserProps, UpdateUserProps } from '../../../domain/repositories/IUserRepository';
 import { User, UserProps } from '../../../domain/entities/User';
 import { getMongoDb } from './client';
-import { ConflictError, InternalError, NotFoundError } from '../../../domain/errors';
+import { ConflictError, InternalError, NotFoundError, BadRequestError } from '../../../domain/errors';
 import { injectable } from 'inversify';
 import { MongoGenericRepository } from './MongoGenericRepository';
 
@@ -39,7 +39,7 @@ export class UserRepository
 
   async create(user: CreateUserProps): Promise<User> {
     try {
-      const result = await this._collection.insertOne({
+      const docToInsert = {
         email: user.email,
         name: user.name,
         password: user.password,
@@ -49,12 +49,11 @@ export class UserRepository
         authProviders: user.authProviders,
         googleId: user.googleId,
         createdAt: user.createdAt,
-      });
+      };
 
-      return new User({
-        id: result.insertedId.toString(),
-        ...user,
-      });
+      const result = await this._collection.insertOne(docToInsert);
+
+      return this._mapToEntity({ _id: result.insertedId, ...docToInsert });
     } catch (error) {
       if (error instanceof MongoServerError && error.code === 11000) {
         throw new ConflictError('Email already registered');
@@ -63,30 +62,6 @@ export class UserRepository
     }
   }
 
-  async update(id: string, updates: UpdateUserProps): Promise<User> {
-    try {
-      if (!ObjectId.isValid(id)) {
-        throw new NotFoundError('User not found');
-      }
-
-      const { id: _id, createdAt, ...updateFields } = updates;
-
-      const result = await this._collection.findOneAndUpdate(
-        { _id: new ObjectId(id) },
-        { $set: updateFields },
-        { returnDocument: 'after' }
-      );
-
-      if (!result) {
-        throw new NotFoundError('User not found');
-      }
-
-      return this._mapToEntity(result);
-    } catch (error) {
-      if (error instanceof NotFoundError) throw error;
-      throw new InternalError('Failed to update user', error as Error);
-    }
-  }
 
   async findByEmail(email: string): Promise<User | null> {
     try {

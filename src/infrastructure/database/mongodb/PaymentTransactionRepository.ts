@@ -1,8 +1,8 @@
-import { Collection, ObjectId, WithId, Document } from 'mongodb';
+import { Collection, ObjectId, WithId, Document, MongoServerError } from 'mongodb';
 import { IPaymentTransactionRepository, CreatePaymentTransactionData } from '../../../domain/repositories/IPaymentTransactionRepository';
 import { PaymentTransaction } from '../../../domain/entities/PaymentTransaction';
 import { getMongoDb } from './client';
-import { InternalError } from '../../../domain/errors';
+import { ConflictError, InternalError } from '../../../domain/errors';
 import { injectable } from 'inversify';
 import { MongoGenericRepository } from './MongoGenericRepository';
 import { toDate } from './utils/mapperUtils';
@@ -17,10 +17,7 @@ export class PaymentTransactionRepository
     constructor() {
         super();
         this._collection = getMongoDb().collection('payment_transactions');
-        // Indexes for common queries
-        this._collection.createIndex({ userId: 1 }).catch(() => { });
-        this._collection.createIndex({ companyId: 1 }).catch(() => { });
-        this._collection.createIndex({ stripeSessionId: 1 }, { unique: true }).catch(() => { });
+
     }
 
     protected _getEntityName(): string {
@@ -54,18 +51,18 @@ export class PaymentTransactionRepository
         try {
             const now = new Date();
             const txData = PaymentTransaction.create(data);
-
-            const result = await this._collection.insertOne({
+            const docToInsert = {
                 ...txData,
                 createdAt: now,
-            });
+            };
 
-            return this._mapToEntity({
-                _id: result.insertedId,
-                ...txData,
-                createdAt: now,
-            });
+            const result = await this._collection.insertOne(docToInsert);
+
+            return this._mapToEntity({ _id: result.insertedId, ...docToInsert });
         } catch (error) {
+            if (error instanceof MongoServerError && error.code === 11000) {
+                throw new ConflictError('Payment transaction with this session ID already exists');
+            }
             throw new InternalError('Failed to create payment transaction', error instanceof Error ? error : undefined);
         }
     }

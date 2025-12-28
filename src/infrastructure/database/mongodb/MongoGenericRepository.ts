@@ -1,6 +1,6 @@
 import { Collection, ObjectId, WithId, Document } from 'mongodb';
 import { IGenericRepository } from '../../../domain/repositories/IGenericRepository';
-import { InternalError, NotFoundError } from '../../../domain/errors';
+import { InternalError, NotFoundError, BadRequestError } from '../../../domain/errors';
 
 export abstract class MongoGenericRepository<T, CreateProps, UpdateProps = Partial<CreateProps>>
     implements IGenericRepository<T, CreateProps, UpdateProps> {
@@ -11,11 +11,14 @@ export abstract class MongoGenericRepository<T, CreateProps, UpdateProps = Parti
 
     async findById(id: string): Promise<T | null> {
         try {
-            if (!ObjectId.isValid(id)) return null;
+            if (!ObjectId.isValid(id)) {
+                throw new BadRequestError('Invalid ID format');
+            }
             const doc = await this._collection.findOne({ _id: new ObjectId(id) });
             if (!doc) return null;
             return this._mapToEntity(doc);
         } catch (error) {
+            if (error instanceof BadRequestError) throw error;
             throw new InternalError('Database query failed', error as Error);
         }
     }
@@ -25,12 +28,14 @@ export abstract class MongoGenericRepository<T, CreateProps, UpdateProps = Parti
     async update(id: string, data: UpdateProps): Promise<T> {
         try {
             if (!ObjectId.isValid(id)) {
-                throw new NotFoundError(`${this._getEntityName()} not found`);
+                throw new BadRequestError('Invalid ID format');
             }
+
+            const { id: _id, createdAt, ...updateFields } = data as any;
 
             const result = await this._collection.findOneAndUpdate(
                 { _id: new ObjectId(id) },
-                { $set: { ...data, updatedAt: new Date() } },
+                { $set: { ...updateFields, updatedAt: new Date() } },
                 { returnDocument: 'after' }
             );
 
@@ -40,7 +45,7 @@ export abstract class MongoGenericRepository<T, CreateProps, UpdateProps = Parti
 
             return this._mapToEntity(result);
         } catch (error) {
-            if (error instanceof NotFoundError) throw error;
+            if (error instanceof NotFoundError || error instanceof BadRequestError) throw error;
             throw new InternalError(`Failed to update ${this._getEntityName().toLowerCase()}`, error as Error);
         }
     }
@@ -48,7 +53,7 @@ export abstract class MongoGenericRepository<T, CreateProps, UpdateProps = Parti
     async delete(id: string): Promise<void> {
         try {
             if (!ObjectId.isValid(id)) {
-                throw new NotFoundError(`${this._getEntityName()} not found`);
+                throw new BadRequestError('Invalid ID format');
             }
 
             const result = await this._collection.deleteOne({ _id: new ObjectId(id) });
@@ -57,7 +62,7 @@ export abstract class MongoGenericRepository<T, CreateProps, UpdateProps = Parti
                 throw new NotFoundError(`${this._getEntityName()} not found`);
             }
         } catch (error) {
-            if (error instanceof NotFoundError) throw error;
+            if (error instanceof NotFoundError || error instanceof BadRequestError) throw error;
             throw new InternalError(`Failed to delete ${this._getEntityName().toLowerCase()}`, error as Error);
         }
     }

@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { buildServer } from './server';
 import { connectMongoDB, disconnectMongoDB } from './infrastructure/database/mongodb/client';
+import { ensureIndexes } from './infrastructure/database/mongodb/ensureIndexes';
 import { connectRedis, disconnectRedis } from './infrastructure/database/redis/client';
 import { config } from './config';
 import { initializeSocketIO, closeSocketIO } from './infrastructure/socket/socketServer';
@@ -15,9 +16,12 @@ async function start() {
     await connectRedis();
     console.log('Databases connected successfully');
 
+    // Ensure database indexes
+    await ensureIndexes();
+
     // Build and start server
     const server = await buildServer();
-    
+
     await server.listen({
       port: config.port,
       host: config.host
@@ -38,12 +42,12 @@ async function start() {
     signals.forEach((signal) => {
       process.on(signal, async () => {
         console.log(`\nReceived ${signal}, shutting down gracefully...`);
-        
+
         closeSocketIO();
         await server.close();
         await disconnectMongoDB();
         await disconnectRedis();
-        
+
         console.log('Server closed. Exiting process.');
         process.exit(0);
       });

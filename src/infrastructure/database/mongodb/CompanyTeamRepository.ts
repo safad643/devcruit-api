@@ -7,7 +7,7 @@ import {
   InviteCompanyTeamMemberInput
 } from '../../../domain/repositories';
 import { getMongoDb } from './client';
-import { InternalError } from '../../../domain/errors';
+import { InternalError, BadRequestError } from '../../../domain/errors';
 import { HRPermissions, HRProfile } from '../../../domain/entities/HRProfile';
 import { InterviewerProfile } from '../../../domain/entities/InterviewerProfile';
 import { CompanyTeamMemberStatus } from '../../../domain/types';
@@ -131,7 +131,7 @@ export class CompanyTeamRepository implements ICompanyTeamRepository {
   async updateStatus(teamMemberId: string, status: CompanyTeamMemberStatus): Promise<void> {
     try {
       if (!ObjectId.isValid(teamMemberId)) {
-        throw new InternalError('Invalid team member ID');
+        throw new BadRequestError('Invalid team member ID format');
       }
 
       await this._collection.updateOne(
@@ -144,6 +144,7 @@ export class CompanyTeamRepository implements ICompanyTeamRepository {
         }
       );
     } catch (error) {
+      if (error instanceof BadRequestError) throw error;
       throw new InternalError('Failed to update team member status', error as Error);
     }
   }

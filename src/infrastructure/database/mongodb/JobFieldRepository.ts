@@ -2,7 +2,7 @@ import { Collection, ObjectId, WithId, Document, MongoServerError } from 'mongod
 import { IJobFieldRepository, CreateJobFieldProps, UpdateJobFieldProps } from '../../../domain/repositories/IJobFieldRepository';
 import { JobField, FieldType } from '../../../domain/entities/JobField';
 import { getMongoDb } from './client';
-import { InternalError, NotFoundError } from '../../../domain/errors';
+import { ConflictError, InternalError, NotFoundError, BadRequestError } from '../../../domain/errors';
 import { injectable } from 'inversify';
 import { MongoGenericRepository } from './MongoGenericRepository';
 import { toDate } from './utils/mapperUtils';
@@ -17,7 +17,7 @@ export class JobFieldRepository
     constructor() {
         super();
         this._collection = getMongoDb().collection('job_fields');
-        this._collection.createIndex({ type: 1, name: 1 }, { unique: true }).catch(() => { });
+
     }
 
     protected _getEntityName(): string {
@@ -37,22 +37,19 @@ export class JobFieldRepository
     async create(data: CreateJobFieldProps): Promise<JobField> {
         try {
             const now = new Date();
-            const result = await this._collection.insertOne({
+            const docToInsert = {
                 type: data.type,
                 name: data.name,
                 createdAt: now,
                 updatedAt: now,
-            });
+            };
 
-            return this._mapToEntity({
-                _id: result.insertedId,
-                ...data,
-                createdAt: now,
-                updatedAt: now,
-            });
+            const result = await this._collection.insertOne(docToInsert);
+
+            return this._mapToEntity({ _id: result.insertedId, ...docToInsert });
         } catch (error) {
             if (error instanceof MongoServerError && error.code === 11000) {
-                throw new InternalError(`${data.type} "${data.name}" already exists`);
+                throw new ConflictError(`${data.type} "${data.name}" already exists`);
             }
             throw new InternalError('Failed to create job field', error instanceof Error ? error : undefined);
         }
@@ -61,7 +58,7 @@ export class JobFieldRepository
     async update(id: string, data: UpdateJobFieldProps): Promise<JobField> {
         try {
             if (!ObjectId.isValid(id)) {
-                throw new NotFoundError('Job field not found');
+                throw new BadRequestError('Invalid ID format');
             }
 
             const result = await this._collection.findOneAndUpdate(
@@ -76,9 +73,9 @@ export class JobFieldRepository
 
             return this._mapToEntity(result);
         } catch (error) {
-            if (error instanceof NotFoundError) throw error;
+            if (error instanceof NotFoundError || error instanceof BadRequestError) throw error;
             if (error instanceof MongoServerError && error.code === 11000) {
-                throw new InternalError('A field with this name already exists for this type');
+                throw new ConflictError('A field with this name already exists for this type');
             }
             throw new InternalError('Failed to update job field', error instanceof Error ? error : undefined);
         }

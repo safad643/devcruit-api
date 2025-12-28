@@ -3,7 +3,7 @@ import { injectable } from 'inversify';
 import { IMessageRepository, MessageListFilters, MessageListResult, CreateMessageProps, UpdateMessageProps } from '../../../domain/repositories/IMessageRepository';
 import { Message, MessageProps } from '../../../domain/entities/Message';
 import { getMongoDb } from './client';
-import { InternalError, NotFoundError } from '../../../domain/errors';
+import { InternalError, NotFoundError, BadRequestError } from '../../../domain/errors';
 import { MongoGenericRepository } from './MongoGenericRepository';
 import { toDate, toDateOptional } from './utils/mapperUtils';
 
@@ -36,46 +36,19 @@ export class MessageRepository
 
   async create(message: CreateMessageProps): Promise<Message> {
     try {
-      const result = await this._collection.insertOne({
+      const docToInsert = {
         conversationId: message.conversationId,
         senderId: message.senderId,
         message: message.message,
         readAt: message.readAt,
         createdAt: message.createdAt,
-      });
+      };
 
-      const doc = await this._collection.findOne({ _id: result.insertedId });
-      if (!doc) {
-        throw new InternalError('Failed to retrieve created message');
-      }
-      return this._mapToEntity(doc);
+      const result = await this._collection.insertOne(docToInsert);
+
+      return this._mapToEntity({ _id: result.insertedId, ...docToInsert });
     } catch (error) {
-      if (error instanceof InternalError) throw error;
       throw new InternalError('Failed to create message', error as Error);
-    }
-  }
-
-  async update(id: string, updates: UpdateMessageProps): Promise<Message> {
-    try {
-      if (!ObjectId.isValid(id)) {
-        throw new NotFoundError('Message not found');
-      }
-
-      const { id: _id, ...updateFields } = updates;
-      const result = await this._collection.findOneAndUpdate(
-        { _id: new ObjectId(id) },
-        { $set: updateFields },
-        { returnDocument: 'after' }
-      );
-
-      if (!result) {
-        throw new NotFoundError('Message not found');
-      }
-
-      return this._mapToEntity(result);
-    } catch (error) {
-      if (error instanceof NotFoundError) throw error;
-      throw new InternalError('Failed to update message', error as Error);
     }
   }
 
