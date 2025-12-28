@@ -1,5 +1,5 @@
-import { 
-  IApplicationRepository, 
+import {
+  IApplicationRepository,
   IJobRepository,
   IDeveloperProfileRepository,
   ICompanyProfileRepository,
@@ -19,7 +19,7 @@ export class GetApplicationDetailsUseCase implements IGetApplicationDetailsUseCa
     @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository,
     @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository,
     @inject(TYPES.UserRepository) private _userRepository: IUserRepository
-  ) {}
+  ) { }
 
   async execute(applicationId: string, companyId?: string, interviewerId?: string): Promise<GetApplicationDetailsOutput> {
     // Get application
@@ -36,7 +36,7 @@ export class GetApplicationDetailsUseCase implements IGetApplicationDetailsUseCa
       }
     } else if (interviewerId) {
       // Interviewer access: verify they're assigned to at least one interview round
-      const isAssigned = application.interviewRounds.some(round => 
+      const isAssigned = application.interviewRounds.some(round =>
         round.interviewerIds.includes(interviewerId)
       );
       if (!isAssigned) {
@@ -54,7 +54,7 @@ export class GetApplicationDetailsUseCase implements IGetApplicationDetailsUseCa
 
     // Get developer profile
     const developerProfile = await this._developerProfileRepository.findById(application.developerId);
-    
+
     // Get developer user information
     let developerName: string | undefined;
     let developerEmail: string | undefined;
@@ -91,6 +91,25 @@ export class GetApplicationDetailsUseCase implements IGetApplicationDetailsUseCa
         userId: developerProfile.userId,
         name: developerName,
         email: developerEmail,
+        // Full profile fields
+        profilePhotoUrl: developerProfile.profilePhotoUrl,
+        bio: developerProfile.bio,
+        skills: developerProfile.skills,
+        techs: developerProfile.techs,
+        workHistory: developerProfile.workHistory,
+        education: developerProfile.education,
+        certifications: developerProfile.certifications,
+        projects: developerProfile.projects,
+        githubUrl: developerProfile.githubUrl,
+        portfolioUrl: developerProfile.portfolioUrl,
+        linkedinUrl: developerProfile.linkedinUrl,
+        resumeUrl: developerProfile.resumeUrl,
+        employmentStatus: developerProfile.employmentStatus,
+        jobTypePreferences: developerProfile.jobTypePreferences,
+        workArrangement: developerProfile.workArrangement,
+        yearsExperience: developerProfile.yearsExperience,
+        seniorityLevel: developerProfile.seniorityLevel,
+        willingToRelocate: developerProfile.willingToRelocate,
       } : undefined,
       company: companyProfile ? {
         id: companyProfile.id,

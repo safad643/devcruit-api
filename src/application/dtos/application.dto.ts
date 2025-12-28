@@ -44,6 +44,8 @@ export interface ApplicationListItem {
   jobTitle?: string;
   developerName?: string;
   developerEmail?: string;
+  developerTechs?: string[]; // Top tech skills for quick scan
+  developerYearsExperience?: number;
 }
 
 export interface ListApplicationsForCompanyOutput {
@@ -114,6 +116,50 @@ export interface GetApplicationDetailsOutput {
     userId: string;
     name?: string;
     email?: string;
+    // Full profile fields (exposed when candidate applies to company's job)
+    profilePhotoUrl?: string;
+    bio?: string;
+    skills?: string[];
+    techs?: string[];
+    workHistory?: {
+      companyName: string;
+      positionTitle: string;
+      startDate: string;
+      endDate: string | null;
+      description: string;
+      technologiesUsed: string[];
+      achievements: string[];
+    }[];
+    education?: {
+      degreeType: string;
+      institution: string;
+      fieldOfStudy: string;
+      graduationYear: number | null;
+      certificateUrl?: string;
+    }[];
+    certifications?: {
+      name: string;
+      issuingOrganization: string;
+      dateObtained: string;
+    }[];
+    projects?: {
+      name: string;
+      description: string;
+      techStack: string[];
+      repositoryUrl?: string;
+      liveDemoUrl?: string;
+      roleInProject: string;
+    }[];
+    githubUrl?: string;
+    portfolioUrl?: string;
+    linkedinUrl?: string;
+    resumeUrl?: string;
+    employmentStatus?: string;
+    jobTypePreferences?: string[];
+    workArrangement?: string[];
+    yearsExperience?: number;
+    seniorityLevel?: string;
+    willingToRelocate?: boolean;
   };
   company?: {
     id: string;

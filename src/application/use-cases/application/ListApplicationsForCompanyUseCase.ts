@@ -1,5 +1,5 @@
-import { 
-  IApplicationRepository, 
+import {
+  IApplicationRepository,
   IJobRepository,
   IDeveloperProfileRepository,
   IUserRepository
@@ -17,7 +17,7 @@ export class ListApplicationsForCompanyUseCase implements IListApplicationsForCo
     @inject(TYPES.JobRepository) private _jobRepository: IJobRepository,
     @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository,
     @inject(TYPES.UserRepository) private _userRepository: IUserRepository
-  ) {}
+  ) { }
 
   async execute(input: ListApplicationsForCompanyInput & { companyId: string }): Promise<ListApplicationsForCompanyOutput> {
     // Build filters
@@ -39,10 +39,10 @@ export class ListApplicationsForCompanyUseCase implements IListApplicationsForCo
       result.applications.map(async (application) => {
         // Get job information
         const job = await this._jobRepository.findById(application.jobId);
-        
+
         // Get developer profile
         const developerProfile = await this._developerProfileRepository.findById(application.developerId);
-        
+
         // Get developer user information
         let developerName: string | undefined;
         let developerEmail: string | undefined;
@@ -76,6 +76,8 @@ export class ListApplicationsForCompanyUseCase implements IListApplicationsForCo
           developerName,
           developerEmail,
           developerUserId,
+          developerTechs: developerProfile?.techs?.slice(0, 4), // Top 4 for quick scan
+          developerYearsExperience: developerProfile?.yearsExperience,
         };
       })
     );
