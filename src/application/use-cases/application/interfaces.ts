@@ -139,3 +139,53 @@ export interface IAcceptOfferUseCase {
 export interface IDeclineOfferUseCase {
     execute(input: DeclineOfferInput): Promise<DeclineOfferOutput>;
 }
+
+// Reschedule Use Cases
+
+export interface RequestRescheduleInput {
+    applicationId: string;
+    roundName: string;
+    reason?: string;
+    proposedScheduledAt?: string;
+}
+
+export interface RequestRescheduleOutput {
+    message: string;
+}
+
+export interface IRequestRescheduleUseCase {
+    execute(input: RequestRescheduleInput & { developerId: string }): Promise<RequestRescheduleOutput>;
+}
+
+export interface RespondToRescheduleRequestInput {
+    applicationId: string;
+    roundName: string;
+    approve: boolean;
+    responseNote?: string;
+    newScheduledAt?: string;
+    newInterviewerId?: string;
+}
+
+export interface RespondToRescheduleRequestOutput {
+    message: string;
+}
+
+export interface IRespondToRescheduleRequestUseCase {
+    execute(input: RespondToRescheduleRequestInput & { companyId: string }): Promise<RespondToRescheduleRequestOutput>;
+}
+
+export interface RescheduleInterviewInput {
+    applicationId: string;
+    roundName: string;
+    newScheduledAt: string;
+    newInterviewerId?: string;
+    reason?: string;
+}
+
+export interface RescheduleInterviewOutput {
+    message: string;
+}
+
+export interface IRescheduleInterviewUseCase {
+    execute(input: RescheduleInterviewInput & { companyId: string }): Promise<RescheduleInterviewOutput>;
+}

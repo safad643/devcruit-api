@@ -14,6 +14,9 @@ import { GetInterviewsForInterviewerUseCase } from '../../application/use-cases/
 import { ExtendOfferUseCase } from '../../application/use-cases/application/ExtendOfferUseCase';
 import { AcceptOfferUseCase } from '../../application/use-cases/application/AcceptOfferUseCase';
 import { DeclineOfferUseCase } from '../../application/use-cases/application/DeclineOfferUseCase';
+import { RequestRescheduleUseCase } from '../../application/use-cases/application/RequestRescheduleUseCase';
+import { RespondToRescheduleRequestUseCase } from '../../application/use-cases/application/RespondToRescheduleRequestUseCase';
+import { RescheduleInterviewUseCase } from '../../application/use-cases/application/RescheduleInterviewUseCase';
 import { CreateOfferLetterUseCase } from '../../application/use-cases/offer-letter/CreateOfferLetterUseCase';
 import { GetOfferLetterUseCase } from '../../application/use-cases/offer-letter/GetOfferLetterUseCase';
 import { GetOrCreateVideoCallUseCase } from '../../application/use-cases/video-call/GetOrCreateVideoCallUseCase';
@@ -38,6 +41,9 @@ import {
   IExtendOfferUseCase,
   IAcceptOfferUseCase,
   IDeclineOfferUseCase,
+  IRequestRescheduleUseCase,
+  IRespondToRescheduleRequestUseCase,
+  IRescheduleInterviewUseCase,
 } from '../../application/use-cases/application/interfaces';
 import {
   ICreateOfferLetterUseCase,
@@ -64,6 +70,9 @@ export const applicationModule = new ContainerModule((bind) => {
   bind<IExtendOfferUseCase>(TYPES.ExtendOfferUseCase).to(ExtendOfferUseCase);
   bind<IAcceptOfferUseCase>(TYPES.AcceptOfferUseCase).to(AcceptOfferUseCase);
   bind<IDeclineOfferUseCase>(TYPES.DeclineOfferUseCase).to(DeclineOfferUseCase);
+  bind<IRequestRescheduleUseCase>(TYPES.RequestRescheduleUseCase).to(RequestRescheduleUseCase);
+  bind<IRespondToRescheduleRequestUseCase>(TYPES.RespondToRescheduleRequestUseCase).to(RespondToRescheduleRequestUseCase);
+  bind<IRescheduleInterviewUseCase>(TYPES.RescheduleInterviewUseCase).to(RescheduleInterviewUseCase);
   bind<ICreateOfferLetterUseCase>(TYPES.CreateOfferLetterUseCase).to(CreateOfferLetterUseCase);
   bind<IGetOfferLetterUseCase>(TYPES.GetOfferLetterUseCase).to(GetOfferLetterUseCase);
   bind<VideoCallHelper>(TYPES.VideoCallHelper).to(VideoCallHelper);

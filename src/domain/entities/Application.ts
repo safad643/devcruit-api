@@ -21,6 +21,19 @@ export enum InterviewRoundResult {
 
 export type VideoCallStatus = 'not-started' | 'in-progress' | 'ended';
 
+export type RescheduleRequestStatus = 'pending' | 'approved' | 'rejected';
+
+export interface RescheduleRequest {
+  requestedBy: 'candidate' | 'company';
+  requestedById: string;
+  reason?: string;
+  proposedScheduledAt?: Date;
+  status: RescheduleRequestStatus;
+  requestedAt: Date;
+  respondedAt?: Date;
+  responseNote?: string;
+}
+
 export interface InterviewRound {
   roundName: string;
   status: InterviewRoundStatus;
@@ -31,6 +44,8 @@ export interface InterviewRound {
   interviewerIds: string[];
   videoCallId?: string;
   videoCallStatus?: VideoCallStatus;
+  rescheduleRequest?: RescheduleRequest;
+  rescheduleHistory?: RescheduleRequest[];
 }
 
 export interface StatusNotes {

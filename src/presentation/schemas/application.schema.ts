@@ -160,3 +160,29 @@ export const CreateOfferLetterSchema = Type.Object({
 
 export type CreateOfferLetterInput = Static<typeof CreateOfferLetterSchema>;
 
+// Request Reschedule Schema (Developer)
+export const RequestRescheduleSchema = Type.Object({
+  reason: Type.Optional(Type.String({ maxLength: 500 })),
+  proposedScheduledAt: Type.Optional(Type.String({ format: 'date-time' }))
+});
+
+export type RequestRescheduleInput = Static<typeof RequestRescheduleSchema>;
+
+// Respond to Reschedule Request Schema (Company/HR)
+export const RespondToRescheduleSchema = Type.Object({
+  approve: Type.Boolean(),
+  responseNote: Type.Optional(Type.String({ maxLength: 500 })),
+  newScheduledAt: Type.Optional(Type.String({ format: 'date-time' })),
+  newInterviewerId: Type.Optional(Type.String({ minLength: 1 }))
+});
+
+export type RespondToRescheduleInput = Static<typeof RespondToRescheduleSchema>;
+
+// Reschedule Interview Schema (Company/HR - direct reschedule)
+export const RescheduleInterviewSchema = Type.Object({
+  newScheduledAt: Type.String({ format: 'date-time' }),
+  newInterviewerId: Type.Optional(Type.String({ minLength: 1 })),
+  reason: Type.Optional(Type.String({ maxLength: 500 }))
+});
+
+export type RescheduleInterviewInput = Static<typeof RescheduleInterviewSchema>;

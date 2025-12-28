@@ -10,6 +10,9 @@ import {
     ScheduleInterviewRoundSchema,
     UpdateInterviewResultSchema,
     ApplicationInterviewRoundParamsSchema,
+    RequestRescheduleSchema,
+    RespondToRescheduleSchema,
+    RescheduleInterviewSchema,
 } from '../schemas/application.schema';
 
 export async function interviewRoutes(fastify: FastifyInstance): Promise<void> {
@@ -88,5 +91,44 @@ export async function interviewRoutes(fastify: FastifyInstance): Promise<void> {
             },
         },
         interviewController.endVideoCall,
+    );
+
+    // Developer route: Request reschedule
+    fastify.post(
+        '/developer/applications/:id/interview-rounds/:roundName/request-reschedule',
+        {
+            preHandler: [authenticate, authorize('developer')],
+            schema: {
+                params: ApplicationInterviewRoundParamsSchema,
+                body: RequestRescheduleSchema,
+            },
+        },
+        interviewController.requestReschedule,
+    );
+
+    // Company/HR route: Respond to reschedule request
+    fastify.post(
+        '/company/applications/:id/interview-rounds/:roundName/respond-reschedule',
+        {
+            preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
+            schema: {
+                params: ApplicationInterviewRoundParamsSchema,
+                body: RespondToRescheduleSchema,
+            },
+        },
+        interviewController.respondToRescheduleRequest,
+    );
+
+    // Company/HR route: Direct reschedule
+    fastify.post(
+        '/company/applications/:id/interview-rounds/:roundName/reschedule',
+        {
+            preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
+            schema: {
+                params: ApplicationInterviewRoundParamsSchema,
+                body: RescheduleInterviewSchema,
+            },
+        },
+        interviewController.rescheduleInterview,
     );
 }

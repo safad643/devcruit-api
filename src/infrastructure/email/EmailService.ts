@@ -11,6 +11,9 @@ import { AccountStatusEmailContentBuilder } from './templates/AccountStatusEmail
 import { ApplicationStatusEmailContentBuilder } from './templates/ApplicationStatusEmailContentBuilder';
 import { TeamInviteEmailContentBuilder } from './templates/TeamInviteEmailContentBuilder';
 import { InterviewScheduledEmailContentBuilder } from './templates/InterviewScheduledEmailContentBuilder';
+import { RescheduleRequestEmailContentBuilder } from './templates/RescheduleRequestEmailContentBuilder';
+import { InterviewRescheduledEmailContentBuilder } from './templates/InterviewRescheduledEmailContentBuilder';
+import { RescheduleRejectedEmailContentBuilder } from './templates/RescheduleRejectedEmailContentBuilder';
 import { IEmailContentBuilder } from './templates/IEmailContentBuilder';
 
 @injectable()
@@ -55,7 +58,6 @@ export class EmailService implements IEmailService {
       await this._sendEmail(email, new AccountStatusEmailContentBuilder('blocked'));
     } catch (error) {
       console.error('Failed to send block email to', email, error);
-      // Silently fail - don't throw
     }
   }
 
@@ -64,7 +66,6 @@ export class EmailService implements IEmailService {
       await this._sendEmail(email, new AccountStatusEmailContentBuilder('unblocked'));
     } catch (error) {
       console.error('Failed to send unblock email to', email, error);
-      // Silently fail - don't throw
     }
   }
 
@@ -76,7 +77,6 @@ export class EmailService implements IEmailService {
       );
     } catch (error) {
       console.error('Failed to send shortlist notification email to', email, error);
-      // Silently fail - don't throw to avoid breaking the application flow
     }
   }
 
@@ -88,7 +88,6 @@ export class EmailService implements IEmailService {
       );
     } catch (error) {
       console.error('Failed to send rejection notification email to', email, error);
-      // Silently fail - don't throw to avoid breaking the application flow
     }
   }
 
@@ -132,7 +131,88 @@ export class EmailService implements IEmailService {
       );
     } catch (error) {
       console.error('Failed to send interview scheduled notification email to', email, error);
-      // Silently fail - don't throw to avoid breaking the interview scheduling flow
+    }
+  }
+
+  async sendRescheduleRequestNotification(
+    email: string,
+    companyName: string,
+    candidateName: string,
+    jobTitle: string,
+    roundName: string,
+    currentScheduledAt: Date,
+    reason?: string,
+    proposedScheduledAt?: Date
+  ): Promise<void> {
+    try {
+      await this._sendEmail(
+        email,
+        new RescheduleRequestEmailContentBuilder({
+          companyName,
+          candidateName,
+          jobTitle,
+          roundName,
+          currentScheduledAt,
+          reason,
+          proposedScheduledAt
+        })
+      );
+    } catch (error) {
+      console.error('Failed to send reschedule request notification email to', email, error);
+    }
+  }
+
+  async sendInterviewRescheduledNotification(
+    email: string,
+    recipientName: string,
+    companyName: string,
+    jobTitle: string,
+    roundName: string,
+    oldScheduledAt: Date,
+    newScheduledAt: Date,
+    interviewerName: string
+  ): Promise<void> {
+    try {
+      await this._sendEmail(
+        email,
+        new InterviewRescheduledEmailContentBuilder({
+          recipientName,
+          companyName,
+          jobTitle,
+          roundName,
+          oldScheduledAt,
+          newScheduledAt,
+          interviewerName
+        })
+      );
+    } catch (error) {
+      console.error('Failed to send interview rescheduled notification email to', email, error);
+    }
+  }
+
+  async sendRescheduleRejectedNotification(
+    email: string,
+    candidateName: string,
+    companyName: string,
+    jobTitle: string,
+    roundName: string,
+    scheduledAt: Date,
+    responseNote?: string
+  ): Promise<void> {
+    try {
+      await this._sendEmail(
+        email,
+        new RescheduleRejectedEmailContentBuilder({
+          candidateName,
+          companyName,
+          jobTitle,
+          roundName,
+          scheduledAt,
+          responseNote
+        })
+      );
+    } catch (error) {
+      console.error('Failed to send reschedule rejected notification email to', email, error);
     }
   }
 }

@@ -35,6 +35,8 @@ export class ApplicationRepository
         interviewerIds: round.interviewerIds || [],
         videoCallId: round.videoCallId,
         videoCallStatus: round.videoCallStatus,
+        rescheduleRequest: round.rescheduleRequest,
+        rescheduleHistory: round.rescheduleHistory,
       }));
     };
 

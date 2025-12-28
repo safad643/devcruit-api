@@ -5,6 +5,9 @@ import {
     IScheduleInterviewRoundUseCase,
     IUpdateInterviewResultUseCase,
     IGetInterviewsForInterviewerUseCase,
+    IRequestRescheduleUseCase,
+    IRespondToRescheduleRequestUseCase,
+    IRescheduleInterviewUseCase,
 } from '../../application/use-cases/application/interfaces';
 import {
     IGetOrCreateVideoCallUseCase,
@@ -14,6 +17,9 @@ import {
 import {
     ScheduleInterviewRoundInput,
     UpdateInterviewResultInput,
+    RequestRescheduleInput,
+    RespondToRescheduleInput,
+    RescheduleInterviewInput,
 } from '../schemas/application.schema';
 import { wrapSuccess } from '../../utils/response';
 import { HttpStatus } from '../../utils/statusCodes';
@@ -27,7 +33,10 @@ export class InterviewController {
         @inject(TYPES.GetInterviewsForInterviewerUseCase) private _getInterviewsForInterviewerUseCase: IGetInterviewsForInterviewerUseCase,
         @inject(TYPES.GetOrCreateVideoCallUseCase) private _getOrCreateVideoCallUseCase: IGetOrCreateVideoCallUseCase,
         @inject(TYPES.StartVideoCallUseCase) private _startVideoCallUseCase: IStartVideoCallUseCase,
-        @inject(TYPES.EndVideoCallUseCase) private _endVideoCallUseCase: IEndVideoCallUseCase
+        @inject(TYPES.EndVideoCallUseCase) private _endVideoCallUseCase: IEndVideoCallUseCase,
+        @inject(TYPES.RequestRescheduleUseCase) private _requestRescheduleUseCase: IRequestRescheduleUseCase,
+        @inject(TYPES.RespondToRescheduleRequestUseCase) private _respondToRescheduleRequestUseCase: IRespondToRescheduleRequestUseCase,
+        @inject(TYPES.RescheduleInterviewUseCase) private _rescheduleInterviewUseCase: IRescheduleInterviewUseCase
     ) { }
 
     // Company/HR endpoint: Schedule interview round
@@ -120,6 +129,65 @@ export class InterviewController {
             applicationId,
             roundName,
             userId,
+        });
+
+        reply.status(HttpStatus.OK).send(wrapSuccess(result));
+    };
+
+    // Developer endpoint: Request reschedule for an interview
+    requestReschedule = async (
+        request: FastifyRequest<{ Params: { id: string; roundName: string }; Body: RequestRescheduleInput }>,
+        reply: FastifyReply
+    ): Promise<void> => {
+        const developerId = request.user?.id as string;
+        const applicationId = request.params.id;
+        const { roundName } = request.params;
+
+        const result = await this._requestRescheduleUseCase.execute({
+            applicationId,
+            roundName,
+            developerId,
+            ...request.body,
+        });
+
+        reply.status(HttpStatus.OK).send(wrapSuccess(result));
+    };
+
+    // Company/HR endpoint: Respond to reschedule request
+    respondToRescheduleRequest = async (
+        request: FastifyRequest<{ Params: { id: string; roundName: string }; Body: RespondToRescheduleInput }>,
+        reply: FastifyReply
+    ): Promise<void> => {
+        const companyContext = this._getCompanyContext(request);
+        const companyId = companyContext.companyUserId;
+        const applicationId = request.params.id;
+        const { roundName } = request.params;
+
+        const result = await this._respondToRescheduleRequestUseCase.execute({
+            applicationId,
+            roundName,
+            companyId,
+            ...request.body,
+        });
+
+        reply.status(HttpStatus.OK).send(wrapSuccess(result));
+    };
+
+    // Company/HR endpoint: Direct reschedule
+    rescheduleInterview = async (
+        request: FastifyRequest<{ Params: { id: string; roundName: string }; Body: RescheduleInterviewInput }>,
+        reply: FastifyReply
+    ): Promise<void> => {
+        const companyContext = this._getCompanyContext(request);
+        const companyId = companyContext.companyUserId;
+        const applicationId = request.params.id;
+        const { roundName } = request.params;
+
+        const result = await this._rescheduleInterviewUseCase.execute({
+            applicationId,
+            roundName,
+            companyId,
+            ...request.body,
         });
 
         reply.status(HttpStatus.OK).send(wrapSuccess(result));
