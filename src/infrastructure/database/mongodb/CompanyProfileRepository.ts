@@ -208,4 +208,74 @@ export class CompanyProfileRepository
       throw new InternalError('Failed to list companies with filters', error as Error);
     }
   }
+
+  async getStatusCounts(): Promise<{ pending: number; approved: number; rejected: number; resubmitted: number }> {
+    try {
+      const result = await this._collection.aggregate([
+        { $group: { _id: '$status', count: { $sum: 1 } } }
+      ]).toArray();
+
+      const counts = { pending: 0, approved: 0, rejected: 0, resubmitted: 0 };
+      for (const r of result) {
+        const status = r._id as keyof typeof counts;
+        if (status in counts) {
+          counts[status] = r.count;
+        }
+      }
+
+      return counts;
+    } catch (error) {
+      throw new InternalError('Failed to get company status counts', error as Error);
+    }
+  }
+
+  async getPendingCompanies(limit: number): Promise<Array<{ id: string; companyName: string; email: string; submittedAt: Date }>> {
+    try {
+      const pipeline = [
+        { $match: { status: 'pending' } },
+        {
+          $addFields: {
+            userIdObjectId: {
+              $cond: {
+                if: { $eq: [{ $type: '$userId' }, 'string'] },
+                then: { $toObjectId: '$userId' },
+                else: '$userId'
+              }
+            }
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'userIdObjectId',
+            foreignField: '_id',
+            as: 'user'
+          }
+        },
+        { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+        { $sort: { createdAt: -1 } },
+        { $limit: limit },
+        {
+          $project: {
+            id: { $toString: '$_id' },
+            companyName: 1,
+            email: '$user.email',
+            submittedAt: '$createdAt'
+          }
+        }
+      ];
+
+      const docs = await this._collection.aggregate(pipeline).toArray();
+
+      return docs.map(doc => ({
+        id: doc.id,
+        companyName: doc.companyName,
+        email: doc.email || '',
+        submittedAt: doc.submittedAt
+      }));
+    } catch (error) {
+      throw new InternalError('Failed to get pending companies', error as Error);
+    }
+  }
 }
+

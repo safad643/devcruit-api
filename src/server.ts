@@ -17,6 +17,7 @@ import { applicationRoutes } from './presentation/routes/application.routes';
 import { interviewRoutes } from './presentation/routes/interview.routes';
 import { offerRoutes } from './presentation/routes/offer.routes';
 import { chatRoutes } from './presentation/routes/chat.routes';
+import { dashboardRoutes } from './presentation/routes/dashboard.routes';
 import fastifyRawBody from 'fastify-raw-body';
 import { globalErrorHandler } from './presentation/middleware/errorHandler';
 import { config } from './config';
@@ -104,6 +105,7 @@ export async function buildServer() {
   await server.register(interviewRoutes, { prefix: '/api' });
   await server.register(offerRoutes, { prefix: '/api' });
   await server.register(chatRoutes, { prefix: '/api/chat' });
+  await server.register(dashboardRoutes, { prefix: '/api' });
 
 
   return server;

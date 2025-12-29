@@ -28,4 +28,7 @@ export type UpdateCompanyProfileProps = Partial<CompanyProfileProps>;
 export interface ICompanyProfileRepository extends IGenericRepository<CompanyProfile, CreateCompanyProfileProps, UpdateCompanyProfileProps> {
   findByUserId(userId: string): Promise<CompanyProfile | null>;
   listWithFilters(filters: CompanyListFilters): Promise<CompanyListResult>;
+  getStatusCounts(): Promise<{ pending: number; approved: number; rejected: number; resubmitted: number }>;
+  getPendingCompanies(limit: number): Promise<Array<{ id: string; companyName: string; email: string; submittedAt: Date }>>;
 }
+

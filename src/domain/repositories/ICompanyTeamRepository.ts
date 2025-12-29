@@ -23,6 +23,14 @@ export interface InviteCompanyTeamMemberInput {
   interviewerAvailability?: InterviewerAvailability;
 }
 
+export interface TeamStatsResult {
+  total: number;
+  hr: number;
+  interviewers: number;
+  active: number;
+  invited: number;
+}
+
 export interface ICompanyTeamRepository {
   inviteMember(input: InviteCompanyTeamMemberInput): Promise<CompanyTeamMember>;
   listMembers(companyId: string): Promise<CompanyTeamMemberWithRole[]>;
@@ -30,5 +38,6 @@ export interface ICompanyTeamRepository {
   findByUserId(userId: string): Promise<CompanyTeamMember | null>;
   updateStatus(teamMemberId: string, status: CompanyTeamMemberStatus): Promise<void>;
   countActiveByCompany(companyId: string): Promise<number>;
+  getTeamStats(companyId: string): Promise<TeamStatsResult>;
 }
 

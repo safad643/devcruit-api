@@ -100,4 +100,52 @@ export class PaymentTransactionRepository
             throw new InternalError('Failed to fetch payment transaction', error as Error);
         }
     }
+
+    async getRevenueTrend(days: number): Promise<{ date: string; amount: number }[]> {
+        try {
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - days + 1);
+            startDate.setHours(0, 0, 0, 0);
+
+            const result = await this._collection.aggregate([
+                { $match: { status: 'succeeded', paidAt: { $gte: startDate } } },
+                {
+                    $group: {
+                        _id: { $dateToString: { format: '%Y-%m-%d', date: '$paidAt' } },
+                        amount: { $sum: '$planSnapshot.finalPrice' }
+                    }
+                }
+            ]).toArray();
+
+            // Build trend array for each day
+            const trend: { date: string; amount: number }[] = [];
+            for (let i = days - 1; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                date.setHours(0, 0, 0, 0);
+                const dateStr = date.toISOString().split('T')[0];
+
+                const found = result.find(r => r._id === dateStr);
+                trend.push({ date: dateStr, amount: found?.amount || 0 });
+            }
+
+            return trend;
+        } catch (error) {
+            throw new InternalError('Failed to get revenue trend', error as Error);
+        }
+    }
+
+    async getTotalRevenue(): Promise<number> {
+        try {
+            const result = await this._collection.aggregate([
+                { $match: { status: 'succeeded' } },
+                { $group: { _id: null, total: { $sum: '$planSnapshot.finalPrice' } } }
+            ]).toArray();
+
+            return result[0]?.total || 0;
+        } catch (error) {
+            throw new InternalError('Failed to get total revenue', error as Error);
+        }
+    }
 }
+

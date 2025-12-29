@@ -212,4 +212,28 @@ export class JobRepository
       throw new InternalError('Failed to count active jobs', error as Error);
     }
   }
+
+  async getStatusCounts(companyId: string): Promise<{ open: number; closed: number; draft: number; total: number }> {
+    try {
+      const pipeline = [
+        { $match: { companyId } },
+        { $group: { _id: '$status', count: { $sum: 1 } } }
+      ];
+
+      const results = await this._collection.aggregate(pipeline).toArray();
+
+      const counts = { open: 0, closed: 0, draft: 0, total: 0 };
+      for (const result of results) {
+        const status = result._id as keyof typeof counts;
+        if (status in counts) {
+          counts[status] = result.count;
+        }
+        counts.total += result.count;
+      }
+
+      return counts;
+    } catch (error) {
+      throw new InternalError('Failed to get job status counts', error as Error);
+    }
+  }
 }

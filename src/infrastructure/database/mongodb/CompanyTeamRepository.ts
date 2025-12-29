@@ -202,5 +202,41 @@ export class CompanyTeamRepository implements ICompanyTeamRepository {
       throw new InternalError('Failed to count active team members', error as Error);
     }
   }
+
+  async getTeamStats(companyId: string): Promise<{ total: number; hr: number; interviewers: number; active: number; invited: number }> {
+    try {
+      const pipeline = [
+        { $match: { companyId } },
+        {
+          $facet: {
+            total: [{ $count: 'count' }],
+            byRole: [{ $group: { _id: '$role', count: { $sum: 1 } } }],
+            byStatus: [{ $group: { _id: '$status', count: { $sum: 1 } } }]
+          }
+        }
+      ];
+
+      const results = await this._collection.aggregate(pipeline).toArray();
+      const facetResult = results[0] || { total: [], byRole: [], byStatus: [] };
+
+      const stats = { total: 0, hr: 0, interviewers: 0, active: 0, invited: 0 };
+
+      stats.total = facetResult.total[0]?.count || 0;
+
+      for (const r of facetResult.byRole) {
+        if (r._id === 'hr') stats.hr = r.count;
+        if (r._id === 'interviewer') stats.interviewers = r.count;
+      }
+
+      for (const s of facetResult.byStatus) {
+        if (s._id === 'active') stats.active = s.count;
+        if (s._id === 'invited') stats.invited = s.count;
+      }
+
+      return stats;
+    } catch (error) {
+      throw new InternalError('Failed to get team stats', error as Error);
+    }
+  }
 }
 

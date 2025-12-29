@@ -32,9 +32,17 @@ export interface PublicJobListFilters {
 export type CreateJobProps = Omit<JobProps, 'id' | 'createdAt' | 'updatedAt' | 'status'> & { status?: JobStatus };
 export type UpdateJobProps = Partial<JobProps>;
 
+export interface JobStatusCounts {
+  open: number;
+  closed: number;
+  draft: number;
+  total: number;
+}
+
 export interface IJobRepository extends IGenericRepository<Job, CreateJobProps, UpdateJobProps> {
   findByCompanyId(companyId: string): Promise<Job[]>;
   listWithFilters(filters: JobListFilters): Promise<JobListResult>;
   listPublicWithFilters(filters: PublicJobListFilters): Promise<JobListResult>;
   countActiveByCompany(companyId: string): Promise<number>;
+  getStatusCounts(companyId: string): Promise<JobStatusCounts>;
 }

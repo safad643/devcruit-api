@@ -138,4 +138,9 @@ export const TYPES = {
   GetConversationUseCase: Symbol.for('GetConversationUseCase'),
   ValidateConversationParticipantUseCase: Symbol.for('ValidateConversationParticipantUseCase'),
   ChatController: Symbol.for('ChatController'),
+
+  // Dashboard module
+  GetCompanyDashboardUseCase: Symbol.for('GetCompanyDashboardUseCase'),
+  GetAdminDashboardUseCase: Symbol.for('GetAdminDashboardUseCase'),
+  DashboardController: Symbol.for('DashboardController'),
 };

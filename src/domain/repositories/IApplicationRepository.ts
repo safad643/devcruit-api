@@ -35,6 +35,27 @@ export type CreateApplicationProps = Omit<ApplicationProps, 'id' | 'appliedAt' |
 };
 export type UpdateApplicationProps = Partial<ApplicationProps>;
 
+export interface RecentApplicationItem {
+  id: string;
+  developerName: string;
+  jobTitle: string;
+  status: string;
+  appliedAt: Date;
+}
+
+export interface UpcomingInterviewItem {
+  applicationId: string;
+  roundName: string;
+  candidateName: string;
+  jobTitle: string;
+  scheduledAt: Date;
+}
+
+export interface ApplicationTrendItem {
+  date: string;
+  count: number;
+}
+
 export interface IApplicationRepository extends IGenericRepository<Application, CreateApplicationProps, UpdateApplicationProps> {
   findByJobId(jobId: string): Promise<Application[]>;
   findByDeveloperId(developerId: string): Promise<Application[]>;
@@ -43,4 +64,9 @@ export interface IApplicationRepository extends IGenericRepository<Application, 
   getMetricsByJobId(jobId: string, companyId: string): Promise<ApplicationMetrics>;
   findByInterviewerId(interviewerId: string): Promise<Application[]>;
   findConflictingInterviews(interviewerId: string, scheduledAt: Date): Promise<Application[]>;
+  // Dashboard aggregation methods
+  getStatusCountsByCompany(companyId: string): Promise<Record<string, number>>;
+  getRecentWithDetails(companyId: string, limit: number): Promise<RecentApplicationItem[]>;
+  getUpcomingInterviews(companyId: string, limit: number): Promise<UpcomingInterviewItem[]>;
+  getApplicationTrend(companyId: string, days: number): Promise<ApplicationTrendItem[]>;
 }

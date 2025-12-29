@@ -82,4 +82,73 @@ export class UserRepository
       throw new InternalError('Database query failed', error as Error);
     }
   }
+
+  async getUserStats(): Promise<{ total: number; developers: number; companies: number; blocked: number }> {
+    try {
+      const result = await this._collection.aggregate([
+        {
+          $facet: {
+            total: [{ $count: 'count' }],
+            byRole: [{ $group: { _id: '$role', count: { $sum: 1 } } }],
+            blocked: [{ $match: { isBlocked: true } }, { $count: 'count' }]
+          }
+        }
+      ]).toArray();
+
+      const facetResult = result[0] || { total: [], byRole: [], blocked: [] };
+      const stats = { total: 0, developers: 0, companies: 0, blocked: 0 };
+
+      stats.total = facetResult.total[0]?.count || 0;
+      stats.blocked = facetResult.blocked[0]?.count || 0;
+
+      for (const r of facetResult.byRole) {
+        if (r._id === 'developer') stats.developers = r.count;
+        if (r._id === 'company') stats.companies = r.count;
+      }
+
+      return stats;
+    } catch (error) {
+      throw new InternalError('Failed to get user stats', error as Error);
+    }
+  }
+
+  async getSignupTrend(days: number): Promise<{ date: string; developers: number; companies: number }[]> {
+    try {
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days + 1);
+      startDate.setHours(0, 0, 0, 0);
+
+      const result = await this._collection.aggregate([
+        { $match: { createdAt: { $gte: startDate } } },
+        {
+          $group: {
+            _id: {
+              date: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+              role: '$role'
+            },
+            count: { $sum: 1 }
+          }
+        }
+      ]).toArray();
+
+      // Build trend array for each day
+      const trend: { date: string; developers: number; companies: number }[] = [];
+      for (let i = days - 1; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        date.setHours(0, 0, 0, 0);
+        const dateStr = date.toISOString().split('T')[0];
+
+        const devCount = result.find(r => r._id.date === dateStr && r._id.role === 'developer')?.count || 0;
+        const compCount = result.find(r => r._id.date === dateStr && r._id.role === 'company')?.count || 0;
+
+        trend.push({ date: dateStr, developers: devCount, companies: compCount });
+      }
+
+      return trend;
+    } catch (error) {
+      throw new InternalError('Failed to get signup trend', error as Error);
+    }
+  }
 }
+
