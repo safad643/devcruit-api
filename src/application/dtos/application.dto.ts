@@ -1,5 +1,10 @@
 import { ApplicationStatus, ShortlistMethod, InterviewRound, InterviewRoundStatus, InterviewRoundResult, StatusNotes } from '../../domain/entities/Application';
 
+// Enriched InterviewRound with resolved interviewer names
+export interface EnrichedInterviewRound extends InterviewRound {
+  interviewerNames: string[];
+}
+
 // Create Application (Apply to Job)
 export interface CreateApplicationInput {
   jobId: string;
@@ -121,7 +126,7 @@ export interface GetApplicationDetailsOutput {
   lastUpdatedAt: Date;
   rejectedAt?: Date;
   rejectedAtStage?: string;
-  interviewRounds: InterviewRound[];
+  interviewRounds: EnrichedInterviewRound[];
   aiMatchScore?: number;
   aiMatchReason?: string;
   // Enriched fields

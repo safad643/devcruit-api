@@ -67,6 +67,25 @@ export class GetApplicationDetailsUseCase implements IGetApplicationDetailsUseCa
     // Get company profile
     const companyProfile = await this._companyProfileRepository.findByUserId(application.companyId);
 
+    // Resolve interviewer names
+    const allInterviewerIds = [...new Set(
+      application.interviewRounds.flatMap(round => round.interviewerIds)
+    )];
+    const interviewerUsers = await Promise.all(
+      allInterviewerIds.map(id => this._userRepository.findById(id))
+    );
+    const interviewerNameMap = new Map<string, string>();
+    allInterviewerIds.forEach((id, index) => {
+      const user = interviewerUsers[index];
+      interviewerNameMap.set(id, user?.name || user?.email || 'Unknown');
+    });
+
+    // Enrich interview rounds with interviewer names
+    const enrichedInterviewRounds = application.interviewRounds.map(round => ({
+      ...round,
+      interviewerNames: round.interviewerIds.map(id => interviewerNameMap.get(id) || 'Unknown')
+    }));
+
     return {
       id: application.id,
       jobId: application.jobId,
@@ -79,7 +98,7 @@ export class GetApplicationDetailsUseCase implements IGetApplicationDetailsUseCa
       lastUpdatedAt: application.lastUpdatedAt,
       rejectedAt: application.rejectedAt,
       rejectedAtStage: application.rejectedAtStage,
-      interviewRounds: application.interviewRounds,
+      interviewRounds: enrichedInterviewRounds,
       aiMatchScore: application.aiMatchScore,
       aiMatchReason: application.aiMatchReason,
       job: job ? {
