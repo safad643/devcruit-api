@@ -34,7 +34,7 @@ export class DeveloperProfileRepository
       workHistory: toArray(doc.workHistory),
       employmentStatus: doc.employmentStatus,
       education: toArray(doc.education),
-      certifications: toArray(doc.certifications),
+
       githubUrl: doc.githubUrl,
       portfolioUrl: doc.portfolioUrl,
       projects: toArray(doc.projects),
@@ -63,7 +63,7 @@ export class DeveloperProfileRepository
         workHistory: profile.workHistory,
         employmentStatus: profile.employmentStatus,
         education: profile.education,
-        certifications: profile.certifications,
+
         githubUrl: profile.githubUrl,
         portfolioUrl: profile.portfolioUrl,
         projects: profile.projects,
@@ -232,7 +232,7 @@ export class DeveloperProfileRepository
       pipeline.push({
         $project: {
           _id: 1, userId: 1, profilePhotoUrl: 1, bio: 1, skills: 1, techs: 1,
-          workHistory: 1, employmentStatus: 1, education: 1, certifications: 1,
+          workHistory: 1, employmentStatus: 1, education: 1,
           githubUrl: 1, portfolioUrl: 1, projects: 1, linkedinUrl: 1,
           desiredSalary: 1, jobTypePreferences: 1, workArrangement: 1,
           yearsExperience: 1, seniorityLevel: 1, willingToRelocate: 1,

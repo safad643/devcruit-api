@@ -1,4 +1,4 @@
-import { IDeveloperProfileRepository, IUserRepository } from '../../../domain/repositories';
+import { IDeveloperProfileRepository, IUserRepository, IJobFieldRepository } from '../../../domain/repositories';
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { CreateDeveloperProfileInput, CreateDeveloperProfileOutput } from '../../dtos/profile.dto';
@@ -10,7 +10,8 @@ import { DateValidator } from '../../validators/date-validator';
 export class CreateDeveloperProfileUseCase {
   constructor(
     @inject(TYPES.DeveloperProfileRepository) private _profileRepository: IDeveloperProfileRepository,
-    @inject(TYPES.UserRepository) private _userRepository: IUserRepository
+    @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
+    @inject(TYPES.JobFieldRepository) private _jobFieldRepository: IJobFieldRepository
   ) { }
 
   async execute(input: CreateDeveloperProfileInput): Promise<CreateDeveloperProfileOutput> {
@@ -37,6 +38,29 @@ export class CreateDeveloperProfileUseCase {
       DateValidator.validateWorkHistoryDates(input.workHistory);
     }
 
+    // 3.6. Validate education dates
+    if (input.education && input.education.length > 0) {
+      DateValidator.validateEducationDates(input.education);
+    }
+
+
+
+    // 3.8. Validate skills exist in JobField table
+    if (input.skills && input.skills.length > 0) {
+      const missingSkills = await this._jobFieldRepository.findMissingNames('skill', input.skills);
+      if (missingSkills.length > 0) {
+        throw new ValidationError(`Invalid skills: ${missingSkills.join(', ')}`);
+      }
+    }
+
+    // 3.9. Validate techs exist in JobField table
+    if (input.techs && input.techs.length > 0) {
+      const missingTechs = await this._jobFieldRepository.findMissingNames('tech', input.techs);
+      if (missingTechs.length > 0) {
+        throw new ValidationError(`Invalid technologies: ${missingTechs.join(', ')}`);
+      }
+    }
+
     // 4. Create the profile
     const profile = DeveloperProfile.create({
       userId: input.userId,
@@ -47,7 +71,7 @@ export class CreateDeveloperProfileUseCase {
       workHistory: input.workHistory,
       employmentStatus: input.employmentStatus,
       education: input.education,
-      certifications: input.certifications,
+
       githubUrl: input.githubUrl,
       portfolioUrl: input.portfolioUrl,
       projects: input.projects,

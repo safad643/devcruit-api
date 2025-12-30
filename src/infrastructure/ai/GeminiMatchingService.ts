@@ -106,9 +106,6 @@ ${this._formatWorkHistory(candidate)}
 EDUCATION:
 ${this._formatEducation(candidate)}
 
-CERTIFICATIONS:
-${this._formatCertifications(candidate)}
-
 PROJECTS:
 ${this._formatProjects(candidate)}
 
@@ -140,13 +137,6 @@ Return the match score.`;
         if (!candidate.education.length) return 'No education provided';
         return candidate.education.map(e =>
             `- ${e.degreeType} in ${e.fieldOfStudy} from ${e.institution} (${e.graduationYear || 'N/A'})`
-        ).join('\n');
-    }
-
-    private _formatCertifications(candidate: DeveloperProfile): string {
-        if (!candidate.certifications.length) return 'No certifications provided';
-        return candidate.certifications.map(c =>
-            `- ${c.name} by ${c.issuingOrganization} (${c.dateObtained})`
         ).join('\n');
     }
 

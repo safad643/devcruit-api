@@ -20,13 +20,6 @@ const EducationSchema = Type.Object({
   certificateUrl: Type.Optional(Type.String({ format: 'uri' }))
 });
 
-// Certification Schema
-const CertificationSchema = Type.Object({
-  name: Type.String({ minLength: 1, maxLength: 200 }),
-  issuingOrganization: Type.String({ minLength: 1, maxLength: 200 }),
-  dateObtained: Type.String({ format: 'date' })
-});
-
 // Project Schema
 const ProjectSchema = Type.Object({
   name: Type.String({ minLength: 1, maxLength: 200 }),
@@ -57,7 +50,7 @@ export const CreateDeveloperProfileSchema = Type.Object({
 
   // ✅ Make these optional
   education: Type.Array(EducationSchema, { minItems: 1 }),
-  certifications: Type.Array(CertificationSchema, { minItems: 0 }),
+
 
   githubUrl: Type.String({ format: 'uri' }),
   portfolioUrl: Type.Optional(Type.String({ format: 'uri' })),
@@ -129,7 +122,7 @@ export const UpdateDeveloperProfileSchema = Type.Object({
     Type.Literal('looking')
   ])),
   education: Type.Optional(Type.Array(EducationSchema, { minItems: 1 })),
-  certifications: Type.Optional(Type.Array(CertificationSchema)),
+
   githubUrl: Type.Optional(Type.String({ format: 'uri' })),
   portfolioUrl: Type.Optional(Type.String({ format: 'uri' })),
   projects: Type.Optional(Type.Array(ProjectSchema, { minItems: 1 })),

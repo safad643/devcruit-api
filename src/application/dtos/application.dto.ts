@@ -46,6 +46,8 @@ export interface ApplicationListItem {
   developerEmail?: string;
   developerTechs?: string[]; // Top tech skills for quick scan
   developerYearsExperience?: number;
+  aiMatchScore?: number;
+  aiMatchReason?: string;
 }
 
 export interface ListApplicationsForCompanyOutput {
@@ -104,6 +106,8 @@ export interface GetApplicationDetailsOutput {
   rejectedAt?: Date;
   rejectedAtStage?: string;
   interviewRounds: InterviewRound[];
+  aiMatchScore?: number;
+  aiMatchReason?: string;
   // Enriched fields
   job?: {
     id: string;
@@ -136,11 +140,6 @@ export interface GetApplicationDetailsOutput {
       fieldOfStudy: string;
       graduationYear: number | null;
       certificateUrl?: string;
-    }[];
-    certifications?: {
-      name: string;
-      issuingOrganization: string;
-      dateObtained: string;
     }[];
     projects?: {
       name: string;

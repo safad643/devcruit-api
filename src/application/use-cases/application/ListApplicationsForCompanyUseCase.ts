@@ -78,6 +78,8 @@ export class ListApplicationsForCompanyUseCase implements IListApplicationsForCo
           developerUserId,
           developerTechs: developerProfile?.techs?.slice(0, 4), // Top 4 for quick scan
           developerYearsExperience: developerProfile?.yearsExperience,
+          aiMatchScore: application.aiMatchScore,
+          aiMatchReason: application.aiMatchReason,
         };
       })
     );

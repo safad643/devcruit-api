@@ -1,16 +1,15 @@
-import { 
-  WorkHistory, 
-  Education, 
-  Certification, 
-  Project, 
-  JobType, 
-  WorkArrangement, 
-  SeniorityLevel 
+import {
+  WorkHistory,
+  Education,
+  Project,
+  JobType,
+  WorkArrangement,
+  SeniorityLevel
 } from '../../domain/entities/DeveloperProfile';
 import { CompanyProfileStatus } from '../../domain/entities/CompanyProfile';
 import { PlanHistoryItem } from '../../domain/entities/CompanyProfile';
 import { DocumentReuploadRequest } from '../../domain/entities/CompanyProfile';
-import { CompanyDocumentKey } from '../../domain/types'; 
+import { CompanyDocumentKey } from '../../domain/types';
 export interface CreateDeveloperProfileInput {
   userId: string;
   profilePhotoUrl: string;
@@ -20,7 +19,7 @@ export interface CreateDeveloperProfileInput {
   workHistory: WorkHistory[];
   employmentStatus: 'employed' | 'unemployed' | 'self-employed' | 'student' | 'looking';
   education: Education[];
-  certifications: Certification[];
+
   githubUrl: string;
   portfolioUrl?: string;
   projects: Project[];
@@ -48,7 +47,7 @@ export interface UpdateDeveloperProfileInput {
   workHistory?: WorkHistory[];
   employmentStatus?: 'employed' | 'unemployed' | 'self-employed' | 'student' | 'looking';
   education?: Education[];
-  certifications?: Certification[];
+
   githubUrl?: string;
   portfolioUrl?: string;
   projects?: Project[];
@@ -100,7 +99,7 @@ export interface GetDeveloperProfileOutput {
   workHistory: WorkHistory[];
   employmentStatus: 'employed' | 'unemployed' | 'self-employed' | 'student' | 'looking';
   education: Education[];
-  certifications: Certification[];
+
   githubUrl?: string;
   portfolioUrl?: string;
   projects: Project[];

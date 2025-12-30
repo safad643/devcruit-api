@@ -18,13 +18,6 @@ export interface Education {
   certificateUrl?: string; // Optional URL to uploaded certificate document
 }
 
-// Certification Interface
-export interface Certification {
-  name: string;
-  issuingOrganization: string;
-  dateObtained: string;
-}
-
 // Project Interface
 export interface Project {
   name: string;
@@ -50,7 +43,7 @@ export interface DeveloperProfileProps {
   workHistory: WorkHistory[];
   employmentStatus: 'employed' | 'unemployed' | 'self-employed' | 'student' | 'looking';
   education: Education[];
-  certifications: Certification[];
+
   githubUrl: string;
   portfolioUrl?: string;
   projects: Project[];
@@ -76,7 +69,7 @@ export class DeveloperProfile {
   public readonly workHistory: WorkHistory[];
   public readonly employmentStatus: 'employed' | 'unemployed' | 'self-employed' | 'student' | 'looking';
   public readonly education: Education[];
-  public readonly certifications: Certification[];
+
   public readonly githubUrl: string;
   public readonly portfolioUrl?: string;
   public readonly projects: Project[];
@@ -101,7 +94,7 @@ export class DeveloperProfile {
     this.workHistory = props.workHistory;
     this.employmentStatus = props.employmentStatus;
     this.education = props.education;
-    this.certifications = props.certifications;
+
     this.githubUrl = props.githubUrl;
     this.portfolioUrl = props.portfolioUrl;
     this.projects = props.projects;

@@ -8,11 +8,11 @@ import { NotFoundError } from '../../../domain/errors';
 export class GetDeveloperProfileUseCase {
   constructor(
     @inject(TYPES.DeveloperProfileRepository) private _profileRepository: IDeveloperProfileRepository
-  ) {}
+  ) { }
 
   async execute(userId: string): Promise<GetDeveloperProfileOutput> {
     const profile = await this._profileRepository.findByUserId(userId);
-    
+
     if (!profile) {
       throw new NotFoundError('Developer profile not found');
     }
@@ -27,7 +27,6 @@ export class GetDeveloperProfileUseCase {
       workHistory: profile.workHistory,
       employmentStatus: profile.employmentStatus,
       education: profile.education,
-      certifications: profile.certifications,
       githubUrl: profile.githubUrl,
       portfolioUrl: profile.portfolioUrl,
       projects: profile.projects,

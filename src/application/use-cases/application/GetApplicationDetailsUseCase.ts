@@ -80,6 +80,8 @@ export class GetApplicationDetailsUseCase implements IGetApplicationDetailsUseCa
       rejectedAt: application.rejectedAt,
       rejectedAtStage: application.rejectedAtStage,
       interviewRounds: application.interviewRounds,
+      aiMatchScore: application.aiMatchScore,
+      aiMatchReason: application.aiMatchReason,
       job: job ? {
         id: job.id,
         title: job.title,
@@ -98,7 +100,6 @@ export class GetApplicationDetailsUseCase implements IGetApplicationDetailsUseCa
         techs: developerProfile.techs,
         workHistory: developerProfile.workHistory,
         education: developerProfile.education,
-        certifications: developerProfile.certifications,
         projects: developerProfile.projects,
         githubUrl: developerProfile.githubUrl,
         portfolioUrl: developerProfile.portfolioUrl,

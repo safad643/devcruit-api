@@ -64,4 +64,34 @@ export class DateValidator {
             }
         });
     }
+
+
+    static validateEducationDates(education: EducationEntry[]): void {
+        const currentYear = new Date().getFullYear();
+        const fiftyYearsAgo = currentYear - 50;
+
+        education.forEach((entry, index) => {
+            const identifier = entry.institution || `entry #${index + 1}`;
+
+            if (entry.graduationYear !== null && entry.graduationYear !== undefined) {
+                if (entry.graduationYear > currentYear) {
+                    throw new ValidationError(
+                        `Education ${identifier}: Graduation year cannot be in the future`
+                    );
+                }
+                if (entry.graduationYear < fiftyYearsAgo) {
+                    throw new ValidationError(
+                        `Education ${identifier}: Graduation year cannot be more than 50 years ago`
+                    );
+                }
+            }
+        });
+    }
+
 }
+
+export interface EducationEntry {
+    graduationYear: number | null;
+    institution?: string;
+}
+
