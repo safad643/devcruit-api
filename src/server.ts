@@ -22,7 +22,6 @@ import fastifyRawBody from 'fastify-raw-body';
 import { globalErrorHandler } from './presentation/middleware/errorHandler';
 import { config } from './config';
 import ajvErrors from 'ajv-errors';
-import { HttpStatus } from './utils/statusCodes';
 import { TooManyRequestsError } from './domain/errors';
 const server = Fastify({
   logger: {
