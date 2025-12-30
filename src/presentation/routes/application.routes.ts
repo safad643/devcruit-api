@@ -47,6 +47,15 @@ export async function applicationRoutes(fastify: FastifyInstance): Promise<void>
     applicationController.withdrawApplication
   );
 
+  fastify.get(
+    '/applications/:id',
+    {
+      preHandler: [authenticate, authorize('developer')],
+      schema: { params: ApplicationIdParamsSchema }
+    },
+    applicationController.getDeveloperApplicationDetails
+  );
+
   // Company routes
   fastify.get(
     '/company/applications',

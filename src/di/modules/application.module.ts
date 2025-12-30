@@ -4,6 +4,7 @@ import { CreateApplicationUseCase } from '../../application/use-cases/applicatio
 import { ListApplicationsForCompanyUseCase } from '../../application/use-cases/application/ListApplicationsForCompanyUseCase';
 import { GetApplicationDetailsUseCase } from '../../application/use-cases/application/GetApplicationDetailsUseCase';
 import { ListApplicationsForDeveloperUseCase } from '../../application/use-cases/application/ListApplicationsForDeveloperUseCase';
+import { GetDeveloperApplicationDetailsUseCase } from '../../application/use-cases/application/GetDeveloperApplicationDetailsUseCase';
 import { WithdrawApplicationUseCase } from '../../application/use-cases/application/WithdrawApplicationUseCase';
 import { GetApplicationMetricsUseCase } from '../../application/use-cases/application/GetApplicationMetricsUseCase';
 import { ShortlistApplicationUseCase } from '../../application/use-cases/application/ShortlistApplicationUseCase';
@@ -31,6 +32,7 @@ import {
   IListApplicationsForCompanyUseCase,
   IGetApplicationDetailsUseCase,
   IListApplicationsForDeveloperUseCase,
+  IGetDeveloperApplicationDetailsUseCase,
   IWithdrawApplicationUseCase,
   IGetApplicationMetricsUseCase,
   IShortlistApplicationUseCase,
@@ -60,6 +62,7 @@ export const applicationModule = new ContainerModule((bind) => {
   bind<IListApplicationsForCompanyUseCase>(TYPES.ListApplicationsForCompanyUseCase).to(ListApplicationsForCompanyUseCase);
   bind<IGetApplicationDetailsUseCase>(TYPES.GetApplicationDetailsUseCase).to(GetApplicationDetailsUseCase);
   bind<IListApplicationsForDeveloperUseCase>(TYPES.ListApplicationsForDeveloperUseCase).to(ListApplicationsForDeveloperUseCase);
+  bind<IGetDeveloperApplicationDetailsUseCase>(TYPES.GetDeveloperApplicationDetailsUseCase).to(GetDeveloperApplicationDetailsUseCase);
   bind<IWithdrawApplicationUseCase>(TYPES.WithdrawApplicationUseCase).to(WithdrawApplicationUseCase);
   bind<IGetApplicationMetricsUseCase>(TYPES.GetApplicationMetricsUseCase).to(GetApplicationMetricsUseCase);
   bind<IShortlistApplicationUseCase>(TYPES.ShortlistApplicationUseCase).to(ShortlistApplicationUseCase);

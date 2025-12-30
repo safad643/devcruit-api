@@ -1,5 +1,5 @@
-import { 
-  IApplicationRepository, 
+import {
+  IApplicationRepository,
   IJobRepository,
   ICompanyProfileRepository,
   IDeveloperProfileRepository
@@ -17,11 +17,10 @@ export class ListApplicationsForDeveloperUseCase implements IListApplicationsFor
     @inject(TYPES.JobRepository) private _jobRepository: IJobRepository,
     @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository,
     @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository
-  ) {}
+  ) { }
 
   async execute(input: ListApplicationsForDeveloperInput & { developerId: string }): Promise<ListApplicationsForDeveloperOutput> {
-    // Get developer profile to get the developerId (profile ID)
-    // Note: input.developerId is the userId, we need to get the profile ID
+
     const developerProfile = await this._developerProfileRepository.findByUserId(input.developerId);
     if (!developerProfile) {
       throw new NotFoundError('Developer profile not found');
@@ -46,22 +45,20 @@ export class ListApplicationsForDeveloperUseCase implements IListApplicationsFor
       result.applications.map(async (application) => {
         // Get job information
         const job = await this._jobRepository.findById(application.jobId);
-        
+
         // Get company profile
         const companyProfile = await this._companyProfileRepository.findByUserId(application.companyId);
 
+        // Compute hasScheduledInterview from interviewRounds
+        const hasScheduledInterview = application.interviewRounds?.some(
+          (r) => r.status === 'scheduled' && !r.result
+        ) ?? false;
+
         return {
           id: application.id,
-          jobId: application.jobId,
-          companyId: application.companyId,
           status: application.status,
-          shortlistMethod: application.shortlistMethod,
-          statusNotes: application.statusNotes,
           appliedAt: application.appliedAt,
-          lastUpdatedAt: application.lastUpdatedAt,
-          rejectedAt: application.rejectedAt,
-          rejectedAtStage: application.rejectedAtStage,
-          interviewRounds: application.interviewRounds,
+          hasScheduledInterview,
           jobTitle: job?.title,
           companyName: companyProfile?.companyName,
         };

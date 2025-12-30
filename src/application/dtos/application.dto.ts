@@ -70,16 +70,9 @@ export interface ListApplicationsForDeveloperInput {
 
 export interface DeveloperApplicationListItem {
   id: string;
-  jobId: string;
-  companyId: string;
   status: ApplicationStatus;
-  shortlistMethod?: ShortlistMethod;
-  statusNotes?: StatusNotes;
   appliedAt: Date;
-  lastUpdatedAt: Date;
-  rejectedAt?: Date;
-  rejectedAtStage?: string;
-  interviewRounds: InterviewRound[];
+  hasScheduledInterview: boolean;
   // Enriched fields for display
   jobTitle?: string;
   companyName?: string;
@@ -90,6 +83,29 @@ export interface ListApplicationsForDeveloperOutput {
   total: number;
   page: number;
   limit: number;
+}
+
+// Get Developer Application Details (for developer viewing their own application)
+export interface DeveloperApplicationDetailsOutput {
+  id: string;
+  jobId: string;
+  companyId: string;
+  status: ApplicationStatus;
+  shortlistMethod?: ShortlistMethod;
+  statusNotes?: StatusNotes;
+  appliedAt: Date;
+  lastUpdatedAt: Date;
+  rejectedAt?: Date;
+  rejectedAtStage?: string;
+  interviewRounds: InterviewRound[];
+  job?: {
+    id: string;
+    title: string;
+  };
+  company?: {
+    id: string;
+    companyName: string;
+  };
 }
 
 // Get Application Details

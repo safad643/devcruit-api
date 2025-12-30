@@ -6,6 +6,7 @@ import {
     CreateApplicationOutput,
     DeclineOfferInput,
     DeclineOfferOutput,
+    DeveloperApplicationDetailsOutput,
     ExtendOfferInput,
     ExtendOfferOutput,
     GetApplicationDetailsOutput,
@@ -36,6 +37,10 @@ export interface IGetApplicationDetailsUseCase {
 
 export interface IListApplicationsForDeveloperUseCase {
     execute(input: ListApplicationsForDeveloperInput & { developerId: string }): Promise<ListApplicationsForDeveloperOutput>;
+}
+
+export interface IGetDeveloperApplicationDetailsUseCase {
+    execute(applicationId: string, developerId: string): Promise<DeveloperApplicationDetailsOutput>;
 }
 
 export interface IWithdrawApplicationUseCase {

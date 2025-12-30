@@ -6,6 +6,7 @@ import {
   IListApplicationsForCompanyUseCase,
   IGetApplicationDetailsUseCase,
   IListApplicationsForDeveloperUseCase,
+  IGetDeveloperApplicationDetailsUseCase,
   IWithdrawApplicationUseCase,
   IGetApplicationMetricsUseCase,
   IShortlistApplicationUseCase,
@@ -29,6 +30,7 @@ export class ApplicationController {
     @inject(TYPES.ListApplicationsForCompanyUseCase) private _listApplicationsForCompanyUseCase: IListApplicationsForCompanyUseCase,
     @inject(TYPES.GetApplicationDetailsUseCase) private _getApplicationDetailsUseCase: IGetApplicationDetailsUseCase,
     @inject(TYPES.ListApplicationsForDeveloperUseCase) private _listApplicationsForDeveloperUseCase: IListApplicationsForDeveloperUseCase,
+    @inject(TYPES.GetDeveloperApplicationDetailsUseCase) private _getDeveloperApplicationDetailsUseCase: IGetDeveloperApplicationDetailsUseCase,
     @inject(TYPES.WithdrawApplicationUseCase) private _withdrawApplicationUseCase: IWithdrawApplicationUseCase,
     @inject(TYPES.GetApplicationMetricsUseCase) private _getApplicationMetricsUseCase: IGetApplicationMetricsUseCase,
     @inject(TYPES.ShortlistApplicationUseCase) private _shortlistApplicationUseCase: IShortlistApplicationUseCase,
@@ -114,6 +116,17 @@ export class ApplicationController {
       sortOrder: query.sortOrder,
     });
 
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
+  };
+
+  // Developer endpoint: Get their own application details
+  getDeveloperApplicationDetails = async (
+    request: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const developerId = request.user?.id as string;
+    const applicationId = request.params.id;
+    const result = await this._getDeveloperApplicationDetailsUseCase.execute(applicationId, developerId);
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 

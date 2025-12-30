@@ -102,6 +102,7 @@ export const TYPES = {
   ListApplicationsForCompanyUseCase: Symbol.for('ListApplicationsForCompanyUseCase'),
   GetApplicationDetailsUseCase: Symbol.for('GetApplicationDetailsUseCase'),
   ListApplicationsForDeveloperUseCase: Symbol.for('ListApplicationsForDeveloperUseCase'),
+  GetDeveloperApplicationDetailsUseCase: Symbol.for('GetDeveloperApplicationDetailsUseCase'),
   WithdrawApplicationUseCase: Symbol.for('WithdrawApplicationUseCase'),
   GetApplicationMetricsUseCase: Symbol.for('GetApplicationMetricsUseCase'),
   ShortlistApplicationUseCase: Symbol.for('ShortlistApplicationUseCase'),
