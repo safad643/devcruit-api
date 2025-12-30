@@ -19,6 +19,7 @@ export const TYPES = {
   PaymentService: Symbol.for('PaymentService'),
   CryptographicService: Symbol.for('CryptographicService'),
   OfferLetterRepository: Symbol.for('OfferLetterRepository'),
+  AIMatchingService: Symbol.for('AIMatchingService'),
 
   // Auth module
   RegisterUserUseCase: Symbol.for('RegisterUserUseCase'),

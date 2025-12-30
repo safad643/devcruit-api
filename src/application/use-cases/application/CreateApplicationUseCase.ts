@@ -1,6 +1,6 @@
-import { 
-  IApplicationRepository, 
-  IJobRepository, 
+import {
+  IApplicationRepository,
+  IJobRepository,
   IDeveloperProfileRepository,
   ICompanyProfileRepository,
   IUserRepository
@@ -9,12 +9,9 @@ import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { NotFoundError, ValidationError } from '../../../domain/errors';
 import { Application, InterviewRound } from '../../../domain/entities/Application';
-import { Job } from '../../../domain/entities/Job';
-import { DeveloperProfile } from '../../../domain/entities/DeveloperProfile';
 import { CreateApplicationInput, CreateApplicationOutput } from '../../dtos/application.dto';
-import { IEmailService } from '../../services';
+import { IEmailService, IAIMatchingService } from '../../services';
 import { ICreateApplicationUseCase } from './interfaces';
-import { getExperienceLevelValue } from '../../../domain/constants/experienceLevel';
 
 @injectable()
 export class CreateApplicationUseCase implements ICreateApplicationUseCase {
@@ -24,8 +21,9 @@ export class CreateApplicationUseCase implements ICreateApplicationUseCase {
     @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository,
     @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository,
     @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
-    @inject(TYPES.EmailService) private _emailService: IEmailService
-  ) {}
+    @inject(TYPES.EmailService) private _emailService: IEmailService,
+    @inject(TYPES.AIMatchingService) private _aiMatchingService: IAIMatchingService
+  ) { }
 
   async execute(input: CreateApplicationInput & { developerId: string }): Promise<CreateApplicationOutput> {
     // 1. Verify developer profile exists
@@ -58,21 +56,25 @@ export class CreateApplicationUseCase implements ICreateApplicationUseCase {
       throw new ValidationError('You have already applied to this job');
     }
 
-    // 5. Get companyId from job (job.companyId is the userId of the company)
+    // 5. Get companyId from job
     const companyId = job.companyId;
 
-    // 6. Determine initial status and shortlist method
+    // 6. Determine initial status
     let status: 'applied' | 'shortlisted' = 'applied';
     let shortlistMethod: 'auto' | 'manual' | undefined = undefined;
     let interviewRounds: InterviewRound[] = [];
+    let aiMatchScore: number | undefined = undefined;
+    let aiMatchReason: string | undefined = undefined;
 
-    // 7. Auto-shortlist logic
+    // 7. Auto-shortlist logic using AI
     if (job.autoShortlist) {
-      const isMatch = this._checkProfileMatch(job, developerProfile);
-      if (isMatch) {
+      const matchResult = await this._aiMatchingService.getMatchScore(job, developerProfile);
+      aiMatchScore = matchResult.score;
+      aiMatchReason = matchResult.reason;
+
+      if (matchResult.shouldShortlist) {
         status = 'shortlisted';
         shortlistMethod = 'auto';
-        // Copy interview rounds from job
         interviewRounds = job.interviewRounds.map(roundName => ({
           roundName,
           status: 'pending' as const,
@@ -81,18 +83,20 @@ export class CreateApplicationUseCase implements ICreateApplicationUseCase {
       }
     }
 
-    // 8. Determine resume URL - use provided resumeUrl or fall back to profile resumeUrl
+    // 8. Determine resume URL
     const resumeUrl = input.resumeUrl || developerProfile.resumeUrl;
 
     // 9. Create the application
     const applicationData = Application.create({
       jobId: input.jobId,
       developerId: developerProfile.id,
-      companyId: companyId,
+      companyId,
       status,
       shortlistMethod,
       interviewRounds,
       resumeUrl,
+      aiMatchScore,
+      aiMatchReason,
     });
 
     const createdApplication = await this._applicationRepository.create(applicationData);
@@ -100,11 +104,9 @@ export class CreateApplicationUseCase implements ICreateApplicationUseCase {
     // 10. Send email notification if shortlisted
     if (status === 'shortlisted') {
       try {
-        // Get company profile for company name
         const companyProfile = await this._companyProfileRepository.findByUserId(companyId);
         const companyName = companyProfile?.companyName || 'the company';
-        
-        // Get developer user email
+
         const developerUser = await this._userRepository.findById(input.developerId);
         if (developerUser?.email) {
           await this._emailService.sendShortlistNotification(
@@ -114,7 +116,6 @@ export class CreateApplicationUseCase implements ICreateApplicationUseCase {
           );
         }
       } catch (error) {
-        // Log error but don't fail the application creation
         console.error('Failed to send shortlist notification email:', error);
       }
     }
@@ -126,46 +127,9 @@ export class CreateApplicationUseCase implements ICreateApplicationUseCase {
       companyId: createdApplication.companyId,
       status: createdApplication.status,
       shortlistMethod: createdApplication.shortlistMethod,
-      message: status === 'shortlisted' 
-        ? 'Application submitted and automatically shortlisted!' 
+      message: status === 'shortlisted'
+        ? 'Application submitted and automatically shortlisted!'
         : 'Application submitted successfully',
     };
   }
-
-  private _checkProfileMatch(job: Job, developerProfile: DeveloperProfile): boolean {
-    // Check required tech match
-    const requiredTechMatch = job.requiredTech.every((tech: string) => 
-      developerProfile.techs.some((devTech: string) => 
-        devTech.toLowerCase() === tech.toLowerCase()
-      )
-    );
-
-    // Check required skills match
-    const requiredSkillsMatch = job.requiredSkills.every((skill: string) => 
-      developerProfile.skills.some((devSkill: string) => 
-        devSkill.toLowerCase() === skill.toLowerCase()
-      )
-    );
-
-    // Check experience level match
-    const experienceLevelMatch = this._checkExperienceLevelMatch(
-      job.experienceLevel,
-      developerProfile.seniorityLevel
-    );
-
-    // Check years of experience
-    const yearsExperienceMatch = developerProfile.yearsExperience >= job.minYears;
-
-    // All required criteria must match
-    return requiredTechMatch && requiredSkillsMatch && experienceLevelMatch && yearsExperienceMatch;
-  }
-
-  private _checkExperienceLevelMatch(jobLevel: string, developerLevel: string): boolean {
-    const jobLevelNum = getExperienceLevelValue(jobLevel);
-    const devLevelNum = getExperienceLevelValue(developerLevel);
-
-    // Developer level should be at least equal to job level
-    return devLevelNum >= jobLevelNum;
-  }
 }
-

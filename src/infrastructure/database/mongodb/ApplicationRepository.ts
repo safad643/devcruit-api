@@ -63,6 +63,8 @@ export class ApplicationRepository
       interviewRounds: mapInterviewRounds(toArray(doc.interviewRounds)),
       resumeUrl: doc.resumeUrl,
       currentOfferLetterId: doc.currentOfferLetterId,
+      aiMatchScore: doc.aiMatchScore,
+      aiMatchReason: doc.aiMatchReason,
     });
   }
 
@@ -80,6 +82,8 @@ export class ApplicationRepository
         rejectedAtStage: application.rejectedAtStage,
         interviewRounds: application.interviewRounds || [],
         resumeUrl: application.resumeUrl,
+        aiMatchScore: application.aiMatchScore,
+        aiMatchReason: application.aiMatchReason,
         appliedAt: now,
         lastUpdatedAt: now,
       };

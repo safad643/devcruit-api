@@ -60,19 +60,21 @@ export interface StatusNotes {
 
 export interface ApplicationProps {
   id: string;
-  jobId: string; // Reference to the Job
-  developerId: string; // Reference to the DeveloperProfile (candidate)
-  companyId: string; // Reference to the CompanyProfile (denormalized for faster queries)
+  jobId: string;
+  developerId: string;
+  companyId: string;
   status: ApplicationStatus;
-  shortlistMethod?: ShortlistMethod; // Set when status becomes 'shortlisted'
-  statusNotes?: StatusNotes; // Notes for different status transitions
+  shortlistMethod?: ShortlistMethod;
+  statusNotes?: StatusNotes;
   appliedAt: Date;
   lastUpdatedAt: Date;
   rejectedAt?: Date;
-  rejectedAtStage?: string; // Exact stage or round at which rejection happened
+  rejectedAtStage?: string;
   interviewRounds: InterviewRound[];
-  resumeUrl?: string; // Optional resume URL for this specific application
-  currentOfferLetterId?: string; // Reference to the latest offer letter
+  resumeUrl?: string;
+  currentOfferLetterId?: string;
+  aiMatchScore?: number;
+  aiMatchReason?: string;
 }
 
 export class Application {
@@ -90,6 +92,8 @@ export class Application {
   public readonly interviewRounds: InterviewRound[];
   public readonly resumeUrl?: string;
   public readonly currentOfferLetterId?: string;
+  public readonly aiMatchScore?: number;
+  public readonly aiMatchReason?: string;
 
   constructor(props: ApplicationProps) {
     this.id = props.id;
@@ -106,6 +110,8 @@ export class Application {
     this.interviewRounds = props.interviewRounds;
     this.resumeUrl = props.resumeUrl;
     this.currentOfferLetterId = props.currentOfferLetterId;
+    this.aiMatchScore = props.aiMatchScore;
+    this.aiMatchReason = props.aiMatchReason;
   }
 
   static create(

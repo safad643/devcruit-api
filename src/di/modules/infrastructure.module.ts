@@ -17,7 +17,7 @@ import {
   IOfferLetterRepository
 } from '../../domain/repositories';
 
-import { IHashService, ITokenService, IAuthTokenService, IEmailService, IGoogleAuthService, IFileService, IPaymentService, ICryptographicService } from '../../application/services';
+import { IHashService, ITokenService, IAuthTokenService, IEmailService, IGoogleAuthService, IFileService, IPaymentService, ICryptographicService, IAIMatchingService } from '../../application/services';
 
 import { UserRepository } from '../../infrastructure/database/mongodb/UserRepository';
 import { AdminRepository } from '../../infrastructure/database/mongodb/AdminRepository';
@@ -40,6 +40,7 @@ import { EmailService } from '../../infrastructure/email/EmailService';
 import { GoogleAuthService } from '../../infrastructure/security/GoogleAuthService';
 import { CloudinaryService } from '../../infrastructure/storage/CloudinaryService';
 import { StripePaymentService } from '../../infrastructure/payment/StripePaymentService';
+import { GeminiMatchingService } from '../../infrastructure/ai/GeminiMatchingService';
 
 
 export const infrastructureModule = new ContainerModule((bind) => {
@@ -67,4 +68,5 @@ export const infrastructureModule = new ContainerModule((bind) => {
   bind<IEmailService>(TYPES.EmailService).to(EmailService).inSingletonScope();
   bind<IFileService>(TYPES.FileService).to(CloudinaryService).inSingletonScope();
   bind<IPaymentService>(TYPES.PaymentService).to(StripePaymentService).inSingletonScope();
+  bind<IAIMatchingService>(TYPES.AIMatchingService).to(GeminiMatchingService).inSingletonScope();
 });

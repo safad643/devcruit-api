@@ -6,6 +6,7 @@
     "@fastify/multipart": "^9.2.1",
     "@fastify/rate-limit": "^10.1.0",
     "@fastify/type-provider-typebox": "^6.1.0",
+    "@google/generative-ai": "^0.24.1",
     "@sinclair/typebox": "^0.34.41",
     "ajv-errors": "^3.0.0",
     "axios": "^1.12.2",

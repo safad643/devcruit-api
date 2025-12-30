@@ -3,7 +3,7 @@ dotenv.config();
 
 
 function getRequiredEnv(key: string): string {
-  const value = process.env[key] ;
+  const value = process.env[key];
   if (!value) {
     throw new Error(`Missing required environment variable: ${key}`);
   }
@@ -19,7 +19,7 @@ function getOptionalEnv(key: string, defaultValue: string): string {
 function validateConfig() {
   const required = ['JWT_SECRET', 'EMAIL_USER', 'EMAIL_PASS', 'EMAIL_FROM', 'COOKIE_SECRET', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_REDIRECT_URI', 'CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'];
   const missing = required.filter(key => !process.env[key]);
-  
+
   if (missing.length > 0) {
     throw new Error(
       `Configuration error: Missing required environment variables: ${missing.join(', ')}`
@@ -55,7 +55,7 @@ export const config = {
     secret: getRequiredEnv('JWT_SECRET'),
     accessTokenExpiry: '2m',
     refreshTokenExpiry: 7 * 24 * 60 * 60,
-  }as const,
+  } as const,
   email: {
     host: getOptionalEnv('EMAIL_HOST', 'smtp.gmail.com'),
     port: parseInt(getOptionalEnv('EMAIL_PORT', '587')),
@@ -73,8 +73,8 @@ export const config = {
     length: parseInt(getOptionalEnv('OTP_LENGTH', '6')),
     maxAttempts: parseInt(getOptionalEnv('OTP_MAX_ATTEMPTS', '3')),
   },
-  pendingUser:{
-    ttl:120
+  pendingUser: {
+    ttl: 120
   },
   cloudinary: {
     cloudName: getRequiredEnv('CLOUDINARY_CLOUD_NAME'),
@@ -98,5 +98,8 @@ export const config = {
   },
   webApp: {
     url: getOptionalEnv('WEB_APP_URL', 'http://localhost:3000')
+  },
+  gemini: {
+    apiKey: getOptionalEnv('GEMINI_API_KEY', ''),
   }
 };

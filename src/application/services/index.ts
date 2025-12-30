@@ -6,3 +6,4 @@ export * from './IGoogleAuthService';
 export * from './IFileService';
 export * from './IPaymentService';
 export * from './ICryptographicService';
+export * from './IAIMatchingService';
