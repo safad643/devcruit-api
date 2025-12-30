@@ -232,22 +232,48 @@ export class ApplicationRepository
     }
   }
 
-  async findConflictingInterviews(interviewerId: string, scheduledAt: Date): Promise<Application[]> {
+  async hasConflictingInterview(
+    interviewerId: string,
+    scheduledAt: Date,
+    excludeApplicationId?: string,
+    excludeRoundName?: string
+  ): Promise<boolean> {
     try {
       const oneHourBefore = new Date(scheduledAt.getTime() - 60 * 60 * 1000);
       const oneHourAfter = new Date(scheduledAt.getTime() + 60 * 60 * 1000);
 
-      const docs = await this._collection.find({
-        'interviewRounds': {
-          $elemMatch: {
-            'interviewerIds': interviewerId,
-            'status': 'scheduled',
-            'scheduledAt': { $gte: oneHourBefore, $lte: oneHourAfter }
+      const pipeline: Document[] = [
+        // Unwind to check each round individually
+        { $unwind: '$interviewRounds' },
+        // Match rounds that conflict
+        {
+          $match: {
+            'interviewRounds.interviewerIds': interviewerId,
+            'interviewRounds.status': 'scheduled',
+            'interviewRounds.scheduledAt': { $gt: oneHourBefore, $lt: oneHourAfter }
           }
         }
-      }).toArray();
+      ];
 
-      return docs.map(doc => this._mapToEntity(doc));
+      // Exclude specific application + round if provided (for rescheduling)
+      if (excludeApplicationId && excludeRoundName) {
+        pipeline.push({
+          $match: {
+            $nor: [
+              {
+                _id: new ObjectId(excludeApplicationId),
+                'interviewRounds.roundName': excludeRoundName
+              }
+            ]
+          }
+        });
+      }
+
+      // Count matching rounds
+      pipeline.push({ $count: 'total' });
+
+      const result = await this._collection.aggregate(pipeline).toArray();
+      return result.length > 0 && result[0].total > 0;
     } catch (error) {
       throw new InternalError('Failed to check for conflicting interviews', error as Error);
     }

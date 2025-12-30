@@ -63,7 +63,12 @@ export interface IApplicationRepository extends IGenericRepository<Application, 
   listWithFilters(filters: ApplicationListFilters): Promise<ApplicationListResult>;
   getMetricsByJobId(jobId: string, companyId: string): Promise<ApplicationMetrics>;
   findByInterviewerId(interviewerId: string): Promise<Application[]>;
-  findConflictingInterviews(interviewerId: string, scheduledAt: Date): Promise<Application[]>;
+  hasConflictingInterview(
+    interviewerId: string,
+    scheduledAt: Date,
+    excludeApplicationId?: string,
+    excludeRoundName?: string
+  ): Promise<boolean>;
   // Dashboard aggregation methods
   getStatusCountsByCompany(companyId: string): Promise<Record<string, number>>;
   getRecentWithDetails(companyId: string, limit: number): Promise<RecentApplicationItem[]>;

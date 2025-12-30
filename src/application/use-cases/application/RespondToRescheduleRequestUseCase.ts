@@ -52,13 +52,16 @@ export class RespondToRescheduleRequestUseCase implements IRespondToRescheduleRe
                 throw new ValidationError('Scheduled date must be in the future');
             }
 
-            // 6a. Check for conflicts if interviewer is specified or use existing
+            // 6a. Check for conflicts (exclude current round being rescheduled)
             const interviewerId = input.newInterviewerId || round.interviewerIds[0];
             if (interviewerId) {
-                const conflicts = await this._applicationRepository.findConflictingInterviews(interviewerId, newScheduledAt);
-                // Exclude current application from conflicts
-                const realConflicts = conflicts.filter(c => c.id !== application.id);
-                if (realConflicts.length > 0) {
+                const hasConflict = await this._applicationRepository.hasConflictingInterview(
+                    interviewerId,
+                    newScheduledAt,
+                    input.applicationId,
+                    input.roundName
+                );
+                if (hasConflict) {
                     throw new ValidationError('This interviewer has a conflicting interview at this time');
                 }
             }

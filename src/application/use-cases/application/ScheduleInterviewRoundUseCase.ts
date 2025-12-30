@@ -82,8 +82,8 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
     }
 
     // 7. Check for scheduling conflicts
-    const conflicts = await this._applicationRepository.findConflictingInterviews(input.interviewerId, scheduledAt);
-    if (conflicts.length > 0) {
+    const hasConflict = await this._applicationRepository.hasConflictingInterview(input.interviewerId, scheduledAt);
+    if (hasConflict) {
       // Format the scheduled time for display
       const timeStr = scheduledAt.toLocaleString('en-US', {
         month: 'short',
