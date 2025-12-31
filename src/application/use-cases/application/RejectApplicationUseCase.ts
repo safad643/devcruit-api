@@ -12,7 +12,7 @@ import { ApplicationStatus, StatusNotes, ApplicationProps } from '../../../domai
 import { RejectApplicationInput, RejectApplicationOutput } from '../../dtos/application.dto';
 import { IEmailService } from '../../services';
 import { IRejectApplicationUseCase } from './interfaces';
-import { ICreateNotificationUseCase } from '../notification/interfaces';
+import { INotificationService } from '../../services/INotificationService';
 
 @injectable()
 export class RejectApplicationUseCase implements IRejectApplicationUseCase {
@@ -23,7 +23,7 @@ export class RejectApplicationUseCase implements IRejectApplicationUseCase {
     @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository,
     @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
     @inject(TYPES.EmailService) private _emailService: IEmailService,
-    @inject(TYPES.CreateNotificationUseCase) private _createNotificationUseCase: ICreateNotificationUseCase
+    @inject(TYPES.NotificationService) private _notificationService: INotificationService
   ) { }
 
   async execute(input: RejectApplicationInput): Promise<RejectApplicationOutput> {
@@ -92,7 +92,7 @@ export class RejectApplicationUseCase implements IRejectApplicationUseCase {
         }
 
         // Send in-app notification
-        await this._createNotificationUseCase.execute({
+        await this._notificationService.create({
           userId: developerProfile.userId,
           type: 'application_rejected',
           title: 'Application Update',

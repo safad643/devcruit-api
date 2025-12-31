@@ -3,7 +3,7 @@ import { TYPES } from '../../../di/types';
 import { IApplicationRepository, IDeveloperProfileRepository, IJobRepository } from '../../../domain/repositories';
 import { NotFoundError, ForbiddenError, ValidationError } from '../../../domain/errors';
 import { IRespondToRescheduleRequestUseCase, RespondToRescheduleRequestInput, RespondToRescheduleRequestOutput } from './interfaces';
-import { ICreateNotificationUseCase } from '../notification/interfaces';
+import { INotificationService } from '../../services/INotificationService';
 
 @injectable()
 export class RespondToRescheduleRequestUseCase implements IRespondToRescheduleRequestUseCase {
@@ -11,7 +11,7 @@ export class RespondToRescheduleRequestUseCase implements IRespondToRescheduleRe
         @inject(TYPES.ApplicationRepository) private _applicationRepository: IApplicationRepository,
         @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository,
         @inject(TYPES.JobRepository) private _jobRepository: IJobRepository,
-        @inject(TYPES.CreateNotificationUseCase) private _createNotificationUseCase: ICreateNotificationUseCase
+        @inject(TYPES.NotificationService) private _notificationService: INotificationService
     ) { }
 
     async execute(input: RespondToRescheduleRequestInput & { companyId: string }): Promise<RespondToRescheduleRequestOutput> {
@@ -97,7 +97,7 @@ export class RespondToRescheduleRequestUseCase implements IRespondToRescheduleRe
                 const timeStr = newScheduledAt.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
 
                 if (developerProfile && job) {
-                    await this._createNotificationUseCase.execute({
+                    await this._notificationService.create({
                         userId: developerProfile.userId,
                         type: 'reschedule_responded',
                         title: 'Reschedule Approved',
@@ -135,7 +135,7 @@ export class RespondToRescheduleRequestUseCase implements IRespondToRescheduleRe
                 const job = await this._jobRepository.findById(application.jobId);
 
                 if (developerProfile && job) {
-                    await this._createNotificationUseCase.execute({
+                    await this._notificationService.create({
                         userId: developerProfile.userId,
                         type: 'reschedule_responded',
                         title: 'Reschedule Request Declined',

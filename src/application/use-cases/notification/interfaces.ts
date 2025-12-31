@@ -1,16 +1,4 @@
-import { Notification, NotificationProps } from '../../../domain/entities/Notification';
-
-export interface CreateNotificationInput {
-    userId: string;
-    type: NotificationProps['type'];
-    title: string;
-    message: string;
-    data?: Record<string, unknown>;
-}
-
-export interface CreateNotificationOutput {
-    notification: Notification;
-}
+import { Notification } from '../../../domain/entities/Notification';
 
 export interface GetNotificationsInput {
     userId: string;
@@ -31,10 +19,6 @@ export interface MarkNotificationReadInput {
 
 export interface MarkNotificationReadOutput {
     success: boolean;
-}
-
-export interface ICreateNotificationUseCase {
-    execute(input: CreateNotificationInput): Promise<CreateNotificationOutput>;
 }
 
 export interface IGetNotificationsUseCase {

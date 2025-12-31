@@ -150,7 +150,7 @@ export const TYPES = {
   // Notification module
   NotificationRepository: Symbol.for('NotificationRepository'),
   NotificationPusher: Symbol.for('NotificationPusher'),
-  CreateNotificationUseCase: Symbol.for('CreateNotificationUseCase'),
+  NotificationService: Symbol.for('NotificationService'),
   GetNotificationsUseCase: Symbol.for('GetNotificationsUseCase'),
   MarkNotificationReadUseCase: Symbol.for('MarkNotificationReadUseCase'),
   NotificationController: Symbol.for('NotificationController'),

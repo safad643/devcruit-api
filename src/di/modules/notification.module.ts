@@ -7,12 +7,13 @@ import { NotificationRepository } from '../../infrastructure/database/mongodb/No
 import { INotificationPusher } from '../../application/services/INotificationPusher';
 import { SocketNotificationPusher } from '../../infrastructure/socket/SocketNotificationPusher';
 
+import { INotificationService } from '../../application/services/INotificationService';
+import { NotificationService } from '../../application/services/NotificationService';
+
 import {
-    ICreateNotificationUseCase,
     IGetNotificationsUseCase,
     IMarkNotificationReadUseCase,
 } from '../../application/use-cases/notification/interfaces';
-import { CreateNotificationUseCase } from '../../application/use-cases/notification/CreateNotificationUseCase';
 import { GetNotificationsUseCase } from '../../application/use-cases/notification/GetNotificationsUseCase';
 import { MarkNotificationReadUseCase } from '../../application/use-cases/notification/MarkNotificationReadUseCase';
 
@@ -29,11 +30,12 @@ export const notificationModule = new ContainerModule((bind) => {
         .to(SocketNotificationPusher)
         .inSingletonScope();
 
-    // Use cases
-    bind<ICreateNotificationUseCase>(TYPES.CreateNotificationUseCase)
-        .to(CreateNotificationUseCase)
+    // Notification service
+    bind<INotificationService>(TYPES.NotificationService)
+        .to(NotificationService)
         .inSingletonScope();
 
+    // Use cases
     bind<IGetNotificationsUseCase>(TYPES.GetNotificationsUseCase)
         .to(GetNotificationsUseCase)
         .inSingletonScope();
@@ -47,4 +49,3 @@ export const notificationModule = new ContainerModule((bind) => {
         .to(NotificationController)
         .inSingletonScope();
 });
-

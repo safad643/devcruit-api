@@ -13,7 +13,7 @@ import { ApplicationStatus, StatusNotes, ApplicationProps } from '../../../domai
 import { DeclineOfferInput, DeclineOfferOutput } from '../../dtos/application.dto';
 import { IEmailService } from '../../services';
 import { IDeclineOfferUseCase } from './interfaces';
-import { ICreateNotificationUseCase } from '../notification/interfaces';
+import { INotificationService } from '../../services/INotificationService';
 
 @injectable()
 export class DeclineOfferUseCase implements IDeclineOfferUseCase {
@@ -25,7 +25,7 @@ export class DeclineOfferUseCase implements IDeclineOfferUseCase {
     @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
     @inject(TYPES.EmailService) private _emailService: IEmailService,
     @inject(TYPES.OfferLetterRepository) private _offerLetterRepository: IOfferLetterRepository,
-    @inject(TYPES.CreateNotificationUseCase) private _createNotificationUseCase: ICreateNotificationUseCase
+    @inject(TYPES.NotificationService) private _notificationService: INotificationService
   ) { }
 
   async execute(input: DeclineOfferInput): Promise<DeclineOfferOutput> {
@@ -89,7 +89,7 @@ export class DeclineOfferUseCase implements IDeclineOfferUseCase {
       const developerUser = await this._userRepository.findById(developerProfile.userId);
       const developerName = developerUser?.name || 'A candidate';
 
-      await this._createNotificationUseCase.execute({
+      await this._notificationService.create({
         userId: application.companyId,
         type: 'offer_declined',
         title: 'Offer Declined',

@@ -8,3 +8,4 @@ export * from './IPaymentService';
 export * from './ICryptographicService';
 export * from './IAIMatchingService';
 export * from './INotificationPusher';
+export * from './INotificationService';

@@ -3,7 +3,7 @@ import { TYPES } from '../../../di/types';
 import { IApplicationRepository, IDeveloperProfileRepository, IJobRepository } from '../../../domain/repositories';
 import { NotFoundError, ForbiddenError, ValidationError } from '../../../domain/errors';
 import { IRequestRescheduleUseCase, RequestRescheduleInput, RequestRescheduleOutput } from './interfaces';
-import { ICreateNotificationUseCase } from '../notification/interfaces';
+import { INotificationService } from '../../services/INotificationService';
 
 @injectable()
 export class RequestRescheduleUseCase implements IRequestRescheduleUseCase {
@@ -11,7 +11,7 @@ export class RequestRescheduleUseCase implements IRequestRescheduleUseCase {
         @inject(TYPES.ApplicationRepository) private _applicationRepository: IApplicationRepository,
         @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository,
         @inject(TYPES.JobRepository) private _jobRepository: IJobRepository,
-        @inject(TYPES.CreateNotificationUseCase) private _createNotificationUseCase: ICreateNotificationUseCase
+        @inject(TYPES.NotificationService) private _notificationService: INotificationService
     ) { }
 
     async execute(input: RequestRescheduleInput & { developerId: string }): Promise<RequestRescheduleOutput> {
@@ -73,7 +73,7 @@ export class RequestRescheduleUseCase implements IRequestRescheduleUseCase {
         try {
             const job = await this._jobRepository.findById(application.jobId);
             if (job) {
-                await this._createNotificationUseCase.execute({
+                await this._notificationService.create({
                     userId: application.companyId,
                     type: 'reschedule_requested',
                     title: 'Reschedule Requested',

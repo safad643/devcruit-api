@@ -12,7 +12,7 @@ import { ApplicationStatus, StatusNotes, ApplicationProps } from '../../../domai
 import { ExtendOfferInput, ExtendOfferOutput } from '../../dtos/application.dto';
 import { IEmailService } from '../../services';
 import { IExtendOfferUseCase } from './interfaces';
-import { ICreateNotificationUseCase } from '../notification/interfaces';
+import { INotificationService } from '../../services/INotificationService';
 
 @injectable()
 export class ExtendOfferUseCase implements IExtendOfferUseCase {
@@ -23,7 +23,7 @@ export class ExtendOfferUseCase implements IExtendOfferUseCase {
     @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository,
     @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
     @inject(TYPES.EmailService) private _emailService: IEmailService,
-    @inject(TYPES.CreateNotificationUseCase) private _createNotificationUseCase: ICreateNotificationUseCase
+    @inject(TYPES.NotificationService) private _notificationService: INotificationService
   ) { }
 
   async execute(input: ExtendOfferInput): Promise<ExtendOfferOutput> {
@@ -76,7 +76,7 @@ export class ExtendOfferUseCase implements IExtendOfferUseCase {
         const companyName = companyProfile?.companyName || 'the company';
 
         // Send in-app notification
-        await this._createNotificationUseCase.execute({
+        await this._notificationService.create({
           userId: developerProfile.userId,
           type: 'offer_extended',
           title: 'Job Offer Received',

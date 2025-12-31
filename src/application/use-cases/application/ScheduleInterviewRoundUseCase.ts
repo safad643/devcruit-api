@@ -6,7 +6,7 @@ import { IScheduleInterviewRoundUseCase, ScheduleInterviewRoundInput, ScheduleIn
 import { InterviewerProfile } from '../../../domain/entities/InterviewerProfile';
 import { HRProfile } from '../../../domain/entities/HRProfile';
 import { IEmailService } from '../../services';
-import { ICreateNotificationUseCase } from '../notification/interfaces';
+import { INotificationService } from '../../services/INotificationService';
 
 @injectable()
 export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUseCase {
@@ -18,7 +18,7 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
     @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
     @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository,
     @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository,
-    @inject(TYPES.CreateNotificationUseCase) private _createNotificationUseCase: ICreateNotificationUseCase
+    @inject(TYPES.NotificationService) private _notificationService: INotificationService
   ) { }
 
   async execute(input: ScheduleInterviewRoundInput & { companyId: string }): Promise<ScheduleInterviewRoundOutput> {
@@ -152,7 +152,7 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
 
       // Notify developer
       if (developerProfile) {
-        await this._createNotificationUseCase.execute({
+        await this._notificationService.create({
           userId: developerProfile.userId,
           type: 'interview_scheduled',
           title: 'Interview Scheduled',
@@ -162,7 +162,7 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
       }
 
       // Notify interviewer
-      await this._createNotificationUseCase.execute({
+      await this._notificationService.create({
         userId: input.interviewerId,
         type: 'interview_scheduled',
         title: 'Interview Assigned',

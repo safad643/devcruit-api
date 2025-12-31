@@ -3,7 +3,7 @@ import { TYPES } from '../../../di/types';
 import { IApplicationRepository, IDeveloperProfileRepository, IJobRepository } from '../../../domain/repositories';
 import { NotFoundError, ForbiddenError, ValidationError } from '../../../domain/errors';
 import { IRescheduleInterviewUseCase, RescheduleInterviewInput, RescheduleInterviewOutput } from './interfaces';
-import { ICreateNotificationUseCase } from '../notification/interfaces';
+import { INotificationService } from '../../services/INotificationService';
 
 @injectable()
 export class RescheduleInterviewUseCase implements IRescheduleInterviewUseCase {
@@ -11,7 +11,7 @@ export class RescheduleInterviewUseCase implements IRescheduleInterviewUseCase {
         @inject(TYPES.ApplicationRepository) private _applicationRepository: IApplicationRepository,
         @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository,
         @inject(TYPES.JobRepository) private _jobRepository: IJobRepository,
-        @inject(TYPES.CreateNotificationUseCase) private _createNotificationUseCase: ICreateNotificationUseCase
+        @inject(TYPES.NotificationService) private _notificationService: INotificationService
     ) { }
 
     async execute(input: RescheduleInterviewInput & { companyId: string }): Promise<RescheduleInterviewOutput> {
@@ -92,7 +92,7 @@ export class RescheduleInterviewUseCase implements IRescheduleInterviewUseCase {
             const timeStr = newScheduledAt.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
 
             if (developerProfile && job) {
-                await this._createNotificationUseCase.execute({
+                await this._notificationService.create({
                     userId: developerProfile.userId,
                     type: 'interview_rescheduled',
                     title: 'Interview Rescheduled',
@@ -102,7 +102,7 @@ export class RescheduleInterviewUseCase implements IRescheduleInterviewUseCase {
             }
 
             if (interviewerId && job) {
-                await this._createNotificationUseCase.execute({
+                await this._notificationService.create({
                     userId: interviewerId,
                     type: 'interview_rescheduled',
                     title: 'Interview Rescheduled',

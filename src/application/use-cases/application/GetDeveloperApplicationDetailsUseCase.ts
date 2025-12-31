@@ -58,6 +58,7 @@ export class GetDeveloperApplicationDetailsUseCase implements IGetDeveloperAppli
             job: job ? {
                 id: job.id,
                 title: job.title,
+                interviewRounds: job.interviewRounds,
             } : undefined,
             company: companyProfile ? {
                 id: companyProfile.id,

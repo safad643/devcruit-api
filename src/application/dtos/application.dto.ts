@@ -107,6 +107,7 @@ export interface DeveloperApplicationDetailsOutput {
   job?: {
     id: string;
     title: string;
+    interviewRounds: string[]; // All interview rounds defined for the job
   };
   company?: {
     id: string;

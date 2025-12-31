@@ -12,7 +12,7 @@ import { ApplicationStatus, StatusNotes, ApplicationProps } from '../../../domai
 import { UpdateApplicationStatusInput, UpdateApplicationStatusOutput } from '../../dtos/application.dto';
 import { IEmailService } from '../../services';
 import { IShortlistApplicationUseCase } from './interfaces';
-import { ICreateNotificationUseCase } from '../notification/interfaces';
+import { INotificationService } from '../../services/INotificationService';
 
 @injectable()
 export class ShortlistApplicationUseCase implements IShortlistApplicationUseCase {
@@ -23,7 +23,7 @@ export class ShortlistApplicationUseCase implements IShortlistApplicationUseCase
     @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository,
     @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
     @inject(TYPES.EmailService) private _emailService: IEmailService,
-    @inject(TYPES.CreateNotificationUseCase) private _createNotificationUseCase: ICreateNotificationUseCase
+    @inject(TYPES.NotificationService) private _notificationService: INotificationService
   ) { }
 
   async execute(input: UpdateApplicationStatusInput): Promise<UpdateApplicationStatusOutput> {
@@ -93,7 +93,7 @@ export class ShortlistApplicationUseCase implements IShortlistApplicationUseCase
         }
 
         // Send in-app notification
-        await this._createNotificationUseCase.execute({
+        await this._notificationService.create({
           userId: developerProfile.userId,
           type: 'application_shortlisted',
           title: 'Application Shortlisted',

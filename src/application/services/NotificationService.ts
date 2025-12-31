@@ -1,18 +1,18 @@
 import { injectable, inject } from 'inversify';
-import { TYPES } from '../../../di/types';
-import { INotificationRepository } from '../../../domain/repositories/INotificationRepository';
-import { INotificationPusher } from '../../services/INotificationPusher';
-import { Notification } from '../../../domain/entities/Notification';
-import { ICreateNotificationUseCase, CreateNotificationInput, CreateNotificationOutput } from './interfaces';
+import { TYPES } from '../../di/types';
+import { INotificationRepository } from '../../domain/repositories/INotificationRepository';
+import { INotificationPusher } from './INotificationPusher';
+import { Notification } from '../../domain/entities/Notification';
+import { INotificationService, CreateNotificationInput, CreateNotificationOutput } from './INotificationService';
 
 @injectable()
-export class CreateNotificationUseCase implements ICreateNotificationUseCase {
+export class NotificationService implements INotificationService {
     constructor(
         @inject(TYPES.NotificationRepository) private _notificationRepository: INotificationRepository,
         @inject(TYPES.NotificationPusher) private _notificationPusher: INotificationPusher
     ) { }
 
-    async execute(input: CreateNotificationInput): Promise<CreateNotificationOutput> {
+    async create(input: CreateNotificationInput): Promise<CreateNotificationOutput> {
         // Create notification data
         const notificationData = Notification.create({
             userId: input.userId,

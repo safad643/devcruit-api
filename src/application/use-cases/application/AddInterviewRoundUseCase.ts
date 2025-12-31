@@ -1,14 +1,13 @@
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
-import { IApplicationRepository, IJobRepository } from '../../../domain/repositories';
+import { IApplicationRepository } from '../../../domain/repositories';
 import { NotFoundError, ForbiddenError, ValidationError } from '../../../domain/errors';
 import { IAddInterviewRoundUseCase, AddInterviewRoundInput, AddInterviewRoundOutput } from './interfaces';
 
 @injectable()
 export class AddInterviewRoundUseCase implements IAddInterviewRoundUseCase {
     constructor(
-        @inject(TYPES.ApplicationRepository) private _applicationRepository: IApplicationRepository,
-        @inject(TYPES.JobRepository) private _jobRepository: IJobRepository
+        @inject(TYPES.ApplicationRepository) private _applicationRepository: IApplicationRepository
     ) { }
 
     async execute(input: AddInterviewRoundInput & { companyId: string }): Promise<AddInterviewRoundOutput> {
@@ -28,53 +27,50 @@ export class AddInterviewRoundUseCase implements IAddInterviewRoundUseCase {
             throw new ValidationError('Can only add interview rounds for shortlisted or interviewing applications');
         }
 
-        // 4. Get job to get current rounds
-        const job = await this._jobRepository.findById(application.jobId);
-        if (!job) {
-            throw new NotFoundError('Job not found');
-        }
-
-        // 5. Validate round name is not empty and doesn't exist
+        // 4. Validate round name is not empty and doesn't already exist in this application
         const roundName = input.roundName.trim();
         if (!roundName) {
             throw new ValidationError('Round name is required');
         }
 
-        if (job.interviewRounds.includes(roundName)) {
-            throw new ValidationError(`Interview round "${roundName}" already exists for this job`);
+        const existingRound = application.interviewRounds.find(r => r.roundName === roundName);
+        if (existingRound) {
+            throw new ValidationError(`Interview round "${roundName}" already exists for this application`);
         }
 
-        // 6. If insertAfterRound is provided, validate it exists and find position
-        let insertIndex = job.interviewRounds.length; // Default: add at end
+        // 5. Find insert position (after the specified round, or at end)
+        let insertIndex = application.interviewRounds.length;
         if (input.insertAfterRound) {
-            const afterIndex = job.interviewRounds.indexOf(input.insertAfterRound);
+            const afterIndex = application.interviewRounds.findIndex(r => r.roundName === input.insertAfterRound);
             if (afterIndex === -1) {
-                throw new ValidationError(`Round "${input.insertAfterRound}" not found`);
+                throw new ValidationError(`Round "${input.insertAfterRound}" not found in this application`);
             }
             insertIndex = afterIndex + 1;
 
-            // Validate: no rounds after insertAfterRound should be completed in application
-            for (let i = insertIndex; i < job.interviewRounds.length; i++) {
-                const laterRoundName = job.interviewRounds[i];
-                const appRound = application.interviewRounds.find(r => r.roundName === laterRoundName);
-                if (appRound?.status === 'completed') {
-                    throw new ValidationError(`Cannot insert round before a completed round "${laterRoundName}"`);
+            // Validate: no rounds after insertAfterRound should be completed
+            for (let i = insertIndex; i < application.interviewRounds.length; i++) {
+                if (application.interviewRounds[i].status === 'completed') {
+                    throw new ValidationError(`Cannot insert round before a completed round "${application.interviewRounds[i].roundName}"`);
                 }
             }
         }
 
-        // 7. Insert the new round into Job's interviewRounds array
-        const updatedJobRounds = [...job.interviewRounds];
-        updatedJobRounds.splice(insertIndex, 0, roundName);
+        // 6. Insert the new round into application's interviewRounds array
+        const updatedRounds = [...application.interviewRounds];
+        updatedRounds.splice(insertIndex, 0, {
+            roundName,
+            status: 'pending',
+            interviewerIds: [],
+        });
 
-        // 8. Update the job with new interview rounds
-        await this._jobRepository.update(job.id, {
-            interviewRounds: updatedJobRounds,
+        // 7. Update the application
+        await this._applicationRepository.update(input.applicationId, {
+            interviewRounds: updatedRounds,
         });
 
         return {
             message: `Interview round "${roundName}" added successfully`,
-            interviewRounds: updatedJobRounds,
+            interviewRounds: updatedRounds.map(r => r.roundName),
         };
     }
 }
