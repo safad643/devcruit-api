@@ -186,3 +186,12 @@ export const RescheduleInterviewSchema = Type.Object({
 });
 
 export type RescheduleInterviewInput = Static<typeof RescheduleInterviewSchema>;
+
+// Add Interview Round Schema (Company/HR)
+export const AddInterviewRoundSchema = Type.Object({
+  roundName: Type.String({ minLength: 1, maxLength: 100 }),
+  insertAfterRound: Type.Optional(Type.String({ minLength: 1 }))
+});
+
+export type AddInterviewRoundInput = Static<typeof AddInterviewRoundSchema>;
+

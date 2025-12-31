@@ -8,6 +8,7 @@ import {
     IRequestRescheduleUseCase,
     IRespondToRescheduleRequestUseCase,
     IRescheduleInterviewUseCase,
+    IAddInterviewRoundUseCase,
 } from '../../application/use-cases/application/interfaces';
 import {
     IGetOrCreateVideoCallUseCase,
@@ -20,6 +21,7 @@ import {
     RequestRescheduleInput,
     RespondToRescheduleInput,
     RescheduleInterviewInput,
+    AddInterviewRoundInput,
 } from '../schemas/application.schema';
 import { wrapSuccess } from '../../utils/response';
 import { HttpStatus } from '../../utils/statusCodes';
@@ -36,7 +38,8 @@ export class InterviewController {
         @inject(TYPES.EndVideoCallUseCase) private _endVideoCallUseCase: IEndVideoCallUseCase,
         @inject(TYPES.RequestRescheduleUseCase) private _requestRescheduleUseCase: IRequestRescheduleUseCase,
         @inject(TYPES.RespondToRescheduleRequestUseCase) private _respondToRescheduleRequestUseCase: IRespondToRescheduleRequestUseCase,
-        @inject(TYPES.RescheduleInterviewUseCase) private _rescheduleInterviewUseCase: IRescheduleInterviewUseCase
+        @inject(TYPES.RescheduleInterviewUseCase) private _rescheduleInterviewUseCase: IRescheduleInterviewUseCase,
+        @inject(TYPES.AddInterviewRoundUseCase) private _addInterviewRoundUseCase: IAddInterviewRoundUseCase
     ) { }
 
     // Company/HR endpoint: Schedule interview round
@@ -186,6 +189,24 @@ export class InterviewController {
         const result = await this._rescheduleInterviewUseCase.execute({
             applicationId,
             roundName,
+            companyId,
+            ...request.body,
+        });
+
+        reply.status(HttpStatus.OK).send(wrapSuccess(result));
+    };
+
+    // Company/HR endpoint: Add interview round
+    addInterviewRound = async (
+        request: FastifyRequest<{ Params: { id: string }; Body: AddInterviewRoundInput }>,
+        reply: FastifyReply
+    ): Promise<void> => {
+        const companyContext = this._getCompanyContext(request);
+        const companyId = companyContext.companyUserId;
+        const applicationId = request.params.id;
+
+        const result = await this._addInterviewRoundUseCase.execute({
+            applicationId,
             companyId,
             ...request.body,
         });

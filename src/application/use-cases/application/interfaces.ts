@@ -194,3 +194,20 @@ export interface RescheduleInterviewOutput {
 export interface IRescheduleInterviewUseCase {
     execute(input: RescheduleInterviewInput & { companyId: string }): Promise<RescheduleInterviewOutput>;
 }
+
+// Add Interview Round Use Case
+export interface AddInterviewRoundInput {
+    applicationId: string;
+    roundName: string;
+    insertAfterRound?: string;
+}
+
+export interface AddInterviewRoundOutput {
+    message: string;
+    interviewRounds: string[];
+}
+
+export interface IAddInterviewRoundUseCase {
+    execute(input: AddInterviewRoundInput & { companyId: string }): Promise<AddInterviewRoundOutput>;
+}
+

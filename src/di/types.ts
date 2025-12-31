@@ -122,6 +122,7 @@ export const TYPES = {
   RequestRescheduleUseCase: Symbol.for('RequestRescheduleUseCase'),
   RespondToRescheduleRequestUseCase: Symbol.for('RespondToRescheduleRequestUseCase'),
   RescheduleInterviewUseCase: Symbol.for('RescheduleInterviewUseCase'),
+  AddInterviewRoundUseCase: Symbol.for('AddInterviewRoundUseCase'),
   ApplicationController: Symbol.for('ApplicationController'),
   InterviewController: Symbol.for('InterviewController'),
   OfferController: Symbol.for('OfferController'),

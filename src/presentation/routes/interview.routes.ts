@@ -13,6 +13,7 @@ import {
     RequestRescheduleSchema,
     RespondToRescheduleSchema,
     RescheduleInterviewSchema,
+    AddInterviewRoundSchema,
 } from '../schemas/application.schema';
 
 export async function interviewRoutes(fastify: FastifyInstance): Promise<void> {
@@ -36,6 +37,19 @@ export async function interviewRoutes(fastify: FastifyInstance): Promise<void> {
             }
         },
         interviewController.scheduleInterviewRound
+    );
+
+    // Company/HR route: Add interview round
+    fastify.post(
+        '/company/applications/:id/add-interview-round',
+        {
+            preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
+            schema: {
+                params: ApplicationIdParamsSchema,
+                body: AddInterviewRoundSchema
+            }
+        },
+        interviewController.addInterviewRound
     );
 
     // Interviewer routes
@@ -132,3 +146,4 @@ export async function interviewRoutes(fastify: FastifyInstance): Promise<void> {
         interviewController.rescheduleInterview,
     );
 }
+
