@@ -67,7 +67,7 @@ export class GetApplicationDetailsUseCase implements IGetApplicationDetailsUseCa
     // Get company profile
     const companyProfile = await this._companyProfileRepository.findByUserId(application.companyId);
 
-    // Resolve interviewer names
+    // Resolve interviewer names and roles
     const allInterviewerIds = [...new Set(
       application.interviewRounds.flatMap(round => round.interviewerIds)
     )];
@@ -75,15 +75,18 @@ export class GetApplicationDetailsUseCase implements IGetApplicationDetailsUseCa
       allInterviewerIds.map(id => this._userRepository.findById(id))
     );
     const interviewerNameMap = new Map<string, string>();
+    const interviewerRoleMap = new Map<string, string>();
     allInterviewerIds.forEach((id, index) => {
-      const user = interviewerUsers[index];
-      interviewerNameMap.set(id, user?.name || user?.email || 'Unknown');
+      const user = interviewerUsers[index]!;
+      interviewerNameMap.set(id, user.name || user.email);
+      interviewerRoleMap.set(id, user.role);
     });
 
-    // Enrich interview rounds with interviewer names
+    // Enrich interview rounds with interviewer names and roles
     const enrichedInterviewRounds = application.interviewRounds.map(round => ({
       ...round,
-      interviewerNames: round.interviewerIds.map(id => interviewerNameMap.get(id) || 'Unknown')
+      interviewerNames: round.interviewerIds.map(id => interviewerNameMap.get(id)!),
+      interviewerRoles: round.interviewerIds.map(id => interviewerRoleMap.get(id)!)
     }));
 
     return {

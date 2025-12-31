@@ -1,8 +1,9 @@
 import { ApplicationStatus, ShortlistMethod, InterviewRound, InterviewRoundStatus, InterviewRoundResult, StatusNotes } from '../../domain/entities/Application';
 
-// Enriched InterviewRound with resolved interviewer names
+// Enriched InterviewRound with resolved interviewer names and roles
 export interface EnrichedInterviewRound extends InterviewRound {
   interviewerNames: string[];
+  interviewerRoles: string[];
 }
 
 // Create Application (Apply to Job)

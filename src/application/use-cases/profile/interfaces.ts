@@ -47,7 +47,7 @@ export interface CompanyTeamMemberDTO {
     userId?: string | null;
     email: string;
     fullName?: string;
-    role: 'hr' | 'interviewer';
+    role: 'company' | 'hr' | 'interviewer';
     status: CompanyTeamMemberStatus;
     invitedAt: Date;
     activatedAt?: Date;
