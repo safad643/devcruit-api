@@ -15,5 +15,6 @@ export * from './IGenericRepository';
 export * from './IPlanRepository';
 export * from './IPaymentTransactionRepository';
 export * from './IOfferLetterRepository';
+export * from './INotificationRepository';
 
 

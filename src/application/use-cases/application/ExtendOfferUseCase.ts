@@ -1,5 +1,5 @@
-import { 
-  IApplicationRepository, 
+import {
+  IApplicationRepository,
   IJobRepository,
   IDeveloperProfileRepository,
   ICompanyProfileRepository,
@@ -12,6 +12,7 @@ import { ApplicationStatus, StatusNotes, ApplicationProps } from '../../../domai
 import { ExtendOfferInput, ExtendOfferOutput } from '../../dtos/application.dto';
 import { IEmailService } from '../../services';
 import { IExtendOfferUseCase } from './interfaces';
+import { ICreateNotificationUseCase } from '../notification/interfaces';
 
 @injectable()
 export class ExtendOfferUseCase implements IExtendOfferUseCase {
@@ -21,8 +22,9 @@ export class ExtendOfferUseCase implements IExtendOfferUseCase {
     @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository,
     @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository,
     @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
-    @inject(TYPES.EmailService) private _emailService: IEmailService
-  ) {}
+    @inject(TYPES.EmailService) private _emailService: IEmailService,
+    @inject(TYPES.CreateNotificationUseCase) private _createNotificationUseCase: ICreateNotificationUseCase
+  ) { }
 
   async execute(input: ExtendOfferInput): Promise<ExtendOfferOutput> {
     // 1. Get application
@@ -66,25 +68,23 @@ export class ExtendOfferUseCase implements IExtendOfferUseCase {
     // 7. Update application
     const updatedApplication = await this._applicationRepository.update(input.applicationId, updateData);
 
-    // 8. Send email notification
+    // 8. Send notifications
     try {
-      // Get developer profile to get userId
       const developerProfile = await this._developerProfileRepository.findById(application.developerId);
       if (developerProfile) {
-        // Get company profile for company name
         const companyProfile = await this._companyProfileRepository.findByUserId(input.companyId);
         const companyName = companyProfile?.companyName || 'the company';
-        
-        // Get developer user email
-        const developerUser = await this._userRepository.findById(developerProfile.userId);
-        if (developerUser?.email) {
-          // Note: Email service method for offer extension can be added later
-          // For now, we'll just log it
-          console.log(`Offer extended to ${developerUser.email} for ${job.title} at ${companyName}`);
-        }
+
+        // Send in-app notification
+        await this._createNotificationUseCase.execute({
+          userId: developerProfile.userId,
+          type: 'offer_extended',
+          title: 'Job Offer Received',
+          message: `Congratulations! ${companyName} has extended you an offer for ${job.title}`,
+          data: { applicationId: input.applicationId, jobId: job.id },
+        });
       }
     } catch (error) {
-      // Log error but don't fail the status update
       console.error('Failed to send offer extension notification:', error);
     }
 
@@ -95,4 +95,3 @@ export class ExtendOfferUseCase implements IExtendOfferUseCase {
     };
   }
 }
-

@@ -7,3 +7,4 @@ export * from './IFileService';
 export * from './IPaymentService';
 export * from './ICryptographicService';
 export * from './IAIMatchingService';
+export * from './INotificationPusher';

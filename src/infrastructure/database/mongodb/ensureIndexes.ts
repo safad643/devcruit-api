@@ -18,6 +18,14 @@ export async function ensureIndexes() {
         // Job Fields
         await db.collection('job_fields').createIndex({ type: 1, name: 1 }, { unique: true });
 
+        // Notifications
+        await db.collection('notifications').createIndex({ userId: 1, createdAt: -1 });
+        await db.collection('notifications').createIndex({ userId: 1, read: 1 });
+        await db.collection('notifications').createIndex(
+            { createdAt: 1 },
+            { expireAfterSeconds: 90 * 24 * 60 * 60 } // 90 days TTL
+        );
+
         console.log('Database indexes ensured successfully');
     } catch (error) {
         console.error('Error ensuring database indexes:', error);

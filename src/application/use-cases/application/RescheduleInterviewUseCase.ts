@@ -1,13 +1,17 @@
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
-import { IApplicationRepository } from '../../../domain/repositories';
+import { IApplicationRepository, IDeveloperProfileRepository, IJobRepository } from '../../../domain/repositories';
 import { NotFoundError, ForbiddenError, ValidationError } from '../../../domain/errors';
 import { IRescheduleInterviewUseCase, RescheduleInterviewInput, RescheduleInterviewOutput } from './interfaces';
+import { ICreateNotificationUseCase } from '../notification/interfaces';
 
 @injectable()
 export class RescheduleInterviewUseCase implements IRescheduleInterviewUseCase {
     constructor(
-        @inject(TYPES.ApplicationRepository) private _applicationRepository: IApplicationRepository
+        @inject(TYPES.ApplicationRepository) private _applicationRepository: IApplicationRepository,
+        @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository,
+        @inject(TYPES.JobRepository) private _jobRepository: IJobRepository,
+        @inject(TYPES.CreateNotificationUseCase) private _createNotificationUseCase: ICreateNotificationUseCase
     ) { }
 
     async execute(input: RescheduleInterviewInput & { companyId: string }): Promise<RescheduleInterviewOutput> {
@@ -81,7 +85,34 @@ export class RescheduleInterviewUseCase implements IRescheduleInterviewUseCase {
             interviewRounds: updatedRounds,
         });
 
-        // TODO: Send email to candidate and interviewer (Step 7)
+        // 9. Send in-app notifications
+        try {
+            const job = await this._jobRepository.findById(application.jobId);
+            const developerProfile = await this._developerProfileRepository.findById(application.developerId);
+            const timeStr = newScheduledAt.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+
+            if (developerProfile && job) {
+                await this._createNotificationUseCase.execute({
+                    userId: developerProfile.userId,
+                    type: 'interview_rescheduled',
+                    title: 'Interview Rescheduled',
+                    message: `Your ${input.roundName} interview for ${job.title} has been rescheduled to ${timeStr}`,
+                    data: { applicationId: input.applicationId, roundName: input.roundName },
+                });
+            }
+
+            if (interviewerId && job) {
+                await this._createNotificationUseCase.execute({
+                    userId: interviewerId,
+                    type: 'interview_rescheduled',
+                    title: 'Interview Rescheduled',
+                    message: `${input.roundName} interview for ${job.title} has been rescheduled to ${timeStr}`,
+                    data: { applicationId: input.applicationId, roundName: input.roundName },
+                });
+            }
+        } catch (error) {
+            console.error('Failed to send reschedule notification:', error);
+        }
 
         return { message: 'Interview rescheduled successfully' };
     }

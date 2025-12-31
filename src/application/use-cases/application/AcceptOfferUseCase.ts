@@ -13,6 +13,7 @@ import { ApplicationStatus, ApplicationProps } from '../../../domain/entities/Ap
 import { AcceptOfferInput, AcceptOfferOutput } from '../../dtos/application.dto';
 import { IEmailService } from '../../services';
 import { IAcceptOfferUseCase } from './interfaces';
+import { ICreateNotificationUseCase } from '../notification/interfaces';
 
 @injectable()
 export class AcceptOfferUseCase implements IAcceptOfferUseCase {
@@ -23,7 +24,8 @@ export class AcceptOfferUseCase implements IAcceptOfferUseCase {
     @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository,
     @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
     @inject(TYPES.EmailService) private _emailService: IEmailService,
-    @inject(TYPES.OfferLetterRepository) private _offerLetterRepository: IOfferLetterRepository
+    @inject(TYPES.OfferLetterRepository) private _offerLetterRepository: IOfferLetterRepository,
+    @inject(TYPES.CreateNotificationUseCase) private _createNotificationUseCase: ICreateNotificationUseCase
   ) { }
 
   async execute(input: AcceptOfferInput): Promise<AcceptOfferOutput> {
@@ -40,7 +42,6 @@ export class AcceptOfferUseCase implements IAcceptOfferUseCase {
     }
 
     // 3. Verify the application belongs to the developer
-    // application.developerId is the profile ID, not the user ID
     if (application.developerId !== developerProfile.id) {
       throw new ForbiddenError('You do not have access to this application');
     }
@@ -50,7 +51,7 @@ export class AcceptOfferUseCase implements IAcceptOfferUseCase {
       throw new ValidationError(`Cannot accept offer for application with status ${application.status}. Only applications with status 'offer_extended' can be accepted.`);
     }
 
-    // 5. Get the job for email notification
+    // 5. Get the job
     const job = await this._jobRepository.findById(application.jobId);
     if (!job) {
       throw new NotFoundError('Job not found');
@@ -73,23 +74,19 @@ export class AcceptOfferUseCase implements IAcceptOfferUseCase {
       });
     }
 
-    // 9. Send email notification to company
+    // 9. Notify company about offer acceptance
     try {
-      // Get company profile for company name
-      const companyProfile = await this._companyProfileRepository.findByUserId(application.companyId);
-      const companyName = companyProfile?.companyName || 'the company';
+      const developerUser = await this._userRepository.findById(developerProfile.userId);
+      const developerName = developerUser?.name || 'A candidate';
 
-      // Get developer profile and user for developer name/email
-      const developerProfile = await this._developerProfileRepository.findById(application.developerId);
-      if (developerProfile) {
-        const developerUser = await this._userRepository.findById(developerProfile.userId);
-        const developerName = developerUser?.name || developerUser?.email || 'the candidate';
-
-        // Note: Email service method for offer acceptance can be added later
-        console.log(`Offer accepted by ${developerName} for ${job.title} at ${companyName}`);
-      }
+      await this._createNotificationUseCase.execute({
+        userId: application.companyId,
+        type: 'offer_accepted',
+        title: 'Offer Accepted',
+        message: `${developerName} has accepted your offer for ${job.title}`,
+        data: { applicationId: input.applicationId, jobId: job.id },
+      });
     } catch (error) {
-      // Log error but don't fail the status update
       console.error('Failed to send offer acceptance notification:', error);
     }
 
@@ -100,4 +97,3 @@ export class AcceptOfferUseCase implements IAcceptOfferUseCase {
     };
   }
 }
-

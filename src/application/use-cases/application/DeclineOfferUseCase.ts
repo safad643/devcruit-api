@@ -13,6 +13,7 @@ import { ApplicationStatus, StatusNotes, ApplicationProps } from '../../../domai
 import { DeclineOfferInput, DeclineOfferOutput } from '../../dtos/application.dto';
 import { IEmailService } from '../../services';
 import { IDeclineOfferUseCase } from './interfaces';
+import { ICreateNotificationUseCase } from '../notification/interfaces';
 
 @injectable()
 export class DeclineOfferUseCase implements IDeclineOfferUseCase {
@@ -23,7 +24,8 @@ export class DeclineOfferUseCase implements IDeclineOfferUseCase {
     @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository,
     @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
     @inject(TYPES.EmailService) private _emailService: IEmailService,
-    @inject(TYPES.OfferLetterRepository) private _offerLetterRepository: IOfferLetterRepository
+    @inject(TYPES.OfferLetterRepository) private _offerLetterRepository: IOfferLetterRepository,
+    @inject(TYPES.CreateNotificationUseCase) private _createNotificationUseCase: ICreateNotificationUseCase
   ) { }
 
   async execute(input: DeclineOfferInput): Promise<DeclineOfferOutput> {
@@ -40,7 +42,6 @@ export class DeclineOfferUseCase implements IDeclineOfferUseCase {
     }
 
     // 3. Verify the application belongs to the developer
-    // application.developerId is the profile ID, not the user ID
     if (application.developerId !== developerProfile.id) {
       throw new ForbiddenError('You do not have access to this application');
     }
@@ -50,7 +51,7 @@ export class DeclineOfferUseCase implements IDeclineOfferUseCase {
       throw new ValidationError(`Cannot decline offer for application with status ${application.status}. Only applications with status 'offer_extended' can be declined.`);
     }
 
-    // 5. Get the job for email notification
+    // 5. Get the job
     const job = await this._jobRepository.findById(application.jobId);
     if (!job) {
       throw new NotFoundError('Job not found');
@@ -83,23 +84,19 @@ export class DeclineOfferUseCase implements IDeclineOfferUseCase {
       });
     }
 
-    // 10. Send email notification to company
+    // 10. Notify company about offer decline
     try {
-      // Get company profile for company name
-      const companyProfile = await this._companyProfileRepository.findByUserId(application.companyId);
-      const companyName = companyProfile?.companyName || 'the company';
+      const developerUser = await this._userRepository.findById(developerProfile.userId);
+      const developerName = developerUser?.name || 'A candidate';
 
-      // Get developer profile and user for developer name/email
-      const developerProfile = await this._developerProfileRepository.findById(application.developerId);
-      if (developerProfile) {
-        const developerUser = await this._userRepository.findById(developerProfile.userId);
-        const developerName = developerUser?.name || developerUser?.email || 'the candidate';
-
-        // Note: Email service method for offer decline can be added later
-        console.log(`Offer declined by ${developerName} for ${job.title} at ${companyName}`);
-      }
+      await this._createNotificationUseCase.execute({
+        userId: application.companyId,
+        type: 'offer_declined',
+        title: 'Offer Declined',
+        message: `${developerName} has declined your offer for ${job.title}`,
+        data: { applicationId: input.applicationId, jobId: job.id },
+      });
     } catch (error) {
-      // Log error but don't fail the status update
       console.error('Failed to send offer decline notification:', error);
     }
 
@@ -110,4 +107,3 @@ export class DeclineOfferUseCase implements IDeclineOfferUseCase {
     };
   }
 }
-

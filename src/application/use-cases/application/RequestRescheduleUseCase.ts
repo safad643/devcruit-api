@@ -1,14 +1,17 @@
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
-import { IApplicationRepository, IDeveloperProfileRepository } from '../../../domain/repositories';
+import { IApplicationRepository, IDeveloperProfileRepository, IJobRepository } from '../../../domain/repositories';
 import { NotFoundError, ForbiddenError, ValidationError } from '../../../domain/errors';
 import { IRequestRescheduleUseCase, RequestRescheduleInput, RequestRescheduleOutput } from './interfaces';
+import { ICreateNotificationUseCase } from '../notification/interfaces';
 
 @injectable()
 export class RequestRescheduleUseCase implements IRequestRescheduleUseCase {
     constructor(
         @inject(TYPES.ApplicationRepository) private _applicationRepository: IApplicationRepository,
-        @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository
+        @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository,
+        @inject(TYPES.JobRepository) private _jobRepository: IJobRepository,
+        @inject(TYPES.CreateNotificationUseCase) private _createNotificationUseCase: ICreateNotificationUseCase
     ) { }
 
     async execute(input: RequestRescheduleInput & { developerId: string }): Promise<RequestRescheduleOutput> {
@@ -66,7 +69,21 @@ export class RequestRescheduleUseCase implements IRequestRescheduleUseCase {
             interviewRounds: updatedRounds,
         });
 
-        // TODO: Send email notification to company (will be added in Step 7)
+        // 9. Notify company about reschedule request
+        try {
+            const job = await this._jobRepository.findById(application.jobId);
+            if (job) {
+                await this._createNotificationUseCase.execute({
+                    userId: application.companyId,
+                    type: 'reschedule_requested',
+                    title: 'Reschedule Requested',
+                    message: `A candidate has requested to reschedule their ${input.roundName} interview for ${job.title}`,
+                    data: { applicationId: input.applicationId, roundName: input.roundName },
+                });
+            }
+        } catch (error) {
+            console.error('Failed to send reschedule request notification:', error);
+        }
 
         return {
             message: 'Reschedule request submitted successfully',

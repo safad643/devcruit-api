@@ -6,6 +6,7 @@ import { IScheduleInterviewRoundUseCase, ScheduleInterviewRoundInput, ScheduleIn
 import { InterviewerProfile } from '../../../domain/entities/InterviewerProfile';
 import { HRProfile } from '../../../domain/entities/HRProfile';
 import { IEmailService } from '../../services';
+import { ICreateNotificationUseCase } from '../notification/interfaces';
 
 @injectable()
 export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUseCase {
@@ -16,7 +17,8 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
     @inject(TYPES.EmailService) private _emailService: IEmailService,
     @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
     @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository,
-    @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository
+    @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository,
+    @inject(TYPES.CreateNotificationUseCase) private _createNotificationUseCase: ICreateNotificationUseCase
   ) { }
 
   async execute(input: ScheduleInterviewRoundInput & { companyId: string }): Promise<ScheduleInterviewRoundOutput> {
@@ -140,6 +142,36 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
       scheduledAt,
       updatedRounds
     );
+
+    // 12. Send in-app notifications
+    try {
+      const developerProfile = await this._developerProfileRepository.findById(application.developerId);
+      const companyProfile = await this._companyProfileRepository.findByUserId(input.companyId);
+      const companyName = companyProfile?.companyName || 'the company';
+      const timeStr = scheduledAt.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+
+      // Notify developer
+      if (developerProfile) {
+        await this._createNotificationUseCase.execute({
+          userId: developerProfile.userId,
+          type: 'interview_scheduled',
+          title: 'Interview Scheduled',
+          message: `Your ${input.roundName} interview for ${job.title} at ${companyName} is scheduled for ${timeStr}`,
+          data: { applicationId: input.applicationId, jobId: job.id, roundName: input.roundName },
+        });
+      }
+
+      // Notify interviewer
+      await this._createNotificationUseCase.execute({
+        userId: input.interviewerId,
+        type: 'interview_scheduled',
+        title: 'Interview Assigned',
+        message: `You have been assigned to conduct a ${input.roundName} interview for ${job.title} on ${timeStr}`,
+        data: { applicationId: input.applicationId, jobId: job.id, roundName: input.roundName },
+      });
+    } catch (error) {
+      console.error('Failed to send interview scheduled notification:', error);
+    }
 
     return {
       id: updatedApplication.id,

@@ -11,6 +11,7 @@ import { jobFieldModule } from './modules/jobField.module';
 import { applicationModule } from './modules/application.module';
 import { chatModule } from './modules/chat.module';
 import { dashboardModule } from './modules/dashboard.module';
+import { notificationModule } from './modules/notification.module';
 
 const container = new Container();
 
@@ -27,5 +28,6 @@ container.load(jobFieldModule);
 container.load(applicationModule);
 container.load(chatModule);
 container.load(dashboardModule);
+container.load(notificationModule);
 
 export { container };

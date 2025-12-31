@@ -1,5 +1,5 @@
-import { 
-  IApplicationRepository, 
+import {
+  IApplicationRepository,
   IJobRepository,
   IDeveloperProfileRepository,
   ICompanyProfileRepository,
@@ -12,6 +12,7 @@ import { ApplicationStatus, StatusNotes, ApplicationProps } from '../../../domai
 import { RejectApplicationInput, RejectApplicationOutput } from '../../dtos/application.dto';
 import { IEmailService } from '../../services';
 import { IRejectApplicationUseCase } from './interfaces';
+import { ICreateNotificationUseCase } from '../notification/interfaces';
 
 @injectable()
 export class RejectApplicationUseCase implements IRejectApplicationUseCase {
@@ -21,8 +22,9 @@ export class RejectApplicationUseCase implements IRejectApplicationUseCase {
     @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository,
     @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository,
     @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
-    @inject(TYPES.EmailService) private _emailService: IEmailService
-  ) {}
+    @inject(TYPES.EmailService) private _emailService: IEmailService,
+    @inject(TYPES.CreateNotificationUseCase) private _createNotificationUseCase: ICreateNotificationUseCase
+  ) { }
 
   async execute(input: RejectApplicationInput): Promise<RejectApplicationOutput> {
     // 1. Get application
@@ -72,16 +74,13 @@ export class RejectApplicationUseCase implements IRejectApplicationUseCase {
     // 8. Update application
     const updatedApplication = await this._applicationRepository.update(input.applicationId, updateData);
 
-    // 9. Send email notification
+    // 9. Send email and in-app notification
     try {
-      // Get developer profile to get userId
       const developerProfile = await this._developerProfileRepository.findById(application.developerId);
       if (developerProfile) {
-        // Get company profile for company name
         const companyProfile = await this._companyProfileRepository.findByUserId(input.companyId);
         const companyName = companyProfile?.companyName || 'the company';
-        
-        // Get developer user email
+
         const developerUser = await this._userRepository.findById(developerProfile.userId);
         if (developerUser?.email) {
           await this._emailService.sendRejectionNotification(
@@ -91,10 +90,18 @@ export class RejectApplicationUseCase implements IRejectApplicationUseCase {
             input.note
           );
         }
+
+        // Send in-app notification
+        await this._createNotificationUseCase.execute({
+          userId: developerProfile.userId,
+          type: 'application_rejected',
+          title: 'Application Update',
+          message: `Your application for ${job.title} at ${companyName} was not selected to proceed`,
+          data: { applicationId: input.applicationId, jobId: job.id },
+        });
       }
     } catch (error) {
-      // Log error but don't fail the status update
-      console.error('Failed to send rejection notification email:', error);
+      console.error('Failed to send rejection notification:', error);
     }
 
     return {
@@ -104,4 +111,3 @@ export class RejectApplicationUseCase implements IRejectApplicationUseCase {
     };
   }
 }
-

@@ -7,6 +7,7 @@ import { config } from './config';
 import { initializeSocketIO, closeSocketIO } from './infrastructure/socket/socketServer';
 import { setupChatSocket } from './presentation/socket/chat.socket';
 import { setupVideoSocket } from './presentation/socket/video.socket';
+import { setupNotificationSocket } from './presentation/socket/notification.socket';
 
 async function start() {
   try {
@@ -32,6 +33,7 @@ async function start() {
     const io = initializeSocketIO(httpServer);
     setupChatSocket(io);
     setupVideoSocket(io);
+    setupNotificationSocket(io);
 
     console.log(`Server running at http://${config.host}:${config.port}`);
     console.log(`Socket.IO server initialized`);

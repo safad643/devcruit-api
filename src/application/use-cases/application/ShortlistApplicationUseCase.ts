@@ -1,5 +1,5 @@
-import { 
-  IApplicationRepository, 
+import {
+  IApplicationRepository,
   IJobRepository,
   IDeveloperProfileRepository,
   ICompanyProfileRepository,
@@ -12,6 +12,7 @@ import { ApplicationStatus, StatusNotes, ApplicationProps } from '../../../domai
 import { UpdateApplicationStatusInput, UpdateApplicationStatusOutput } from '../../dtos/application.dto';
 import { IEmailService } from '../../services';
 import { IShortlistApplicationUseCase } from './interfaces';
+import { ICreateNotificationUseCase } from '../notification/interfaces';
 
 @injectable()
 export class ShortlistApplicationUseCase implements IShortlistApplicationUseCase {
@@ -21,8 +22,9 @@ export class ShortlistApplicationUseCase implements IShortlistApplicationUseCase
     @inject(TYPES.DeveloperProfileRepository) private _developerProfileRepository: IDeveloperProfileRepository,
     @inject(TYPES.CompanyProfileRepository) private _companyProfileRepository: ICompanyProfileRepository,
     @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
-    @inject(TYPES.EmailService) private _emailService: IEmailService
-  ) {}
+    @inject(TYPES.EmailService) private _emailService: IEmailService,
+    @inject(TYPES.CreateNotificationUseCase) private _createNotificationUseCase: ICreateNotificationUseCase
+  ) { }
 
   async execute(input: UpdateApplicationStatusInput): Promise<UpdateApplicationStatusOutput> {
     // 1. Get application
@@ -71,7 +73,7 @@ export class ShortlistApplicationUseCase implements IShortlistApplicationUseCase
     // 8. Update application
     const updatedApplication = await this._applicationRepository.update(input.applicationId, updateData);
 
-    // 9. Send email notification
+    // 9. Send email notification and in-app notification
     try {
       // Get developer profile to get userId
       const developerProfile = await this._developerProfileRepository.findById(application.developerId);
@@ -79,7 +81,7 @@ export class ShortlistApplicationUseCase implements IShortlistApplicationUseCase
         // Get company profile for company name
         const companyProfile = await this._companyProfileRepository.findByUserId(input.companyId);
         const companyName = companyProfile?.companyName || 'the company';
-        
+
         // Get developer user email
         const developerUser = await this._userRepository.findById(developerProfile.userId);
         if (developerUser?.email) {
@@ -89,10 +91,19 @@ export class ShortlistApplicationUseCase implements IShortlistApplicationUseCase
             job.title
           );
         }
+
+        // Send in-app notification
+        await this._createNotificationUseCase.execute({
+          userId: developerProfile.userId,
+          type: 'application_shortlisted',
+          title: 'Application Shortlisted',
+          message: `${companyName} has shortlisted your application for ${job.title}`,
+          data: { applicationId: input.applicationId, jobId: job.id },
+        });
       }
     } catch (error) {
       // Log error but don't fail the status update
-      console.error('Failed to send shortlist notification email:', error);
+      console.error('Failed to send shortlist notification:', error);
     }
 
     return {
@@ -102,4 +113,3 @@ export class ShortlistApplicationUseCase implements IShortlistApplicationUseCase
     };
   }
 }
-
