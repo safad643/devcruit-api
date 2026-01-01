@@ -38,14 +38,16 @@ export class ScheduleInterviewRoundUseCase implements IScheduleInterviewRoundUse
       throw new ValidationError('Can only schedule interviews for shortlisted or interviewing applications');
     }
 
-    // 4. Get job to verify round name exists
+    // 4. Get job (needed for email notification later)
     const job = await this._jobRepository.findById(application.jobId);
     if (!job) {
       throw new NotFoundError('Job not found');
     }
 
-    if (!job.interviewRounds.includes(input.roundName)) {
-      throw new ValidationError(`Interview round "${input.roundName}" does not exist for this job`);
+    // 5. Verify round exists in application's interview rounds
+    const roundExists = application.interviewRounds.some(r => r.roundName === input.roundName);
+    if (!roundExists) {
+      throw new ValidationError(`Interview round "${input.roundName}" does not exist for this application`);
     }
 
     // 5. Validate interviewer belongs to the company (exactly one interviewer per round)
