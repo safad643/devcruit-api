@@ -18,6 +18,7 @@ import {
 } from '../../domain/repositories';
 
 import { IHashService, ITokenService, IAuthTokenService, IEmailService, IGoogleAuthService, IFileService, IPaymentService, ICryptographicService, IAIMatchingService } from '../../application/services';
+import { ICodeExecutionService } from '../../application/services/ICodeExecutionService';
 
 import { UserRepository } from '../../infrastructure/database/mongodb/UserRepository';
 import { AdminRepository } from '../../infrastructure/database/mongodb/AdminRepository';
@@ -41,6 +42,7 @@ import { GoogleAuthService } from '../../infrastructure/security/GoogleAuthServi
 import { CloudinaryService } from '../../infrastructure/storage/CloudinaryService';
 import { StripePaymentService } from '../../infrastructure/payment/StripePaymentService';
 import { GeminiMatchingService } from '../../infrastructure/ai/GeminiMatchingService';
+import { E2BService } from '../../infrastructure/code-execution/E2BService';
 
 
 export const infrastructureModule = new ContainerModule((bind) => {
@@ -69,4 +71,5 @@ export const infrastructureModule = new ContainerModule((bind) => {
   bind<IFileService>(TYPES.FileService).to(CloudinaryService).inSingletonScope();
   bind<IPaymentService>(TYPES.PaymentService).to(StripePaymentService).inSingletonScope();
   bind<IAIMatchingService>(TYPES.AIMatchingService).to(GeminiMatchingService).inSingletonScope();
+  bind<ICodeExecutionService>(TYPES.CodeExecutionService).to(E2BService).inSingletonScope();
 });

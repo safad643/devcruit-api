@@ -20,6 +20,7 @@ export const TYPES = {
   CryptographicService: Symbol.for('CryptographicService'),
   OfferLetterRepository: Symbol.for('OfferLetterRepository'),
   AIMatchingService: Symbol.for('AIMatchingService'),
+  CodeExecutionService: Symbol.for('CodeExecutionService'),
 
   // Auth module
   RegisterUserUseCase: Symbol.for('RegisterUserUseCase'),
@@ -154,4 +155,8 @@ export const TYPES = {
   GetNotificationsUseCase: Symbol.for('GetNotificationsUseCase'),
   MarkNotificationReadUseCase: Symbol.for('MarkNotificationReadUseCase'),
   NotificationController: Symbol.for('NotificationController'),
+
+  // Code Execution module
+  ExecuteCodeUseCase: Symbol.for('ExecuteCodeUseCase'),
+  CodeExecutionController: Symbol.for('CodeExecutionController'),
 };

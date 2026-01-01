@@ -12,6 +12,7 @@ import { applicationModule } from './modules/application.module';
 import { chatModule } from './modules/chat.module';
 import { dashboardModule } from './modules/dashboard.module';
 import { notificationModule } from './modules/notification.module';
+import { codeExecutionModule } from './modules/codeExecution.module';
 
 const container = new Container();
 
@@ -29,5 +30,6 @@ container.load(applicationModule);
 container.load(chatModule);
 container.load(dashboardModule);
 container.load(notificationModule);
+container.load(codeExecutionModule);
 
 export { container };
