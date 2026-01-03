@@ -8,7 +8,7 @@ import {
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { NotFoundError, ForbiddenError, ValidationError } from '../../../domain/errors';
-import { ApplicationStatus, StatusNotes, ApplicationProps } from '../../../domain/entities/Application';
+import { ApplicationStatus, StatusNotes, ApplicationProps, InterviewRound } from '../../../domain/entities/Application';
 import { UpdateApplicationStatusInput, UpdateApplicationStatusOutput } from '../../dtos/application.dto';
 import { IEmailService } from '../../services';
 import { IShortlistApplicationUseCase } from './interfaces';
@@ -58,6 +58,15 @@ export class ShortlistApplicationUseCase implements IShortlistApplicationUseCase
     // 6. Set shortlistMethod to manual if not already set
     if (!application.shortlistMethod) {
       updateData.shortlistMethod = 'manual';
+    }
+
+    // 6.5. Copy interview rounds from job to application
+    if (job.interviewRounds && job.interviewRounds.length > 0) {
+      updateData.interviewRounds = job.interviewRounds.map((roundName: string): InterviewRound => ({
+        roundName,
+        status: 'pending' as const,
+        interviewerIds: [],
+      }));
     }
 
     // 7. Add note to statusNotes if provided

@@ -69,6 +69,12 @@ export class ApplicationRepository
   }
 
   async create(application: CreateApplicationProps): Promise<Application> {
+    let collectionss = await this._collection.find({developerId: application.developerId,appliedAt:{
+    $gte: new Date("2025-01-01T00:00:00.000Z"),
+    $lt: new Date("2026-01-01T00:00:00.000Z")
+  }}).count();
+    if(collectionss>=2)throw new BadRequestError('you cant more than 2 per year')
+
     try {
       const now = new Date();
       const docToInsert = {
