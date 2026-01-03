@@ -28,7 +28,7 @@ export interface ListApplicationsForCompanyInput {
   status?: ApplicationStatus;
   page: number;
   limit: number;
-  sortBy?: 'appliedAt' | 'lastUpdatedAt';
+  sortBy?: 'appliedAt' | 'lastUpdatedAt' | 'aiMatchScore';
   sortOrder?: 'asc' | 'desc';
 }
 
@@ -70,7 +70,7 @@ export interface ListApplicationsForDeveloperInput {
   status?: ApplicationStatus;
   page: number;
   limit: number;
-  sortBy?: 'appliedAt' | 'lastUpdatedAt';
+  sortBy?: 'appliedAt' | 'lastUpdatedAt' | 'aiMatchScore';
   sortOrder?: 'asc' | 'desc';
 }
 

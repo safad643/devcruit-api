@@ -27,7 +27,8 @@ export const ListApplicationsForCompanyQuerySchema = Type.Object({
   limit: Type.Optional(Type.Integer({ minimum: 1, maximum: 100 })),
   sortBy: Type.Optional(Type.Union([
     Type.Literal('appliedAt'),
-    Type.Literal('lastUpdatedAt')
+    Type.Literal('lastUpdatedAt'),
+    Type.Literal('aiMatchScore')
   ])),
   sortOrder: Type.Optional(Type.Union([
     Type.Literal('asc'),
@@ -55,7 +56,8 @@ export const ListApplicationsForDeveloperQuerySchema = Type.Object({
   limit: Type.Optional(Type.Integer({ minimum: 1, maximum: 100 })),
   sortBy: Type.Optional(Type.Union([
     Type.Literal('appliedAt'),
-    Type.Literal('lastUpdatedAt')
+    Type.Literal('lastUpdatedAt'),
+    Type.Literal('aiMatchScore')
   ])),
   sortOrder: Type.Optional(Type.Union([
     Type.Literal('asc'),

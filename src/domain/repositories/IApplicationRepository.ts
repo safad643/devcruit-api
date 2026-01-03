@@ -8,7 +8,7 @@ export interface ApplicationListFilters {
   status?: string;
   page: number;
   limit: number;
-  sortBy?: 'appliedAt' | 'lastUpdatedAt';
+  sortBy?: 'appliedAt' | 'lastUpdatedAt' | 'aiMatchScore';
   sortOrder?: 'asc' | 'desc';
 }
 
