@@ -23,7 +23,8 @@ import {
 import {
   CreatePlanSchema,
   UpdatePlanSchema,
-  PlanIdParamsSchema
+  PlanIdParamsSchema,
+  ListPlansQuerySchema
 } from '../schemas/plan.schema';
 
 export async function adminRoutes(fastify: FastifyInstance): Promise<void> {
@@ -155,7 +156,8 @@ export async function adminRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get(
     '/admin/plans',
     {
-      preHandler: authorize('admin')
+      preHandler: authorize('admin'),
+      schema: { querystring: ListPlansQuerySchema }
     },
     planController.listAll
   );

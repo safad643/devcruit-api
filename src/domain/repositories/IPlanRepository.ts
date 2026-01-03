@@ -7,4 +7,6 @@ export type UpdatePlanData = Partial<Omit<PlanProps, 'id' | 'createdAt' | 'updat
 export interface IPlanRepository extends IGenericRepository<Plan, CreatePlanData, UpdatePlanData> {
     findActive(): Promise<Plan[]>;
     findAll(): Promise<Plan[]>;
+    findAllPaginated(page: number, limit: number): Promise<Plan[]>;
+    countAll(): Promise<number>;
 }

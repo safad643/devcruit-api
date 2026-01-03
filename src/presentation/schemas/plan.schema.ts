@@ -50,9 +50,11 @@ export const PlanIdParamsSchema = Type.Object({
     id: Type.String({ minLength: 1 }),
 });
 
-// List Plans Query Schema (optional, for future filtering)
+// List Plans Query Schema
 export const ListPlansQuerySchema = Type.Object({
     activeOnly: Type.Optional(Type.Boolean()),
+    page: Type.Optional(Type.Integer({ minimum: 1, default: 1 })),
+    limit: Type.Optional(Type.Integer({ minimum: 1, maximum: 100, default: 10 })),
 });
 
 // Export TypeScript types

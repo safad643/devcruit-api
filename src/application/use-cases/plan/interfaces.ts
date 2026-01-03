@@ -4,6 +4,7 @@ import {
     UpdatePlanInput,
     UpdatePlanOutput,
     DeletePlanOutput,
+    ListPlansInput,
     ListPlansOutput,
     GetPlanByIdOutput,
 } from '../../dtos/plan.dto';
@@ -21,7 +22,7 @@ export interface IDeletePlanUseCase {
 }
 
 export interface IListPlansUseCase {
-    execute(activeOnly: boolean): Promise<ListPlansOutput>;
+    execute(input: ListPlansInput): Promise<ListPlansOutput>;
 }
 
 export interface IGetPlanByIdUseCase {

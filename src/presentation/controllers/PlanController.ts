@@ -52,10 +52,15 @@ export class PlanController {
     };
 
     listAll = async (
-        _request: FastifyRequest,
+        request: FastifyRequest<{ Querystring: ListPlansQuery }>,
         reply: FastifyReply
     ): Promise<void> => {
-        const result = await this._listPlansUseCase.execute(false); // All plans for admin
+        const { page = 1, limit = 10 } = request.query;
+        const result = await this._listPlansUseCase.execute({
+            activeOnly: false,
+            page,
+            limit,
+        });
         reply.status(HttpStatus.OK).send(wrapSuccess(result));
     };
 
@@ -63,7 +68,7 @@ export class PlanController {
         _request: FastifyRequest,
         reply: FastifyReply
     ): Promise<void> => {
-        const result = await this._listPlansUseCase.execute(true); // Active only for public
+        const result = await this._listPlansUseCase.execute({ activeOnly: true });
         reply.status(HttpStatus.OK).send(wrapSuccess(result));
     };
 
@@ -75,3 +80,4 @@ export class PlanController {
         reply.status(HttpStatus.OK).send(wrapSuccess(result));
     };
 }
+

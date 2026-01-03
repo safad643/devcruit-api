@@ -2,7 +2,7 @@ import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { IPlanRepository } from '../../../domain/repositories/IPlanRepository';
 import { IListPlansUseCase } from './interfaces';
-import { ListPlansOutput, PlanListItem } from '../../dtos/plan.dto';
+import { ListPlansInput, ListPlansOutput, PlanListItem } from '../../dtos/plan.dto';
 
 @injectable()
 export class ListPlansUseCase implements IListPlansUseCase {
@@ -10,10 +10,21 @@ export class ListPlansUseCase implements IListPlansUseCase {
         @inject(TYPES.PlanRepository) private _planRepository: IPlanRepository
     ) { }
 
-    async execute(activeOnly: boolean): Promise<ListPlansOutput> {
-        const plans = activeOnly
-            ? await this._planRepository.findActive()
-            : await this._planRepository.findAll();
+    async execute(input: ListPlansInput): Promise<ListPlansOutput> {
+        const { activeOnly, page = 1, limit = 10 } = input;
+
+        let plans;
+        let total;
+
+        if (activeOnly) {
+            // Active only returns all (non-paginated for public pricing page)
+            plans = await this._planRepository.findActive();
+            total = plans.length;
+        } else {
+            // Admin view: paginated
+            plans = await this._planRepository.findAllPaginated(page, limit);
+            total = await this._planRepository.countAll();
+        }
 
         const planItems: PlanListItem[] = plans.map(plan => ({
             id: plan.id,
@@ -33,6 +44,14 @@ export class ListPlansUseCase implements IListPlansUseCase {
             finalPrice: plan.getFinalPrice(),
         }));
 
-        return { plans: planItems };
+        const totalPages = activeOnly ? 1 : Math.ceil(total / limit);
+
+        return {
+            plans: planItems,
+            total,
+            page: activeOnly ? 1 : page,
+            limit: activeOnly ? total : limit,
+            totalPages,
+        };
     }
 }

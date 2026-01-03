@@ -52,6 +52,12 @@ export interface DeletePlanOutput {
 }
 
 // List Plans
+export interface ListPlansInput {
+    activeOnly: boolean;
+    page?: number;
+    limit?: number;
+}
+
 export interface PlanListItem {
     id: string;
     name: string;
@@ -72,6 +78,10 @@ export interface PlanListItem {
 
 export interface ListPlansOutput {
     plans: PlanListItem[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
 }
 
 // Get Plan By Id

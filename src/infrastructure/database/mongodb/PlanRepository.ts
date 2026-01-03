@@ -92,4 +92,27 @@ export class PlanRepository
             throw new InternalError('Failed to fetch plans', error as Error);
         }
     }
+
+    async findAllPaginated(page: number, limit: number): Promise<Plan[]> {
+        try {
+            const skip = (page - 1) * limit;
+            const docs = await this._collection
+                .find({})
+                .sort({ displayOrder: 1 })
+                .skip(skip)
+                .limit(limit)
+                .toArray();
+            return docs.map(doc => this._mapToEntity(doc));
+        } catch (error) {
+            throw new InternalError('Failed to fetch plans', error as Error);
+        }
+    }
+
+    async countAll(): Promise<number> {
+        try {
+            return await this._collection.countDocuments({});
+        } catch (error) {
+            throw new InternalError('Failed to count plans', error as Error);
+        }
+    }
 }
