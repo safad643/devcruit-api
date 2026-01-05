@@ -146,7 +146,9 @@ export const TYPES = {
   // Dashboard module
   GetCompanyDashboardUseCase: Symbol.for('GetCompanyDashboardUseCase'),
   GetAdminDashboardUseCase: Symbol.for('GetAdminDashboardUseCase'),
+  GetDeveloperDashboardUseCase: Symbol.for('GetDeveloperDashboardUseCase'),
   DashboardController: Symbol.for('DashboardController'),
+
 
   // Notification module
   NotificationRepository: Symbol.for('NotificationRepository'),

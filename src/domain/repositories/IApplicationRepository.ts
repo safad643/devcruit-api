@@ -56,6 +56,23 @@ export interface ApplicationTrendItem {
   count: number;
 }
 
+// Developer dashboard types
+export interface DeveloperUpcomingInterviewItem {
+  applicationId: string;
+  roundName: string;
+  jobTitle: string;
+  companyName: string;
+  scheduledAt: Date;
+}
+
+export interface DeveloperRecentApplicationItem {
+  id: string;
+  jobTitle: string;
+  companyName: string;
+  status: string;
+  appliedAt: Date;
+}
+
 export interface IApplicationRepository extends IGenericRepository<Application, CreateApplicationProps, UpdateApplicationProps> {
   findByJobId(jobId: string): Promise<Application[]>;
   findByDeveloperId(developerId: string): Promise<Application[]>;
@@ -69,9 +86,14 @@ export interface IApplicationRepository extends IGenericRepository<Application, 
     excludeApplicationId?: string,
     excludeRoundName?: string
   ): Promise<boolean>;
-  // Dashboard aggregation methods
+  // Company dashboard aggregation methods
   getStatusCountsByCompany(companyId: string): Promise<Record<string, number>>;
   getRecentWithDetails(companyId: string, limit: number): Promise<RecentApplicationItem[]>;
   getUpcomingInterviews(companyId: string, limit: number): Promise<UpcomingInterviewItem[]>;
   getApplicationTrend(companyId: string, days: number): Promise<ApplicationTrendItem[]>;
+  // Developer dashboard aggregation methods
+  getStatusCountsByDeveloper(developerId: string): Promise<Record<string, number>>;
+  getUpcomingInterviewsForDeveloper(developerId: string, limit: number): Promise<DeveloperUpcomingInterviewItem[]>;
+  getRecentApplicationsForDeveloper(developerId: string, limit: number): Promise<DeveloperRecentApplicationItem[]>;
 }
+

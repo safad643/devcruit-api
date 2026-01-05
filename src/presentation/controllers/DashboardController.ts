@@ -2,7 +2,7 @@
 import { injectable, inject } from 'inversify';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { TYPES } from '../../di/types';
-import { IGetCompanyDashboardUseCase, IGetAdminDashboardUseCase } from '../../application/use-cases/dashboard/interfaces';
+import { IGetCompanyDashboardUseCase, IGetAdminDashboardUseCase, IGetDeveloperDashboardUseCase } from '../../application/use-cases/dashboard/interfaces';
 import { wrapSuccess } from '../../utils/response';
 import { HttpStatus } from '../../utils/statusCodes';
 import { ForbiddenError } from '../../domain/errors';
@@ -11,7 +11,8 @@ import { ForbiddenError } from '../../domain/errors';
 export class DashboardController {
     constructor(
         @inject(TYPES.GetCompanyDashboardUseCase) private _getCompanyDashboardUseCase: IGetCompanyDashboardUseCase,
-        @inject(TYPES.GetAdminDashboardUseCase) private _getAdminDashboardUseCase: IGetAdminDashboardUseCase
+        @inject(TYPES.GetAdminDashboardUseCase) private _getAdminDashboardUseCase: IGetAdminDashboardUseCase,
+        @inject(TYPES.GetDeveloperDashboardUseCase) private _getDeveloperDashboardUseCase: IGetDeveloperDashboardUseCase
     ) { }
 
     getCompanyDashboard = async (
@@ -30,6 +31,15 @@ export class DashboardController {
         reply: FastifyReply
     ): Promise<void> => {
         const result = await this._getAdminDashboardUseCase.execute();
+        reply.status(HttpStatus.OK).send(wrapSuccess(result));
+    };
+
+    getDeveloperDashboard = async (
+        request: FastifyRequest,
+        reply: FastifyReply
+    ): Promise<void> => {
+        const developerId = request.user!.id;
+        const result = await this._getDeveloperDashboardUseCase.execute(developerId);
         reply.status(HttpStatus.OK).send(wrapSuccess(result));
     };
 

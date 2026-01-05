@@ -113,3 +113,33 @@ export interface AdminDashboardOutput {
     totalRevenue: number;
 }
 
+// Developer Dashboard Types
+export interface DeveloperUpcomingInterviewItem {
+    applicationId: string;
+    roundName: string;
+    jobTitle: string;
+    companyName: string;
+    scheduledAt: Date;
+}
+
+export interface DeveloperRecentApplicationItem {
+    id: string;
+    jobTitle: string;
+    companyName: string;
+    status: string;
+    appliedAt: Date;
+}
+
+export interface DeveloperDashboardOutput {
+    stats: {
+        total: number;
+        active: number;
+        offers: number;
+        rejected: number;
+        pendingOffers: number;
+    };
+    byStatus: ApplicationStatusCounts;
+    upcomingInterviews: DeveloperUpcomingInterviewItem[];
+    recentApplications: DeveloperRecentApplicationItem[];
+}
+

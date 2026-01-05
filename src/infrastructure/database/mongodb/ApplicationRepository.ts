@@ -475,4 +475,141 @@ export class ApplicationRepository
       throw new InternalError('Failed to get application trend', error as Error);
     }
   }
+
+  // Developer dashboard aggregation methods
+
+  async getStatusCountsByDeveloper(developerId: string): Promise<Record<string, number>> {
+    try {
+      const pipeline = [
+        { $match: { developerId } },
+        { $group: { _id: '$status', count: { $sum: 1 } } }
+      ];
+
+      const results = await this._collection.aggregate(pipeline).toArray();
+
+      const counts: Record<string, number> = { total: 0 };
+      for (const result of results) {
+        counts[result._id] = result.count;
+        counts.total += result.count;
+      }
+
+      return counts;
+    } catch (error) {
+      throw new InternalError('Failed to get developer application status counts', error as Error);
+    }
+  }
+
+  async getUpcomingInterviewsForDeveloper(developerId: string, limit: number): Promise<{ applicationId: string; roundName: string; jobTitle: string; companyName: string; scheduledAt: Date }[]> {
+    try {
+      const now = new Date();
+
+      const pipeline = [
+        { $match: { developerId } },
+        { $unwind: '$interviewRounds' },
+        {
+          $match: {
+            'interviewRounds.status': 'scheduled',
+            'interviewRounds.scheduledAt': { $gt: now }
+          }
+        },
+        { $sort: { 'interviewRounds.scheduledAt': 1 } },
+        { $limit: limit },
+        // Join with jobs
+        {
+          $lookup: {
+            from: 'jobs',
+            let: { jobId: { $toObjectId: '$jobId' } },
+            pipeline: [{ $match: { $expr: { $eq: ['$_id', '$$jobId'] } } }],
+            as: 'job'
+          }
+        },
+        { $unwind: { path: '$job', preserveNullAndEmptyArrays: true } },
+        // Join with company_profiles
+        {
+          $lookup: {
+            from: 'company_profiles',
+            localField: 'companyId',
+            foreignField: 'userId',
+            as: 'companyProfile'
+          }
+        },
+        { $unwind: { path: '$companyProfile', preserveNullAndEmptyArrays: true } },
+        // Project final shape
+        {
+          $project: {
+            applicationId: { $toString: '$_id' },
+            roundName: '$interviewRounds.roundName',
+            jobTitle: { $ifNull: ['$job.title', 'Unknown Position'] },
+            companyName: { $ifNull: ['$companyProfile.companyName', 'Unknown Company'] },
+            scheduledAt: '$interviewRounds.scheduledAt'
+          }
+        }
+      ];
+
+      const results = await this._collection.aggregate(pipeline).toArray();
+
+      return results.map(r => ({
+        applicationId: r.applicationId,
+        roundName: r.roundName,
+        jobTitle: r.jobTitle,
+        companyName: r.companyName,
+        scheduledAt: new Date(r.scheduledAt)
+      }));
+    } catch (error) {
+      throw new InternalError('Failed to get upcoming interviews for developer', error as Error);
+    }
+  }
+
+  async getRecentApplicationsForDeveloper(developerId: string, limit: number): Promise<{ id: string; jobTitle: string; companyName: string; status: string; appliedAt: Date }[]> {
+    try {
+      const pipeline = [
+        { $match: { developerId } },
+        { $sort: { appliedAt: -1 } },
+        { $limit: limit },
+        // Join with jobs
+        {
+          $lookup: {
+            from: 'jobs',
+            let: { jobId: { $toObjectId: '$jobId' } },
+            pipeline: [{ $match: { $expr: { $eq: ['$_id', '$$jobId'] } } }],
+            as: 'job'
+          }
+        },
+        { $unwind: { path: '$job', preserveNullAndEmptyArrays: true } },
+        // Join with company_profiles
+        {
+          $lookup: {
+            from: 'company_profiles',
+            localField: 'companyId',
+            foreignField: 'userId',
+            as: 'companyProfile'
+          }
+        },
+        { $unwind: { path: '$companyProfile', preserveNullAndEmptyArrays: true } },
+        // Project final shape
+        {
+          $project: {
+            id: { $toString: '$_id' },
+            jobTitle: { $ifNull: ['$job.title', 'Unknown Position'] },
+            companyName: { $ifNull: ['$companyProfile.companyName', 'Unknown Company'] },
+            status: 1,
+            appliedAt: 1
+          }
+        }
+      ];
+
+      const results = await this._collection.aggregate(pipeline).toArray();
+
+      return results.map(r => ({
+        id: r.id,
+        jobTitle: r.jobTitle,
+        companyName: r.companyName,
+        status: r.status,
+        appliedAt: new Date(r.appliedAt)
+      }));
+    } catch (error) {
+      throw new InternalError('Failed to get recent applications for developer', error as Error);
+    }
+  }
 }
+

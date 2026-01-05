@@ -27,5 +27,14 @@ export async function dashboardRoutes(fastify: FastifyInstance): Promise<void> {
         },
         dashboardController.getAdminDashboard
     );
+
+    // Developer dashboard endpoint
+    fastify.get(
+        '/developer/dashboard',
+        {
+            preHandler: [authenticate, authorize('developer')]
+        },
+        dashboardController.getDeveloperDashboard
+    );
 }
 
