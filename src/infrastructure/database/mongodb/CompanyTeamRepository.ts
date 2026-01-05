@@ -84,7 +84,7 @@ export class CompanyTeamRepository implements ICompanyTeamRepository {
         updatedAt: now,
       };
 
-      const result = await this._collection.insertOne(doc);
+      const result = await this._collection.insertOne(doc as CompanyTeamMemberDocument);
       const documentWithId: CompanyTeamMemberDocument = {
         ...doc,
         _id: result.insertedId,

@@ -10,16 +10,18 @@ export async function paymentRoutes(fastify: FastifyInstance): Promise<void> {
   const paymentController = container.get<PaymentController>(TYPES.PaymentController);
 
   // Authenticated company-only checkout
-  fastify.post(
-    '/checkout',
-    {
-      preHandler: [authenticate, authorize('company')],
-      schema: { body: CreateCheckoutSchema }
-    },
-    paymentController.checkout
-  );
+  fastify.register(async (checkoutRoutes) => {
+    checkoutRoutes.addHook('preHandler', authenticate);
+    checkoutRoutes.addHook('preHandler', authorize('company'));
 
-  // Webhook: raw body handling will be added in a later step
+    checkoutRoutes.post(
+      '/checkout',
+      { schema: { body: CreateCheckoutSchema } },
+      paymentController.checkout
+    );
+  });
+
+  // Webhook: raw body handling (public, no auth)
   fastify.post(
     '/webhook',
     { config: { rawBody: true } },

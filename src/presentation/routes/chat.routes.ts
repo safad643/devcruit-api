@@ -13,57 +13,34 @@ import {
 export async function chatRoutes(fastify: FastifyInstance): Promise<void> {
   const chatController = container.get<ChatController>(TYPES.ChatController);
 
+  fastify.addHook('preHandler', authenticate);
+
   fastify.get(
     '/conversations',
-    {
-      preHandler: [authenticate],
-    },
     chatController.getConversations
   );
 
   fastify.get(
     '/conversations/:conversationId/messages',
-    {
-      preHandler: [authenticate],
-      schema: {
-        params: ConversationIdParamsSchema,
-        querystring: GetMessagesQuerySchema,
-      },
-    },
+    { schema: { params: ConversationIdParamsSchema, querystring: GetMessagesQuerySchema } },
     chatController.getMessages
   );
 
   fastify.post(
     '/conversations/:conversationId/read',
-    {
-      preHandler: [authenticate],
-      schema: {
-        params: ConversationIdParamsSchema,
-        body: MarkMessagesAsReadSchema,
-      },
-    },
+    { schema: { params: ConversationIdParamsSchema, body: MarkMessagesAsReadSchema } },
     chatController.markMessagesAsRead
   );
 
   fastify.get(
     '/can-message/:userId',
-    {
-      preHandler: [authenticate],
-      schema: {
-        params: UserIdParamsSchema,
-      },
-    },
+    { schema: { params: UserIdParamsSchema } },
     chatController.checkCanMessage
   );
 
   fastify.get(
     '/conversations/with/:userId',
-    {
-      preHandler: [authenticate],
-      schema: {
-        params: UserIdParamsSchema,
-      },
-    },
+    { schema: { params: UserIdParamsSchema } },
     chatController.getConversationWithUser
   );
 }

@@ -19,71 +19,73 @@ export async function profileRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.addHook('preHandler', authenticate);
 
   fastify.post(
-    '/create', 
-    { 
-      schema: { body: CreateDeveloperProfileSchema } 
-    }, 
+    '/create',
+    { schema: { body: CreateDeveloperProfileSchema } },
     profileController.createProfile
   );
 
   fastify.post(
     '/company/create',
-    {
-      schema: { body: CreateCompanyProfileSchema }
-    },
+    { schema: { body: CreateCompanyProfileSchema } },
     profileController.createCompanyProfile
   );
 
   fastify.get(
     '/me',
-  
+    {},
     profileController.getProfile
-  );
-
-  // Developer profile update
-  fastify.patch(
-    '/developer',
-    {
-      preHandler: [authorize('developer')],
-      schema: { body: UpdateDeveloperProfileSchema }
-    },
-    profileController.updateDeveloperProfile
-  );
-
-  // Company profile update
-  fastify.patch(
-    '/company',
-    {
-      preHandler: [authorize('company')],
-      schema: { body: UpdateCompanyProfileSchema }
-    },
-    profileController.updateCompanyProfile
   );
 
   fastify.post(
     '/resubmitdocuments',
-    {
-      schema: { body: ResubmitDocumentsSchema }
-    },
+    { schema: { body: ResubmitDocumentsSchema } },
     profileController.resubmitDocuments
   );
 
-  fastify.get(
-    '/company/team',
-    {
-      // Company owners and HR can view the team list
-      preHandler: [authorize('company', 'hr'), checkCompanyPaid],
-    },
-    profileController.listCompanyTeam
-  );
+  // Developer profile update
+  fastify.register(async (developerRoutes) => {
+    developerRoutes.addHook('preHandler', authorize('developer'));
 
-  fastify.post(
-    '/company/team/invite',
-    {
-      preHandler: [authorize('company'), checkCompanyPaid],
-      schema: { body: InviteCompanyTeamMemberSchema }
-    },
-    profileController.inviteCompanyTeamMember
-  );
+    developerRoutes.patch(
+      '/developer',
+      { schema: { body: UpdateDeveloperProfileSchema } },
+      profileController.updateDeveloperProfile
+    );
+  });
+
+  // Company profile update
+  fastify.register(async (companyRoutes) => {
+    companyRoutes.addHook('preHandler', authorize('company'));
+
+    companyRoutes.patch(
+      '/company',
+      { schema: { body: UpdateCompanyProfileSchema } },
+      profileController.updateCompanyProfile
+    );
+  });
+
+  // Company team routes (company/hr with paid check)
+  fastify.register(async (teamRoutes) => {
+    teamRoutes.addHook('preHandler', authorize('company', 'hr'));
+    teamRoutes.addHook('preHandler', checkCompanyPaid);
+
+    teamRoutes.get(
+      '/company/team',
+      {},
+      profileController.listCompanyTeam
+    );
+  });
+
+  // Company invite (company only with paid check)
+  fastify.register(async (inviteRoutes) => {
+    inviteRoutes.addHook('preHandler', authorize('company'));
+    inviteRoutes.addHook('preHandler', checkCompanyPaid);
+
+    inviteRoutes.post(
+      '/company/team/invite',
+      { schema: { body: InviteCompanyTeamMemberSchema } },
+      profileController.inviteCompanyTeamMember
+    );
+  });
 }
 

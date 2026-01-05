@@ -16,75 +16,52 @@ import {
 export async function offerRoutes(fastify: FastifyInstance): Promise<void> {
     const offerController = container.get<OfferController>(TYPES.OfferController);
 
-    // Company route: Extend offer
-    fastify.patch(
-        '/company/applications/:id/extend-offer',
-        {
-            preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
-            schema: {
-                params: ApplicationIdParamsSchema,
-                body: ExtendOfferSchema
-            }
-        },
-        offerController.extendOffer
-    );
+    // Company/HR routes with paid check
+    fastify.register(async (companyRoutes) => {
+        companyRoutes.addHook('preHandler', authenticate);
+        companyRoutes.addHook('preHandler', authorize('company', 'hr'));
+        companyRoutes.addHook('preHandler', checkCompanyPaid);
 
-    // Developer route: Accept offer
-    fastify.patch(
-        '/applications/:id/accept-offer',
-        {
-            preHandler: [authenticate, authorize('developer')],
-            schema: {
-                params: ApplicationIdParamsSchema,
-                body: AcceptOfferSchema
-            }
-        },
-        offerController.acceptOffer
-    );
+        companyRoutes.patch(
+            '/company/applications/:id/extend-offer',
+            { schema: { params: ApplicationIdParamsSchema, body: ExtendOfferSchema } },
+            offerController.extendOffer
+        );
 
-    // Developer route: Decline offer
-    fastify.patch(
-        '/applications/:id/decline-offer',
-        {
-            preHandler: [authenticate, authorize('developer')],
-            schema: {
-                params: ApplicationIdParamsSchema,
-                body: DeclineOfferSchema
-            }
-        },
-        offerController.declineOffer
-    );
+        companyRoutes.post(
+            '/company/applications/:id/offer-letter',
+            { schema: { params: ApplicationIdParamsSchema, body: CreateOfferLetterSchema } },
+            offerController.createOfferLetter
+        );
 
-    // Company route: Create offer letter
-    fastify.post(
-        '/company/applications/:id/offer-letter',
-        {
-            preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
-            schema: {
-                params: ApplicationIdParamsSchema,
-                body: CreateOfferLetterSchema
-            }
-        },
-        offerController.createOfferLetter
-    );
+        companyRoutes.get(
+            '/company/applications/:id/offer-letter',
+            { schema: { params: ApplicationIdParamsSchema } },
+            offerController.getOfferLetterForCompany
+        );
+    });
 
-    // Company route: Get offer letter
-    fastify.get(
-        '/company/applications/:id/offer-letter',
-        {
-            preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
-            schema: { params: ApplicationIdParamsSchema }
-        },
-        offerController.getOfferLetterForCompany
-    );
+    // Developer routes
+    fastify.register(async (developerRoutes) => {
+        developerRoutes.addHook('preHandler', authenticate);
+        developerRoutes.addHook('preHandler', authorize('developer'));
 
-    // Developer route: Get offer letter
-    fastify.get(
-        '/applications/:id/offer-letter',
-        {
-            preHandler: [authenticate, authorize('developer')],
-            schema: { params: ApplicationIdParamsSchema }
-        },
-        offerController.getOfferLetterForDeveloper
-    );
+        developerRoutes.patch(
+            '/applications/:id/accept-offer',
+            { schema: { params: ApplicationIdParamsSchema, body: AcceptOfferSchema } },
+            offerController.acceptOffer
+        );
+
+        developerRoutes.patch(
+            '/applications/:id/decline-offer',
+            { schema: { params: ApplicationIdParamsSchema, body: DeclineOfferSchema } },
+            offerController.declineOffer
+        );
+
+        developerRoutes.get(
+            '/applications/:id/offer-letter',
+            { schema: { params: ApplicationIdParamsSchema } },
+            offerController.getOfferLetterForDeveloper
+        );
+    });
 }

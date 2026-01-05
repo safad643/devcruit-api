@@ -9,6 +9,8 @@ export interface SendMessageInput {
 export interface SendMessageOutput {
   message: Message;
   conversation: Conversation;
+  participant1Name?: string;
+  participant2Name?: string;
 }
 
 export interface GetConversationsInput {

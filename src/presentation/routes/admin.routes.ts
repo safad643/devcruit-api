@@ -30,66 +30,48 @@ import {
 export async function adminRoutes(fastify: FastifyInstance): Promise<void> {
   const adminController = container.get<AdminController>(TYPES.AdminController);
 
-  // Require authentication for all admin routes
   fastify.addHook('preHandler', authenticate);
+  fastify.addHook('preHandler', authorize('admin'));
 
   // Block user endpoint
   fastify.post(
     '/admin/block/user',
-    {
-      preHandler: authorize('admin'),
-      schema: { body: BlockUserSchema }
-    },
+    { schema: { body: BlockUserSchema } },
     adminController.blockUser
   );
 
   // Unblock user endpoint
   fastify.post(
     '/admin/unblock/user',
-    {
-      preHandler: authorize('admin'),
-      schema: { body: UnblockUserSchema }
-    },
+    { schema: { body: UnblockUserSchema } },
     adminController.unblockUser
   );
 
   // Approve company endpoint
   fastify.post(
     '/admin/approve/company',
-    {
-      preHandler: authorize('admin'),
-      schema: { body: ApproveCompanySchema }
-    },
+    { schema: { body: ApproveCompanySchema } },
     adminController.approveCompany
   );
 
   // Reject company endpoint
   fastify.post(
     '/admin/reject/company',
-    {
-      preHandler: authorize('admin'),
-      schema: { body: RejectCompanySchema }
-    },
+    { schema: { body: RejectCompanySchema } },
     adminController.rejectCompany
   );
 
   // List companies endpoint
   fastify.post(
     '/admin/list/companies',
-    {
-      preHandler: authorize('admin'),
-      schema: { body: ListCompaniesSchema }
-    },
+    { schema: { body: ListCompaniesSchema } },
     adminController.listCompanies
   );
 
   // List developers endpoint
   fastify.post(
     '/admin/list/developers',
-    {
-      preHandler: authorize('admin'),
-      schema: { body: ListDevelopersSchema }
-    },
+    { schema: { body: ListDevelopersSchema } },
     adminController.listDevelopers
   );
 
@@ -99,43 +81,28 @@ export async function adminRoutes(fastify: FastifyInstance): Promise<void> {
   // Create job field
   fastify.post(
     '/admin/job-fields',
-    {
-      preHandler: authorize('admin'),
-      schema: { body: CreateJobFieldSchema }
-    },
+    { schema: { body: CreateJobFieldSchema } },
     jobFieldController.create
   );
 
   // Get job fields by type
   fastify.get(
     '/admin/job-fields',
-    {
-      preHandler: authorize('admin'),
-      schema: { querystring: GetJobFieldsQuerySchema }
-    },
+    { schema: { querystring: GetJobFieldsQuerySchema } },
     jobFieldController.getAll
   );
 
   // Update job field
   fastify.put(
     '/admin/job-fields/:id',
-    {
-      preHandler: authorize('admin'),
-      schema: {
-        params: JobFieldIdParamsSchema,
-        body: UpdateJobFieldSchema
-      }
-    },
+    { schema: { params: JobFieldIdParamsSchema, body: UpdateJobFieldSchema } },
     jobFieldController.update
   );
 
   // Delete job field
   fastify.delete(
     '/admin/job-fields/:id',
-    {
-      preHandler: authorize('admin'),
-      schema: { params: JobFieldIdParamsSchema }
-    },
+    { schema: { params: JobFieldIdParamsSchema } },
     jobFieldController.delete
   );
 
@@ -145,53 +112,35 @@ export async function adminRoutes(fastify: FastifyInstance): Promise<void> {
   // Create plan
   fastify.post(
     '/admin/plans',
-    {
-      preHandler: authorize('admin'),
-      schema: { body: CreatePlanSchema }
-    },
+    { schema: { body: CreatePlanSchema } },
     planController.create
   );
 
   // List all plans (admin - includes inactive)
   fastify.get(
     '/admin/plans',
-    {
-      preHandler: authorize('admin'),
-      schema: { querystring: ListPlansQuerySchema }
-    },
+    { schema: { querystring: ListPlansQuerySchema } },
     planController.listAll
   );
 
   // Get plan by ID
   fastify.get(
     '/admin/plans/:id',
-    {
-      preHandler: authorize('admin'),
-      schema: { params: PlanIdParamsSchema }
-    },
+    { schema: { params: PlanIdParamsSchema } },
     planController.getById
   );
 
   // Update plan
   fastify.put(
     '/admin/plans/:id',
-    {
-      preHandler: authorize('admin'),
-      schema: {
-        params: PlanIdParamsSchema,
-        body: UpdatePlanSchema
-      }
-    },
+    { schema: { params: PlanIdParamsSchema, body: UpdatePlanSchema } },
     planController.update
   );
 
   // Delete plan (soft delete)
   fastify.delete(
     '/admin/plans/:id',
-    {
-      preHandler: authorize('admin'),
-      schema: { params: PlanIdParamsSchema }
-    },
+    { schema: { params: PlanIdParamsSchema } },
     planController.delete
   );
 }

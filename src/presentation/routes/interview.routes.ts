@@ -19,131 +19,95 @@ import {
 export async function interviewRoutes(fastify: FastifyInstance): Promise<void> {
     const interviewController = container.get<InterviewController>(TYPES.InterviewController);
 
-    // Conditional middleware: only checkCompanyPaid for company/hr, not for interviewers
-    const checkCompanyPaidIfNeeded = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
-        if (request.user?.role === 'company' || request.user?.role === 'hr') {
-            await checkCompanyPaid(request, reply);
-        }
-    };
+    // Company/HR routes with paid check
+    fastify.register(async (companyRoutes) => {
+        companyRoutes.addHook('preHandler', authenticate);
+        companyRoutes.addHook('preHandler', authorize('company', 'hr'));
+        companyRoutes.addHook('preHandler', checkCompanyPaid);
 
-    // Company/HR route: Schedule interview round
-    fastify.post(
-        '/company/applications/:id/schedule-interview',
-        {
-            preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
-            schema: {
-                params: ApplicationIdParamsSchema,
-                body: ScheduleInterviewRoundSchema
-            }
-        },
-        interviewController.scheduleInterviewRound
-    );
+        companyRoutes.post(
+            '/company/applications/:id/schedule-interview',
+            { schema: { params: ApplicationIdParamsSchema, body: ScheduleInterviewRoundSchema } },
+            interviewController.scheduleInterviewRound
+        );
 
-    // Company/HR route: Add interview round
-    fastify.post(
-        '/company/applications/:id/add-interview-round',
-        {
-            preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
-            schema: {
-                params: ApplicationIdParamsSchema,
-                body: AddInterviewRoundSchema
-            }
-        },
-        interviewController.addInterviewRound
-    );
+        companyRoutes.post(
+            '/company/applications/:id/add-interview-round',
+            { schema: { params: ApplicationIdParamsSchema, body: AddInterviewRoundSchema } },
+            interviewController.addInterviewRound
+        );
 
-    // Interviewer routes
-    fastify.get(
-        '/interviewer/interviews',
-        {
-            preHandler: [authenticate, authorize('interviewer')]
-        },
-        interviewController.getInterviewsForInterviewer
-    );
+        companyRoutes.post(
+            '/company/applications/:id/interview-rounds/:roundName/respond-reschedule',
+            { schema: { params: ApplicationInterviewRoundParamsSchema, body: RespondToRescheduleSchema } },
+            interviewController.respondToRescheduleRequest
+        );
 
-    fastify.post(
-        '/interviewer/applications/:id/update-interview-result',
-        {
-            preHandler: [authenticate, authorize('interviewer')],
-            schema: {
-                params: ApplicationIdParamsSchema,
-                body: UpdateInterviewResultSchema
-            }
-        },
-        interviewController.updateInterviewResult
-    );
+        companyRoutes.post(
+            '/company/applications/:id/interview-rounds/:roundName/reschedule',
+            { schema: { params: ApplicationInterviewRoundParamsSchema, body: RescheduleInterviewSchema } },
+            interviewController.rescheduleInterview
+        );
+    });
 
-    // Video call routes (shared between developer/interviewer/hr/company as appropriate)
-    fastify.post(
-        '/applications/:id/interview-rounds/:roundName/video-call',
-        {
-            preHandler: [authenticate, authorize('developer', 'interviewer', 'hr', 'company')],
-            schema: {
-                params: ApplicationInterviewRoundParamsSchema,
-            },
-        },
-        interviewController.getOrCreateVideoCall,
-    );
+    // Interviewer-only routes
+    fastify.register(async (interviewerRoutes) => {
+        interviewerRoutes.addHook('preHandler', authenticate);
+        interviewerRoutes.addHook('preHandler', authorize('interviewer'));
 
-    fastify.post(
-        '/applications/:id/interview-rounds/:roundName/video-call/start',
-        {
-            preHandler: [authenticate, authorize('interviewer', 'hr', 'company')],
-            schema: {
-                params: ApplicationInterviewRoundParamsSchema,
-            },
-        },
-        interviewController.startVideoCall,
-    );
+        interviewerRoutes.get(
+            '/interviewer/interviews',
+            {},
+            interviewController.getInterviewsForInterviewer
+        );
 
-    fastify.post(
-        '/applications/:id/interview-rounds/:roundName/video-call/end',
-        {
-            preHandler: [authenticate, authorize('interviewer', 'hr', 'company')],
-            schema: {
-                params: ApplicationInterviewRoundParamsSchema,
-            },
-        },
-        interviewController.endVideoCall,
-    );
+        interviewerRoutes.post(
+            '/interviewer/applications/:id/update-interview-result',
+            { schema: { params: ApplicationIdParamsSchema, body: UpdateInterviewResultSchema } },
+            interviewController.updateInterviewResult
+        );
+    });
 
-    // Developer route: Request reschedule
-    fastify.post(
-        '/developer/applications/:id/interview-rounds/:roundName/request-reschedule',
-        {
-            preHandler: [authenticate, authorize('developer')],
-            schema: {
-                params: ApplicationInterviewRoundParamsSchema,
-                body: RequestRescheduleSchema,
-            },
-        },
-        interviewController.requestReschedule,
-    );
+    // Video call routes - all roles
+    fastify.register(async (videoAllRoutes) => {
+        videoAllRoutes.addHook('preHandler', authenticate);
+        videoAllRoutes.addHook('preHandler', authorize('developer', 'interviewer', 'hr', 'company'));
 
-    // Company/HR route: Respond to reschedule request
-    fastify.post(
-        '/company/applications/:id/interview-rounds/:roundName/respond-reschedule',
-        {
-            preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
-            schema: {
-                params: ApplicationInterviewRoundParamsSchema,
-                body: RespondToRescheduleSchema,
-            },
-        },
-        interviewController.respondToRescheduleRequest,
-    );
+        videoAllRoutes.post(
+            '/applications/:id/interview-rounds/:roundName/video-call',
+            { schema: { params: ApplicationInterviewRoundParamsSchema } },
+            interviewController.getOrCreateVideoCall
+        );
+    });
 
-    // Company/HR route: Direct reschedule
-    fastify.post(
-        '/company/applications/:id/interview-rounds/:roundName/reschedule',
-        {
-            preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
-            schema: {
-                params: ApplicationInterviewRoundParamsSchema,
-                body: RescheduleInterviewSchema,
-            },
-        },
-        interviewController.rescheduleInterview,
-    );
+    // Video call routes - interviewer/hr/company only
+    fastify.register(async (videoHostRoutes) => {
+        videoHostRoutes.addHook('preHandler', authenticate);
+        videoHostRoutes.addHook('preHandler', authorize('interviewer', 'hr', 'company'));
+
+        videoHostRoutes.post(
+            '/applications/:id/interview-rounds/:roundName/video-call/start',
+            { schema: { params: ApplicationInterviewRoundParamsSchema } },
+            interviewController.startVideoCall
+        );
+
+        videoHostRoutes.post(
+            '/applications/:id/interview-rounds/:roundName/video-call/end',
+            { schema: { params: ApplicationInterviewRoundParamsSchema } },
+            interviewController.endVideoCall
+        );
+    });
+
+    // Developer-only routes
+    fastify.register(async (developerRoutes) => {
+        developerRoutes.addHook('preHandler', authenticate);
+        developerRoutes.addHook('preHandler', authorize('developer'));
+
+        developerRoutes.post(
+            '/developer/applications/:id/interview-rounds/:roundName/request-reschedule',
+            { schema: { params: ApplicationInterviewRoundParamsSchema, body: RequestRescheduleSchema } },
+            interviewController.requestReschedule
+        );
+    });
 }
 

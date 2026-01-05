@@ -12,79 +12,63 @@ import { GetJobFieldsQuerySchema } from '../schemas/jobField.schema';
 export async function jobRoutes(fastify: FastifyInstance): Promise<void> {
   const jobController = container.get<JobController>(TYPES.JobController);
 
+  // Most routes need company auth + paid check
+  fastify.addHook('preHandler', authenticate);
+  fastify.addHook('preHandler', authorize('company', 'hr'));
+  fastify.addHook('preHandler', checkCompanyPaid);
+
   fastify.post(
     '/jobs',
-    {
-      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
-      schema: { body: CreateJobSchema }
-    },
+    { schema: { body: CreateJobSchema } },
     jobController.createJob
   );
 
   fastify.get(
     '/jobs',
-    {
-      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
-      schema: { querystring: ListJobsQuerySchema }
-    },
+    { schema: { querystring: ListJobsQuerySchema } },
     jobController.listJobs
   );
 
   fastify.delete(
     '/jobs/:id',
-    {
-      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
-      schema: { params: JobIdParamsSchema }
-    },
+    { schema: { params: JobIdParamsSchema } },
     jobController.deleteJob
   );
 
   fastify.post(
     '/jobs/:id/close',
-    {
-      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
-      schema: { params: JobIdParamsSchema }
-    },
+    { schema: { params: JobIdParamsSchema } },
     jobController.closeJob
   );
 
   fastify.post(
     '/jobs/:id/open',
-    {
-      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
-      schema: { params: JobIdParamsSchema }
-    },
+    { schema: { params: JobIdParamsSchema } },
     jobController.openJob
   );
 
   fastify.get(
     '/jobs/:id',
-    {
-      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
-      schema: { params: JobIdParamsSchema }
-    },
+    { schema: { params: JobIdParamsSchema } },
     jobController.getJob
   );
 
   fastify.put(
     '/jobs/:id',
-    {
-      preHandler: [authenticate, authorize('company', 'hr'), checkCompanyPaid],
-      schema: { params: JobIdParamsSchema, body: UpdateJobSchema }
-    },
+    { schema: { params: JobIdParamsSchema, body: UpdateJobSchema } },
     jobController.updateJob
   );
 
-  // Public job fields endpoint for companies to fetch dynamic options
-  const jobFieldController = container.get<JobFieldController>(TYPES.JobFieldController);
+  // Exception: job-fields only needs authenticate (no role/paid check)
+  fastify.register(async (authOnlyRoutes) => {
+    authOnlyRoutes.addHook('preHandler', authenticate);
 
-  fastify.get(
-    '/job-fields',
-    {
-      preHandler: [authenticate],
-      schema: { querystring: GetJobFieldsQuerySchema }
-    },
-    jobFieldController.getAll
-  );
+    const jobFieldController = container.get<JobFieldController>(TYPES.JobFieldController);
+    authOnlyRoutes.get(
+      '/job-fields',
+      { schema: { querystring: GetJobFieldsQuerySchema } },
+      jobFieldController.getAll
+    );
+  });
 }
 

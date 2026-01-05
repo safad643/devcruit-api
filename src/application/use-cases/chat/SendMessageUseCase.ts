@@ -3,6 +3,7 @@ import { TYPES } from '../../../di/types';
 import { IConversationRepository } from '../../../domain/repositories/IConversationRepository';
 import { IMessageRepository } from '../../../domain/repositories/IMessageRepository';
 import { ICompanyTeamRepository } from '../../../domain/repositories/ICompanyTeamRepository';
+import { IUserRepository } from '../../../domain/repositories/IUserRepository';
 import { ICheckCanMessageUseCase } from './interfaces';
 import { ISendMessageUseCase } from './interfaces';
 import { SendMessageInput, SendMessageOutput } from '../../dtos/chat.dto';
@@ -16,8 +17,9 @@ export class SendMessageUseCase implements ISendMessageUseCase {
     @inject(TYPES.ConversationRepository) private _conversationRepository: IConversationRepository,
     @inject(TYPES.MessageRepository) private _messageRepository: IMessageRepository,
     @inject(TYPES.CompanyTeamRepository) private _companyTeamRepository: ICompanyTeamRepository,
-    @inject(TYPES.CheckCanMessageUseCase) private _checkCanMessageUseCase: ICheckCanMessageUseCase
-  ) {}
+    @inject(TYPES.CheckCanMessageUseCase) private _checkCanMessageUseCase: ICheckCanMessageUseCase,
+    @inject(TYPES.UserRepository) private _userRepository: IUserRepository
+  ) { }
 
   async execute(input: SendMessageInput & { senderId: string; senderRole: string }): Promise<SendMessageOutput> {
     const canMessage = await this._checkCanMessageUseCase.execute({
@@ -37,7 +39,7 @@ export class SendMessageUseCase implements ISendMessageUseCase {
 
     if (!conversation) {
       let companyId: string | undefined;
-      
+
       if (input.senderRole === 'developer') {
         const hrTeamMember = await this._companyTeamRepository.findByUserId(input.receiverId);
         if (hrTeamMember && hrTeamMember.status === 'active') {
@@ -72,10 +74,17 @@ export class SendMessageUseCase implements ISendMessageUseCase {
       new Date()
     );
 
+    // Fetch participant names for the response
+    const [participant1, participant2] = await Promise.all([
+      this._userRepository.findById(conversation.participant1Id),
+      this._userRepository.findById(conversation.participant2Id),
+    ]);
+
     return {
       message,
       conversation,
+      participant1Name: participant1?.name,
+      participant2Name: participant2?.name,
     };
   }
 }
-
