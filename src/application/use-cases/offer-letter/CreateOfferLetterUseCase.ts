@@ -127,10 +127,7 @@ export class CreateOfferLetterUseCase implements ICreateOfferLetterUseCase {
         // 10. Send email notification
         try {
             // TODO: Implement proper email template for offer letter notification
-            console.log(
-                `Offer letter sent to ${developerUser.email} for ${job.title} at ${companyProfile.companyName}. ` +
-                `Expires on ${input.offerExpirationDate}`
-            );
+
         } catch (error) {
             console.error('Failed to send offer letter notification:', error);
         }

@@ -39,7 +39,7 @@ export class PaymentController {
     request: FastifyRequest,
     reply: FastifyReply
   ): Promise<void> => {
-    console.log('Stripe webhook received');
+    request.log.info('Stripe webhook received');
     const signature = request.headers['stripe-signature'];
     if (!signature || typeof signature !== 'string') {
       throw new ValidationError('Missing Stripe signature header');

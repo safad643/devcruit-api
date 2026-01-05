@@ -9,6 +9,7 @@ import {
   ISendMessageUseCase,
   IMarkMessageAsReadUseCase,
 } from '../../application/use-cases/chat';
+import { server } from '../../server';
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
@@ -50,7 +51,7 @@ export function setupChatSocket(io: SocketIOServer): void {
     const userId = socket.userId!;
     const userRole = socket.userRole!;
 
-    console.log(`[Socket] User connected: ${userId}`);
+    server.log.info({ userId }, '[Socket] User connected');
 
     if (!onlineUsers.has(userId)) {
       onlineUsers.set(userId, new Set());
@@ -79,7 +80,7 @@ export function setupChatSocket(io: SocketIOServer): void {
 
         socket.join(`conversation:${conversationId}`);
         socket.emit('joined-room', conversationId);
-        console.log(`[Socket] User ${userId} joined conversation ${conversationId}`);
+        server.log.info({ userId, conversationId }, '[Socket] User joined conversation');
       } catch (error) {
         socket.emit('error', { message: 'Failed to join conversation' });
       }
@@ -87,7 +88,7 @@ export function setupChatSocket(io: SocketIOServer): void {
 
     socket.on('leave-conversation', (conversationId: string) => {
       socket.leave(`conversation:${conversationId}`);
-      console.log(`[Socket] User ${userId} left conversation ${conversationId}`);
+      server.log.info({ userId, conversationId }, '[Socket] User left conversation');
     });
 
     socket.on(
@@ -190,7 +191,7 @@ export function setupChatSocket(io: SocketIOServer): void {
     });
 
     socket.on('disconnect', () => {
-      console.log(`[Socket] User disconnected: ${userId}`);
+      server.log.info({ userId }, '[Socket] User disconnected');
 
       const userSockets = onlineUsers.get(userId);
       if (userSockets) {
@@ -203,7 +204,7 @@ export function setupChatSocket(io: SocketIOServer): void {
     });
 
     socket.on('error', (error) => {
-      console.error(`[Socket] Error for user ${userId}:`, error);
+      server.log.error({ userId, error }, '[Socket] Error');
     });
   });
 }

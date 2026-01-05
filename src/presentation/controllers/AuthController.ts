@@ -1,6 +1,7 @@
 import { injectable, inject } from 'inversify';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { TYPES } from '../../di/types';
+
 import {
   IRegisterUserUseCase,
   IVerifyEmailUseCase,
@@ -20,7 +21,9 @@ import {
   LoginInput,
   ResendOTPInput,
   ForgotPasswordInput,
-  ResetPasswordInput
+  ResetPasswordInput,
+  GoogleLoginInput,
+  GoogleRegisterInput
 } from '../schemas/auth.schema';
 import { config } from '../../config';
 import { wrapSuccess } from '../../utils/response';
@@ -54,8 +57,13 @@ export class AuthController {
   };
 
   login = async (request: FastifyRequest<{ Body: LoginInput }>, reply: FastifyReply): Promise<void> => {
-    const result = await this._loginUseCase.execute(request.body);
-    this._handleAuthResponse(reply, result);
+    try {
+      const result = await this._loginUseCase.execute(request.body);
+      this._handleAuthResponse(reply, result);
+    } catch (error) {
+      request.log.warn({ email: request.body.email, ip: request.ip }, 'Failed login attempt');
+      throw error;
+    }
   };
 
   adminLogin = async (request: FastifyRequest<{ Body: LoginInput }>, reply: FastifyReply): Promise<void> => {
@@ -86,7 +94,7 @@ export class AuthController {
   };
 
   googleLogin = async (
-    request: FastifyRequest<{ Body: { code: string } }>,
+    request: FastifyRequest<{ Body: GoogleLoginInput }>,
     reply: FastifyReply
   ): Promise<void> => {
     const result = await this._googleLoginUseCase.execute(request.body);
@@ -94,7 +102,7 @@ export class AuthController {
   };
 
   googleRegister = async (
-    request: FastifyRequest<{ Body: { code: string; role: string } }>,
+    request: FastifyRequest<{ Body: GoogleRegisterInput }>,
     reply: FastifyReply
   ): Promise<void> => {
     const result = await this._googleRegisterUseCase.execute(request.body);

@@ -35,22 +35,22 @@ async function start() {
     setupVideoSocket(io);
     setupNotificationSocket(io);
 
-    console.log(`Server running at http://${config.host}:${config.port}`);
-    console.log(`Socket.IO server initialized`);
-    console.log(`Environment: ${config.nodeEnv}`);
+    server.log.info(`Server running at http://${config.host}:${config.port}`);
+    server.log.info('Socket.IO server initialized');
+    server.log.info(`Environment: ${config.nodeEnv}`);
 
     // Graceful shutdown
     const signals = ['SIGINT', 'SIGTERM'];
     signals.forEach((signal) => {
       process.on(signal, async () => {
-        console.log(`\nReceived ${signal}, shutting down gracefully...`);
+        server.log.info(`Received ${signal}, shutting down gracefully...`);
 
         closeSocketIO();
         await server.close();
         await disconnectMongoDB();
         await disconnectRedis();
 
-        console.log('Server closed. Exiting process.');
+        server.log.info('Server closed. Exiting process.');
         process.exit(0);
       });
     });
