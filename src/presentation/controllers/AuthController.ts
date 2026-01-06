@@ -122,7 +122,7 @@ export class AuthController {
     reply.setCookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: config.env.isProduction,
-      sameSite: 'strict',
+      sameSite: 'none',
       maxAge: config.security.refreshTokenMaxAgeMs,
       path: '/'
     });
