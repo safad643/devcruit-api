@@ -11,6 +11,7 @@ import { fileRoutes } from './presentation/routes/file.routes';
 import { adminRoutes } from './presentation/routes/admin.routes';
 import { paymentRoutes } from './presentation/routes/payment.routes';
 import { jobRoutes } from './presentation/routes/job.routes';
+import { jobFieldRoutes } from './presentation/routes/jobField.routes';
 import { publicJobRoutes } from './presentation/routes/public.jobs.routes';
 import { publicPlanRoutes } from './presentation/routes/plan.routes';
 import { applicationRoutes } from './presentation/routes/application.routes';
@@ -100,6 +101,7 @@ export async function buildServer() {
   await server.register(adminRoutes, { prefix: '/api' });
   await server.register(paymentRoutes, { prefix: '/api/payment' });
   await server.register(jobRoutes, { prefix: '/api/company' });
+  await server.register(jobFieldRoutes, { prefix: '/api' });
   await server.register(publicJobRoutes, { prefix: '/api/jobs' });
   await server.register(publicPlanRoutes, { prefix: '/api/plans' });
   await server.register(applicationRoutes, { prefix: '/api' });
