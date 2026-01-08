@@ -2,18 +2,19 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { container } from '../../di/container';
 import { TYPES } from '../../di/types';
 import { ITokenService } from '../../application/services';
-import { UnauthorizedError } from '../../domain/errors';
+import { IBlockedUserRepository } from '../../domain/repositories';
+import { UnauthorizedError, UserBlockedError } from '../../domain/errors';
 
 export async function authenticate(
   request: FastifyRequest,
   reply: FastifyReply
 ): Promise<void> {
   try {
-    
-    
+
+
     // Extract token from Authorization header
     const authHeader = request.headers.authorization;
-    
+
     if (!authHeader) {
       throw new UnauthorizedError('Authorization header missing');
     }
@@ -32,6 +33,12 @@ export async function authenticate(
     const tokenService = container.get<ITokenService>(TYPES.TokenService);
     const payload = tokenService.verifyAccessToken(token);
 
+    // Check if user is blocked
+    const blockedUserRepository = container.get<IBlockedUserRepository>(TYPES.BlockedUserRepository);
+    if (await blockedUserRepository.isBlocked(payload.userId)) {
+      throw new UserBlockedError();
+    }
+
     // Attach user to request
     request.user = {
       id: payload.userId,
@@ -39,10 +46,10 @@ export async function authenticate(
     };
 
   } catch (error) {
-    if (error instanceof UnauthorizedError) {
+    if (error instanceof UnauthorizedError || error instanceof UserBlockedError) {
       throw error;
     }
-    
+
     // Token verification failed (expired, invalid signature, etc.)
     throw new UnauthorizedError('Invalid or expired access token');
   }

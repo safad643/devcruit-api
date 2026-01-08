@@ -1,8 +1,8 @@
-import { Collection, ObjectId, WithId, Document, MongoServerError } from 'mongodb';
+import { Collection, WithId, Document, MongoServerError } from 'mongodb';
 import { IUserRepository, CreateUserProps, UpdateUserProps } from '../../../domain/repositories/IUserRepository';
-import { User, UserProps } from '../../../domain/entities/User';
+import { User } from '../../../domain/entities/User';
 import { getMongoDb } from './client';
-import { ConflictError, InternalError, NotFoundError, BadRequestError } from '../../../domain/errors';
+import { ConflictError, InternalError } from '../../../domain/errors';
 import { injectable } from 'inversify';
 import { MongoGenericRepository } from './MongoGenericRepository';
 
@@ -148,6 +148,17 @@ export class UserRepository
       return trend;
     } catch (error) {
       throw new InternalError('Failed to get signup trend', error as Error);
+    }
+  }
+
+  async findBlockedUserIds(): Promise<string[]> {
+    try {
+      const docs = await this._collection
+        .find({ isBlocked: true }, { projection: { _id: 1 } })
+        .toArray();
+      return docs.map(doc => doc._id.toString());
+    } catch (error) {
+      throw new InternalError('Failed to get blocked user IDs', error as Error);
     }
   }
 }

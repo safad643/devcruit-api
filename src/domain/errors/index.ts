@@ -18,6 +18,12 @@ export class ForbiddenError extends AppError {
   }
 }
 
+export class UserBlockedError extends AppError {
+  constructor(message = 'Your account has been blocked') {
+    super(message, 'USER_BLOCKED', true);
+  }
+}
+
 export class SubscriptionRequiredError extends AppError {
   constructor(message = 'Active subscription required') {
     super(message, 'SUBSCRIPTION_REQUIRED', true);

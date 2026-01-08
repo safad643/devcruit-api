@@ -10,6 +10,7 @@ export const TYPES = {
   PendingUserRepository: Symbol.for('PendingUserRepository'),
   OTPRepository: Symbol.for('OTPRepository'),
   RefreshTokenRepository: Symbol.for('RefreshTokenRepository'),
+  BlockedUserRepository: Symbol.for('BlockedUserRepository'),
   HashService: Symbol.for('HashService'),
   TokenService: Symbol.for('TokenService'),
   AuthTokenService: Symbol.for('AuthTokenService'),

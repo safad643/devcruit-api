@@ -8,6 +8,7 @@ import { initializeSocketIO, closeSocketIO } from './infrastructure/socket/socke
 import { setupChatSocket } from './presentation/socket/chat.socket';
 import { setupVideoSocket } from './presentation/socket/video.socket';
 import { setupNotificationSocket } from './presentation/socket/notification.socket';
+import { syncBlockedUsersToRedis } from './infrastructure/startup/syncBlockedUsers';
 
 async function start() {
   try {
@@ -19,6 +20,9 @@ async function start() {
 
     // Ensure database indexes
     await ensureIndexes();
+
+    // Sync blocked users from MongoDB to Redis
+    await syncBlockedUsersToRedis();
 
     // Build and start server
     const server = await buildServer();

@@ -22,5 +22,6 @@ export interface IUserRepository extends IGenericRepository<User, CreateUserProp
   findByGoogleId(googleId: string): Promise<User | null>;
   getUserStats(): Promise<UserStats>;
   getSignupTrend(days: number): Promise<SignupTrendItem[]>;
+  findBlockedUserIds(): Promise<string[]>;
 }
 

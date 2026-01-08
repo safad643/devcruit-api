@@ -14,7 +14,8 @@ import {
   IRefreshTokenRepository,
   IJobRepository,
   IApplicationRepository,
-  IOfferLetterRepository
+  IOfferLetterRepository,
+  IBlockedUserRepository
 } from '../../domain/repositories';
 
 import { IHashService, ITokenService, IAuthTokenService, IEmailService, IGoogleAuthService, IFileService, IPaymentService, ICryptographicService, IAIMatchingService } from '../../application/services';
@@ -33,6 +34,7 @@ import { MessageRepository } from '../../infrastructure/database/mongodb/Message
 import { PendingUserRepository } from '../../infrastructure/database/redis/PendingUserRepository';
 import { OTPRepository } from '../../infrastructure/database/redis/OTPRepository';
 import { RefreshTokenRepository } from '../../infrastructure/database/redis/RefreshTokenRepository';
+import { BlockedUserRepository } from '../../infrastructure/database/redis/BlockedUserRepository';
 import { HashService } from '../../infrastructure/security/HashService';
 import { TokenService } from '../../infrastructure/security/TokenService';
 import { AuthTokenService } from '../../infrastructure/security/AuthTokenService';
@@ -60,6 +62,7 @@ export const infrastructureModule = new ContainerModule((bind) => {
   bind<IPendingUserRepository>(TYPES.PendingUserRepository).to(PendingUserRepository).inSingletonScope();
   bind<IOTPRepository>(TYPES.OTPRepository).to(OTPRepository).inSingletonScope();
   bind<IRefreshTokenRepository>(TYPES.RefreshTokenRepository).to(RefreshTokenRepository).inSingletonScope();
+  bind<IBlockedUserRepository>(TYPES.BlockedUserRepository).to(BlockedUserRepository).inSingletonScope();
 
   // Services
   bind<IGoogleAuthService>(TYPES.GoogleAuthService).to(GoogleAuthService).inSingletonScope();
