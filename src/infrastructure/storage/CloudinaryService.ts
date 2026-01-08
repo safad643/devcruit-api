@@ -23,9 +23,11 @@ export class CloudinaryService implements IFileService {
     const folder = params.folder || this._getFolderForCategory(category, userId);
 
     // Create parameters to sign (according to Cloudinary signed upload docs)
+    // resource_type: 'auto' is required to properly handle PDFs and other non-image files
     const paramsToSign: Record<string, string | number> = {
       timestamp,
       folder,
+      resource_type: 'auto',
     };
 
     // Create signature string: "key=value&key=value"
