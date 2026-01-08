@@ -21,6 +21,7 @@ import { chatRoutes } from './presentation/routes/chat.routes';
 import { dashboardRoutes } from './presentation/routes/dashboard.routes';
 import { notificationRoutes } from './presentation/routes/notification.routes';
 import { codeExecutionRoutes } from './presentation/routes/code-execution.routes';
+import { turnRoutes } from './presentation/routes/turn.routes';
 import fastifyRawBody from 'fastify-raw-body';
 import { globalErrorHandler } from './presentation/middleware/errorHandler';
 import { config } from './config';
@@ -111,6 +112,7 @@ export async function buildServer() {
   await server.register(dashboardRoutes, { prefix: '/api' });
   await server.register(notificationRoutes, { prefix: '/api/notifications' });
   await server.register(codeExecutionRoutes, { prefix: '/api/code' });
+  await server.register(turnRoutes, { prefix: '/api/turn' });
 
 
   return server;

@@ -101,5 +101,9 @@ export const config = {
   },
   gemini: {
     apiKey: getOptionalEnv('GEMINI_API_KEY', ''),
-  }
+  },
+  metered: {
+    domain: getOptionalEnv('METERED_DOMAIN', 'devcruit.metered.live'),
+    secretKey: getOptionalEnv('METERED_SECRET_KEY', ''),
+  },
 };
