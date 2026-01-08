@@ -16,7 +16,7 @@ const EducationSchema = Type.Object({
   degreeType: Type.String({ minLength: 1, maxLength: 50 }),
   institution: Type.String({ minLength: 1, maxLength: 200 }),
   fieldOfStudy: Type.String({ minLength: 1, maxLength: 200 }),
-  graduationYear: Type.Union([Type.Number({ minimum: 1900, maximum: 2100 }), Type.Null()]),
+  graduationYear: Type.Union([Type.Number({ minimum: new Date().getFullYear() - 50, maximum: new Date().getFullYear() }), Type.Null()]),
   certificateUrl: Type.Optional(Type.String({ format: 'uri' }))
 });
 
@@ -56,7 +56,7 @@ export const CreateDeveloperProfileSchema = Type.Object({
   portfolioUrl: Type.Optional(Type.String({ format: 'uri' })),
 
   // ✅ Make these optional
-  projects: Type.Optional(Type.Array(ProjectSchema, { minItems: 1 })),
+  projects: Type.Optional(Type.Array(ProjectSchema)),
 
   linkedinUrl: Type.String({ format: 'uri' }),
   desiredSalary: Type.Optional(Type.Number({ minimum: 0 })),
