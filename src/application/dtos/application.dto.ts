@@ -137,6 +137,7 @@ export interface GetApplicationDetailsOutput {
     title: string;
     companyId: string;
     interviewRounds: string[]; // All interview rounds defined for the job
+    autoShortlist?: boolean;
   };
   developer?: {
     id: string;

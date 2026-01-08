@@ -109,6 +109,7 @@ export class GetApplicationDetailsUseCase implements IGetApplicationDetailsUseCa
         title: job.title,
         companyId: job.companyId,
         interviewRounds: job.interviewRounds,
+        autoShortlist: job.autoShortlist,
       } : undefined,
       developer: developerProfile ? {
         id: developerProfile.id,
