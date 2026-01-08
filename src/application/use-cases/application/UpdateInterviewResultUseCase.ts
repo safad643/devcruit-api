@@ -11,7 +11,7 @@ export class UpdateInterviewResultUseCase implements IUpdateInterviewResultUseCa
     @inject(TYPES.ApplicationRepository) private _applicationRepository: IApplicationRepository,
     @inject(TYPES.CompanyTeamRepository) private _companyTeamRepository: ICompanyTeamRepository,
     @inject(TYPES.JobRepository) private _jobRepository: IJobRepository
-  ) {}
+  ) { }
 
   async execute(input: UpdateInterviewResultInput & { interviewerId: string }): Promise<UpdateInterviewResultOutput> {
     // 1. Get application
@@ -46,15 +46,25 @@ export class UpdateInterviewResultUseCase implements IUpdateInterviewResultUseCa
       throw new ValidationError(`Result must be one of: ${validResults.join(', ')}`);
     }
 
-    // 6. Update the interview round
+    // 6. Update the interview round and cancel remaining rounds if fail
+    const isFail = input.result === InterviewRoundResult.FAIL;
+    let foundCurrentRound = false;
     const updatedRounds = application.interviewRounds.map(r => {
       if (r.roundName === input.roundName) {
+        foundCurrentRound = true;
         return {
           ...r,
           status: 'completed' as InterviewRoundStatus,
           result: input.result,
           feedback: input.feedback,
           completedAt: new Date(),
+        };
+      }
+      // Cancel remaining scheduled/pending rounds if this is a fail
+      if (isFail && foundCurrentRound && (r.status === 'scheduled' || r.status === 'pending')) {
+        return {
+          ...r,
+          status: 'cancelled' as InterviewRoundStatus,
         };
       }
       return r;
@@ -76,7 +86,7 @@ export class UpdateInterviewResultUseCase implements IUpdateInterviewResultUseCa
         rejectedAt: now,
         rejectedAtStage: input.roundName,
       };
-      
+
       // Add feedback to statusNotes if provided
       if (input.feedback) {
         const statusNotes: StatusNotes = {
@@ -85,10 +95,10 @@ export class UpdateInterviewResultUseCase implements IUpdateInterviewResultUseCa
         };
         statusUpdate.statusNotes = statusNotes;
       }
-    } 
+    }
     // If result is pass and this is the last round, mark as interview_completed
     else if (input.result === InterviewRoundResult.PASS) {
-      const isLastRound = job.interviewRounds.length > 0 && 
+      const isLastRound = job.interviewRounds.length > 0 &&
         job.interviewRounds[job.interviewRounds.length - 1] === input.roundName;
       if (isLastRound) {
         statusUpdate = {
