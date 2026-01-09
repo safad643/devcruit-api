@@ -8,7 +8,8 @@ import {
   UpdateDeveloperProfileSchema,
   UpdateCompanyProfileSchema,
   ResubmitDocumentsSchema,
-  InviteCompanyTeamMemberSchema
+  InviteCompanyTeamMemberSchema,
+  ListCompanyTeamQuerySchema
 } from '../schemas/profile.schema';
 import { authenticate } from '../middleware/authenticate';
 import { authorize } from '../middleware/authorize';
@@ -71,7 +72,7 @@ export async function profileRoutes(fastify: FastifyInstance): Promise<void> {
 
     teamRoutes.get(
       '/company/team',
-      {},
+      { schema: { querystring: ListCompanyTeamQuerySchema } },
       profileController.listCompanyTeam
     );
   });
