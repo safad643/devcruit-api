@@ -60,7 +60,7 @@ export async function buildServer() {
   });
 
   await server.register(cors, {
-    origin: config.cors.origin || 'http://localhost:3000',
+    origin: [config.cors.origin, 'http://localhost:3000'],
     credentials: true
   });
 
