@@ -60,6 +60,7 @@ export class ListCompanyTeamMembersUseCase implements IListCompanyTeamMembersUse
       userId: member.userId,
       email: member.email,
       fullName: member.fullName,
+      jobTitle: member.jobTitle,
       role: role,
       status: member.status,
       invitedAt: member.invitedAt,

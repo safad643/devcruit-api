@@ -273,6 +273,7 @@ export class CompanyTeamRepository implements ICompanyTeamRepository {
       companyId: doc.companyId,
       email: doc.email,
       fullName: doc.fullName,
+      jobTitle: doc.jobTitle,
       focusAreas: doc.focusAreas ?? [],
       availability: doc.availability,
       status: doc.status,

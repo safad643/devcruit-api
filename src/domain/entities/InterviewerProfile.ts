@@ -11,6 +11,7 @@ export interface InterviewerProfileProps {
   companyId: string;
   email: string;
   fullName?: string;
+  jobTitle?: string;
   focusAreas: string[];
   availability?: InterviewerAvailability;
   status: CompanyTeamMemberStatus;
@@ -27,6 +28,7 @@ export class InterviewerProfile {
   public readonly companyId: string;
   public readonly email: string;
   public readonly fullName?: string;
+  public readonly jobTitle?: string;
   public readonly focusAreas: string[];
   public readonly availability?: InterviewerAvailability;
   public readonly status: CompanyTeamMemberStatus;
@@ -42,6 +44,7 @@ export class InterviewerProfile {
     this.companyId = props.companyId;
     this.email = props.email;
     this.fullName = props.fullName;
+    this.jobTitle = props.jobTitle;
     this.focusAreas = props.focusAreas;
     this.availability = props.availability;
     this.status = props.status;
