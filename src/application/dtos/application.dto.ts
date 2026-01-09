@@ -105,6 +105,7 @@ export interface DeveloperApplicationDetailsOutput {
   rejectedAt?: Date;
   rejectedAtStage?: string;
   interviewRounds: InterviewRound[];
+  counterOffer?: CounterOffer;
   job?: {
     id: string;
     title: string;

@@ -55,6 +55,7 @@ export class GetDeveloperApplicationDetailsUseCase implements IGetDeveloperAppli
             rejectedAt: application.rejectedAt,
             rejectedAtStage: application.rejectedAtStage,
             interviewRounds: application.interviewRounds,
+            counterOffer: application.counterOffer,
             job: job ? {
                 id: job.id,
                 title: job.title,
