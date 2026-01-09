@@ -104,6 +104,7 @@ export class GetApplicationDetailsUseCase implements IGetApplicationDetailsUseCa
       interviewRounds: enrichedInterviewRounds,
       aiMatchScore: application.aiMatchScore,
       aiMatchReason: application.aiMatchReason,
+      counterOffer: application.counterOffer,
       job: job ? {
         id: job.id,
         title: job.title,
