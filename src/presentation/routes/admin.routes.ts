@@ -12,7 +12,8 @@ import {
   ApproveCompanySchema,
   RejectCompanySchema,
   ListCompaniesSchema,
-  ListDevelopersSchema
+  ListDevelopersSchema,
+  GetCompanyDetailsParamsSchema
 } from '../schemas/admin.schema';
 import {
   CreateJobFieldSchema,
@@ -73,6 +74,13 @@ export async function adminRoutes(fastify: FastifyInstance): Promise<void> {
     '/admin/list/developers',
     { schema: { body: ListDevelopersSchema } },
     adminController.listDevelopers
+  );
+
+  // Get company details endpoint
+  fastify.get(
+    '/admin/companies/:companyId',
+    { schema: { params: GetCompanyDetailsParamsSchema } },
+    adminController.getCompanyDetails
   );
 
   // Job Fields CRUD endpoints

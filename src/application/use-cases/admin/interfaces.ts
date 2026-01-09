@@ -11,6 +11,7 @@ import {
     RejectCompanyOutput,
     UnblockUserInput,
     UnblockUserOutput,
+    GetCompanyDetailsOutput,
 } from '../../dtos/admin.dto';
 
 export interface IBlockUserUseCase {
@@ -35,4 +36,8 @@ export interface IListCompaniesUseCase {
 
 export interface IListDevelopersUseCase {
     execute(input: ListDevelopersInput): Promise<ListDevelopersOutput>;
+}
+
+export interface IGetCompanyDetailsUseCase {
+    execute(companyId: string): Promise<GetCompanyDetailsOutput>;
 }

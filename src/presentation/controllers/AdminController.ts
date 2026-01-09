@@ -8,6 +8,7 @@ import {
   IRejectCompanyUseCase,
   IListCompaniesUseCase,
   IListDevelopersUseCase,
+  IGetCompanyDetailsUseCase,
 } from '../../application/use-cases/admin/interfaces';
 import {
   BlockUserInput,
@@ -15,7 +16,8 @@ import {
   ApproveCompanyInput,
   RejectCompanyInput,
   ListCompaniesInput,
-  ListDevelopersInput
+  ListDevelopersInput,
+  GetCompanyDetailsParams
 } from '../schemas/admin.schema';
 import { wrapSuccess } from '../../utils/response';
 import { HttpStatus } from '../../utils/statusCodes';
@@ -28,7 +30,8 @@ export class AdminController {
     @inject(TYPES.ApproveCompanyUseCase) private _approveCompanyUseCase: IApproveCompanyUseCase,
     @inject(TYPES.RejectCompanyUseCase) private _rejectCompanyUseCase: IRejectCompanyUseCase,
     @inject(TYPES.ListCompaniesUseCase) private _listCompaniesUseCase: IListCompaniesUseCase,
-    @inject(TYPES.ListDevelopersUseCase) private _listDevelopersUseCase: IListDevelopersUseCase
+    @inject(TYPES.ListDevelopersUseCase) private _listDevelopersUseCase: IListDevelopersUseCase,
+    @inject(TYPES.GetCompanyDetailsUseCase) private _getCompanyDetailsUseCase: IGetCompanyDetailsUseCase
   ) { }
 
   blockUser = async (request: FastifyRequest<{ Body: BlockUserInput }>, reply: FastifyReply): Promise<void> => {
@@ -60,5 +63,9 @@ export class AdminController {
     const result = await this._listDevelopersUseCase.execute(request.body);
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
-}
 
+  getCompanyDetails = async (request: FastifyRequest<{ Params: GetCompanyDetailsParams }>, reply: FastifyReply): Promise<void> => {
+    const result = await this._getCompanyDetailsUseCase.execute(request.params.companyId);
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
+  };
+}

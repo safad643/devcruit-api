@@ -80,6 +80,7 @@ export const TYPES = {
   RejectCompanyUseCase: Symbol.for('RejectCompanyUseCase'),
   ListCompaniesUseCase: Symbol.for('ListCompaniesUseCase'),
   ListDevelopersUseCase: Symbol.for('ListDevelopersUseCase'),
+  GetCompanyDetailsUseCase: Symbol.for('GetCompanyDetailsUseCase'),
   AdminController: Symbol.for('AdminController'),
 
   // Job Field module

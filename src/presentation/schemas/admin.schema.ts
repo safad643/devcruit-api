@@ -71,6 +71,11 @@ export const ListDevelopersSchema = Type.Object({
   ]))
 });
 
+// Get Company Details Params Schema
+export const GetCompanyDetailsParamsSchema = Type.Object({
+  companyId: Type.String({ minLength: 1 })
+});
+
 // Export TypeScript types
 export type BlockUserInput = Static<typeof BlockUserSchema>;
 export type UnblockUserInput = Static<typeof UnblockUserSchema>;
@@ -78,4 +83,4 @@ export type ApproveCompanyInput = Static<typeof ApproveCompanySchema>;
 export type RejectCompanyInput = Static<typeof RejectCompanySchema>;
 export type ListCompaniesInput = Static<typeof ListCompaniesSchema>;
 export type ListDevelopersInput = Static<typeof ListDevelopersSchema>;
-
+export type GetCompanyDetailsParams = Static<typeof GetCompanyDetailsParamsSchema>;

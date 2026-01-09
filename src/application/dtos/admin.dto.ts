@@ -1,4 +1,5 @@
 import { CompanyDocumentKey } from '../../domain/types';
+import { PlanHistoryItem, DocumentReuploadRequest } from '../../domain/entities/CompanyProfile';
 
 export interface BlockUserInput {
   userId: string;
@@ -100,4 +101,28 @@ export interface ListDevelopersOutput {
   total: number;
   page: number;
   limit: number;
+}
+
+// Get Company Details (Admin) Input/Output
+export interface GetCompanyDetailsOutput {
+  id: string;
+  userId: string;
+  email: string;
+  isBlocked: boolean;
+  fullName: string;
+  phoneNumber: string;
+  companyName: string;
+  companyWebsite: string;
+  companySize: '1-10' | '11-50' | '51-200' | '201-500' | '501-1000' | '1000+';
+  businessRegistrationNumber: string;
+  businessAddress: string;
+  businessRegistrationProofUrl: string;
+  employmentVerificationUrl: string;
+  logoUrl?: string;
+  status: 'pending' | 'approved' | 'rejected' | 'resubmitted';
+  hasActivePlan: boolean;
+  planHistory: PlanHistoryItem[];
+  documentReuploadRequests: DocumentReuploadRequest[];
+  createdAt: Date;
+  updatedAt: Date;
 }
