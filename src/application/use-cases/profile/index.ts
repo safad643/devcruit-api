@@ -8,3 +8,5 @@ export { UpdateCompanyProfileUseCase } from './UpdateCompanyProfileUseCase';
 export { ResubmitDocumentsUseCase } from './ResubmitDocumentsUseCase';
 export { InviteCompanyTeamMemberUseCase } from './InviteCompanyTeamMemberUseCase';
 export { ListCompanyTeamMembersUseCase } from './ListCompanyTeamMembersUseCase';
+export { UpdateCompanyTeamMemberUseCase } from './UpdateCompanyTeamMemberUseCase';
+export { DeleteCompanyTeamMemberUseCase } from './DeleteCompanyTeamMemberUseCase';

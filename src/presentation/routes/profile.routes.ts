@@ -9,7 +9,9 @@ import {
   UpdateCompanyProfileSchema,
   ResubmitDocumentsSchema,
   InviteCompanyTeamMemberSchema,
-  ListCompanyTeamQuerySchema
+  ListCompanyTeamQuerySchema,
+  UpdateCompanyTeamMemberSchema,
+  TeamMemberIdParamSchema
 } from '../schemas/profile.schema';
 import { authenticate } from '../middleware/authenticate';
 import { authorize } from '../middleware/authorize';
@@ -87,6 +89,19 @@ export async function profileRoutes(fastify: FastifyInstance): Promise<void> {
       { schema: { body: InviteCompanyTeamMemberSchema } },
       profileController.inviteCompanyTeamMember
     );
+
+    // Update team member
+    inviteRoutes.patch(
+      '/company/team/:memberId',
+      { schema: { params: TeamMemberIdParamSchema, body: UpdateCompanyTeamMemberSchema } },
+      profileController.updateCompanyTeamMember
+    );
+
+    // Delete team member
+    inviteRoutes.delete(
+      '/company/team/:memberId',
+      { schema: { params: TeamMemberIdParamSchema } },
+      profileController.deleteCompanyTeamMember
+    );
   });
 }
-

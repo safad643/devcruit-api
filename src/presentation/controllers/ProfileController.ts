@@ -11,6 +11,8 @@ import {
   IResubmitDocumentsUseCase,
   IInviteCompanyTeamMemberUseCase,
   IListCompanyTeamMembersUseCase,
+  IUpdateCompanyTeamMemberUseCase,
+  IDeleteCompanyTeamMemberUseCase,
 } from '../../application/use-cases/profile/interfaces';
 import {
   CreateDeveloperProfileInput,
@@ -19,7 +21,9 @@ import {
   UpdateCompanyProfileInput,
   ResubmitDocumentsInput,
   InviteCompanyTeamMemberInput,
-  ListCompanyTeamQueryInput
+  ListCompanyTeamQueryInput,
+  UpdateCompanyTeamMemberInput,
+  TeamMemberIdParamInput
 } from '../schemas/profile.schema';
 import { wrapSuccess } from '../../utils/response';
 import { HttpStatus } from '../../utils/statusCodes';
@@ -36,7 +40,9 @@ export class ProfileController {
     @inject(TYPES.UpdateCompanyProfileUseCase) private _updateCompanyProfileUseCase: IUpdateCompanyProfileUseCase,
     @inject(TYPES.ResubmitDocumentsUseCase) private _resubmitDocumentsUseCase: IResubmitDocumentsUseCase,
     @inject(TYPES.InviteCompanyTeamMemberUseCase) private _inviteCompanyTeamMemberUseCase: IInviteCompanyTeamMemberUseCase,
-    @inject(TYPES.ListCompanyTeamMembersUseCase) private _listCompanyTeamMembersUseCase: IListCompanyTeamMembersUseCase
+    @inject(TYPES.ListCompanyTeamMembersUseCase) private _listCompanyTeamMembersUseCase: IListCompanyTeamMembersUseCase,
+    @inject(TYPES.UpdateCompanyTeamMemberUseCase) private _updateCompanyTeamMemberUseCase: IUpdateCompanyTeamMemberUseCase,
+    @inject(TYPES.DeleteCompanyTeamMemberUseCase) private _deleteCompanyTeamMemberUseCase: IDeleteCompanyTeamMemberUseCase
   ) { }
 
   createProfile = async (
@@ -144,6 +150,36 @@ export class ProfileController {
     reply.status(HttpStatus.CREATED).send(wrapSuccess(result));
   };
 
+  updateCompanyTeamMember = async (
+    request: FastifyRequest<{ Params: TeamMemberIdParamInput; Body: UpdateCompanyTeamMemberInput }>,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const companyUserId = request.user?.id as string;
+    const { memberId } = request.params;
+
+    const result = await this._updateCompanyTeamMemberUseCase.execute({
+      companyUserId,
+      teamMemberId: memberId,
+      fullName: request.body.fullName,
+      jobTitle: request.body.jobTitle,
+    });
+    reply.status(HttpStatus.OK).send(wrapSuccess(result));
+  };
+
+  deleteCompanyTeamMember = async (
+    request: FastifyRequest<{ Params: TeamMemberIdParamInput }>,
+    reply: FastifyReply
+  ): Promise<void> => {
+    const companyUserId = request.user?.id as string;
+    const { memberId } = request.params;
+
+    await this._deleteCompanyTeamMemberUseCase.execute({
+      companyUserId,
+      teamMemberId: memberId,
+    });
+    reply.status(HttpStatus.OK).send(wrapSuccess({ message: 'Team member removed successfully' }));
+  };
+
   private _getCompanyContext(request: FastifyRequest) {
     const companyContext = request.companyContext;
     if (!companyContext) {
@@ -152,4 +188,3 @@ export class ProfileController {
     return companyContext;
   }
 }
-

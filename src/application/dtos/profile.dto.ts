@@ -156,3 +156,51 @@ export interface ResubmitDocumentsOutput {
   userId: string;
   message: string;
 }
+
+// Company Team Member DTOs
+export interface CompanyTeamMemberDTO {
+  id: string;
+  userId?: string | null;
+  email: string;
+  fullName?: string;
+  jobTitle?: string;
+  role: 'company' | 'hr' | 'interviewer';
+  status: 'invited' | 'active' | 'disabled';
+  invitedAt: Date;
+  activatedAt?: Date;
+}
+
+export interface InviteCompanyTeamMemberInput {
+  inviterUserId: string;
+  email: string;
+  role: 'hr' | 'interviewer';
+  fullName?: string;
+  jobTitle?: string;
+}
+
+export interface ListCompanyTeamMembersInput {
+  companyUserId: string;
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+export interface PaginatedTeamMembersResponse {
+  data: CompanyTeamMemberDTO[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface UpdateCompanyTeamMemberInput {
+  companyUserId: string;
+  teamMemberId: string;
+  fullName?: string;
+  jobTitle?: string;
+}
+
+export interface DeleteCompanyTeamMemberInput {
+  companyUserId: string;
+  teamMemberId: string;
+}

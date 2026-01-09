@@ -47,7 +47,10 @@ export const TYPES = {
   ResubmitDocumentsUseCase: Symbol.for('ResubmitDocumentsUseCase'),
   InviteCompanyTeamMemberUseCase: Symbol.for('InviteCompanyTeamMemberUseCase'),
   ListCompanyTeamMembersUseCase: Symbol.for('ListCompanyTeamMembersUseCase'),
+  UpdateCompanyTeamMemberUseCase: Symbol.for('UpdateCompanyTeamMemberUseCase'),
+  DeleteCompanyTeamMemberUseCase: Symbol.for('DeleteCompanyTeamMemberUseCase'),
   ProfileController: Symbol.for('ProfileController'),
+
 
   // Payment module
   CreateCheckoutSessionUseCase: Symbol.for('CreateCheckoutSessionUseCase'),

@@ -45,11 +45,19 @@ export interface PaginatedTeamMembersResult {
   totalPages: number;
 }
 
+export interface UpdateTeamMemberData {
+  fullName?: string;
+  jobTitle?: string;
+}
+
 export interface ICompanyTeamRepository {
   inviteMember(input: InviteCompanyTeamMemberInput): Promise<CompanyTeamMember>;
   listMembers(companyId: string, options?: ListMembersOptions): Promise<PaginatedTeamMembersResult>;
   findByEmail(companyId: string, email: string): Promise<CompanyTeamMember | null>;
   findByUserId(userId: string): Promise<CompanyTeamMember | null>;
+  findById(teamMemberId: string): Promise<CompanyTeamMemberWithRole | null>;
+  updateMember(teamMemberId: string, data: UpdateTeamMemberData): Promise<CompanyTeamMember>;
+  deleteMember(teamMemberId: string): Promise<void>;
   updateStatus(teamMemberId: string, status: CompanyTeamMemberStatus): Promise<void>;
   countActiveByCompany(companyId: string): Promise<number>;
   getTeamStats(companyId: string): Promise<TeamStatsResult>;

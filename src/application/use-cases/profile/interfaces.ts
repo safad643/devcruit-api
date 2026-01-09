@@ -11,8 +11,23 @@ import {
     UpdateCompanyProfileOutput,
     UpdateDeveloperProfileInput,
     UpdateDeveloperProfileOutput,
+    CompanyTeamMemberDTO,
+    InviteCompanyTeamMemberInput,
+    ListCompanyTeamMembersInput,
+    PaginatedTeamMembersResponse,
+    UpdateCompanyTeamMemberInput,
+    DeleteCompanyTeamMemberInput,
 } from '../../dtos/profile.dto';
-import { CompanyTeamMemberStatus } from '../../../domain/types';
+
+// Re-export DTOs for convenience
+export {
+    CompanyTeamMemberDTO,
+    InviteCompanyTeamMemberInput,
+    ListCompanyTeamMembersInput,
+    PaginatedTeamMembersResponse,
+    UpdateCompanyTeamMemberInput,
+    DeleteCompanyTeamMemberInput,
+};
 
 export interface ICreateDeveloperProfileUseCase {
     execute(input: CreateDeveloperProfileInput): Promise<CreateDeveloperProfileOutput>;
@@ -42,44 +57,18 @@ export interface IResubmitDocumentsUseCase {
     execute(input: ResubmitDocumentsInput): Promise<ResubmitDocumentsOutput>;
 }
 
-export interface CompanyTeamMemberDTO {
-    id: string;
-    userId?: string | null;
-    email: string;
-    fullName?: string;
-    role: 'company' | 'hr' | 'interviewer';
-    status: CompanyTeamMemberStatus;
-    invitedAt: Date;
-    activatedAt?: Date;
-}
-
-export interface InviteCompanyTeamMemberInput {
-    inviterUserId: string;
-    email: string;
-    role: 'hr' | 'interviewer';
-    fullName?: string;
-    jobTitle?: string;
-}
-
 export interface IInviteCompanyTeamMemberUseCase {
     execute(input: InviteCompanyTeamMemberInput): Promise<CompanyTeamMemberDTO>;
 }
 
-export interface ListCompanyTeamMembersInput {
-    companyUserId: string;
-    page?: number;
-    limit?: number;
-    search?: string;
-}
-
-export interface PaginatedTeamMembersResponse {
-    data: CompanyTeamMemberDTO[];
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-}
-
 export interface IListCompanyTeamMembersUseCase {
     execute(input: ListCompanyTeamMembersInput): Promise<PaginatedTeamMembersResponse>;
+}
+
+export interface IUpdateCompanyTeamMemberUseCase {
+    execute(input: UpdateCompanyTeamMemberInput): Promise<CompanyTeamMemberDTO>;
+}
+
+export interface IDeleteCompanyTeamMemberUseCase {
+    execute(input: DeleteCompanyTeamMemberInput): Promise<void>;
 }

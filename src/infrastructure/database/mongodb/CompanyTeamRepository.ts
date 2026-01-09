@@ -6,7 +6,8 @@ import {
   ICompanyTeamRepository,
   InviteCompanyTeamMemberInput,
   ListMembersOptions,
-  PaginatedTeamMembersResult
+  PaginatedTeamMembersResult,
+  UpdateTeamMemberData
 } from '../../../domain/repositories';
 import { getMongoDb } from './client';
 import { InternalError, BadRequestError } from '../../../domain/errors';
@@ -154,6 +155,68 @@ export class CompanyTeamRepository implements ICompanyTeamRepository {
       return doc ? this._mapToEntity(doc) : null;
     } catch (error) {
       throw new InternalError('Failed to find team member by user ID', error as Error);
+    }
+  }
+
+  async findById(teamMemberId: string): Promise<CompanyTeamMemberWithRole | null> {
+    try {
+      if (!ObjectId.isValid(teamMemberId)) {
+        throw new BadRequestError('Invalid team member ID format');
+      }
+
+      const doc = await this._collection.findOne({ _id: new ObjectId(teamMemberId) });
+      if (!doc) return null;
+
+      return {
+        member: this._mapToEntity(doc),
+        role: doc.role,
+      };
+    } catch (error) {
+      if (error instanceof BadRequestError) throw error;
+      throw new InternalError('Failed to find team member by ID', error as Error);
+    }
+  }
+
+  async updateMember(teamMemberId: string, data: UpdateTeamMemberData): Promise<CompanyTeamMember> {
+    try {
+      if (!ObjectId.isValid(teamMemberId)) {
+        throw new BadRequestError('Invalid team member ID format');
+      }
+
+      const updateFields: Record<string, any> = { updatedAt: new Date() };
+      if (data.fullName !== undefined) updateFields.fullName = data.fullName;
+      if (data.jobTitle !== undefined) updateFields.jobTitle = data.jobTitle;
+
+      const result = await this._collection.findOneAndUpdate(
+        { _id: new ObjectId(teamMemberId) },
+        { $set: updateFields },
+        { returnDocument: 'after' }
+      );
+
+      if (!result) {
+        throw new BadRequestError('Team member not found');
+      }
+
+      return this._mapToEntity(result);
+    } catch (error) {
+      if (error instanceof BadRequestError) throw error;
+      throw new InternalError('Failed to update team member', error as Error);
+    }
+  }
+
+  async deleteMember(teamMemberId: string): Promise<void> {
+    try {
+      if (!ObjectId.isValid(teamMemberId)) {
+        throw new BadRequestError('Invalid team member ID format');
+      }
+
+      const result = await this._collection.deleteOne({ _id: new ObjectId(teamMemberId) });
+      if (result.deletedCount === 0) {
+        throw new BadRequestError('Team member not found');
+      }
+    } catch (error) {
+      if (error instanceof BadRequestError) throw error;
+      throw new InternalError('Failed to delete team member', error as Error);
     }
   }
 
