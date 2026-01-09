@@ -10,7 +10,9 @@ import {
     ExtendOfferSchema,
     AcceptOfferSchema,
     DeclineOfferSchema,
-    CreateOfferLetterSchema
+    CreateOfferLetterSchema,
+    SubmitCounterOfferSchema,
+    RejectCounterOfferSchema,
 } from '../schemas/application.schema';
 
 export async function offerRoutes(fastify: FastifyInstance): Promise<void> {
@@ -39,6 +41,12 @@ export async function offerRoutes(fastify: FastifyInstance): Promise<void> {
             { schema: { params: ApplicationIdParamsSchema } },
             offerController.getOfferLetterForCompany
         );
+
+        companyRoutes.patch(
+            '/company/applications/:id/reject-counter',
+            { schema: { params: ApplicationIdParamsSchema, body: RejectCounterOfferSchema } },
+            offerController.rejectCounterOffer
+        );
     });
 
     // Developer routes
@@ -62,6 +70,12 @@ export async function offerRoutes(fastify: FastifyInstance): Promise<void> {
             '/applications/:id/offer-letter',
             { schema: { params: ApplicationIdParamsSchema } },
             offerController.getOfferLetterForDeveloper
+        );
+
+        developerRoutes.patch(
+            '/applications/:id/counter-offer',
+            { schema: { params: ApplicationIdParamsSchema, body: SubmitCounterOfferSchema } },
+            offerController.submitCounterOffer
         );
     });
 }

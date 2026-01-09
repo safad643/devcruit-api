@@ -5,6 +5,7 @@ export type ApplicationStatus =
   | 'interview_completed'
   | 'rejected'
   | 'offer_extended'
+  | 'counter_offered'
   | 'offer_accepted'
   | 'offer_declined'
   | 'withdrawn';
@@ -53,9 +54,16 @@ export interface StatusNotes {
   rejected?: string;
   interviewing?: string;
   offer_extended?: string;
+  counter_offered?: string;
   offer_accepted?: string;
   offer_declined?: string;
   withdrawn?: string;
+}
+
+export interface CounterOffer {
+  proposedSalary: number;
+  reason?: string;
+  submittedAt: Date;
 }
 
 export interface ApplicationProps {
@@ -75,6 +83,7 @@ export interface ApplicationProps {
   currentOfferLetterId?: string;
   aiMatchScore?: number;
   aiMatchReason?: string;
+  counterOffer?: CounterOffer;
 }
 
 export class Application {
@@ -94,6 +103,7 @@ export class Application {
   public readonly currentOfferLetterId?: string;
   public readonly aiMatchScore?: number;
   public readonly aiMatchReason?: string;
+  public readonly counterOffer?: CounterOffer;
 
   constructor(props: ApplicationProps) {
     this.id = props.id;
@@ -112,6 +122,7 @@ export class Application {
     this.currentOfferLetterId = props.currentOfferLetterId;
     this.aiMatchScore = props.aiMatchScore;
     this.aiMatchReason = props.aiMatchReason;
+    this.counterOffer = props.counterOffer;
   }
 
   static create(

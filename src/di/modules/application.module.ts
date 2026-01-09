@@ -19,6 +19,8 @@ import { RequestRescheduleUseCase } from '../../application/use-cases/applicatio
 import { RespondToRescheduleRequestUseCase } from '../../application/use-cases/application/RespondToRescheduleRequestUseCase';
 import { RescheduleInterviewUseCase } from '../../application/use-cases/application/RescheduleInterviewUseCase';
 import { AddInterviewRoundUseCase } from '../../application/use-cases/application/AddInterviewRoundUseCase';
+import { SubmitCounterOfferUseCase } from '../../application/use-cases/application/SubmitCounterOfferUseCase';
+import { RejectCounterOfferUseCase } from '../../application/use-cases/application/RejectCounterOfferUseCase';
 import { CreateOfferLetterUseCase } from '../../application/use-cases/offer-letter/CreateOfferLetterUseCase';
 import { GetOfferLetterUseCase } from '../../application/use-cases/offer-letter/GetOfferLetterUseCase';
 import { GetOrCreateVideoCallUseCase } from '../../application/use-cases/video-call/GetOrCreateVideoCallUseCase';
@@ -48,6 +50,8 @@ import {
   IRespondToRescheduleRequestUseCase,
   IRescheduleInterviewUseCase,
   IAddInterviewRoundUseCase,
+  ISubmitCounterOfferUseCase,
+  IRejectCounterOfferUseCase,
 } from '../../application/use-cases/application/interfaces';
 import {
   ICreateOfferLetterUseCase,
@@ -79,6 +83,8 @@ export const applicationModule = new ContainerModule((bind) => {
   bind<IRespondToRescheduleRequestUseCase>(TYPES.RespondToRescheduleRequestUseCase).to(RespondToRescheduleRequestUseCase);
   bind<IRescheduleInterviewUseCase>(TYPES.RescheduleInterviewUseCase).to(RescheduleInterviewUseCase);
   bind<IAddInterviewRoundUseCase>(TYPES.AddInterviewRoundUseCase).to(AddInterviewRoundUseCase);
+  bind<ISubmitCounterOfferUseCase>(TYPES.SubmitCounterOfferUseCase).to(SubmitCounterOfferUseCase);
+  bind<IRejectCounterOfferUseCase>(TYPES.RejectCounterOfferUseCase).to(RejectCounterOfferUseCase);
   bind<ICreateOfferLetterUseCase>(TYPES.CreateOfferLetterUseCase).to(CreateOfferLetterUseCase);
   bind<IGetOfferLetterUseCase>(TYPES.GetOfferLetterUseCase).to(GetOfferLetterUseCase);
   bind<VideoCallHelper>(TYPES.VideoCallHelper).to(VideoCallHelper);

@@ -8,6 +8,8 @@ export type NotificationType =
     | 'offer_extended'
     | 'offer_accepted'
     | 'offer_declined'
+    | 'counter_offer_submitted'
+    | 'counter_offer_rejected'
     | 'new_message';
 
 export interface NotificationProps {

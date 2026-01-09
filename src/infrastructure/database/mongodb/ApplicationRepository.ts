@@ -65,6 +65,11 @@ export class ApplicationRepository
       currentOfferLetterId: doc.currentOfferLetterId,
       aiMatchScore: doc.aiMatchScore,
       aiMatchReason: doc.aiMatchReason,
+      counterOffer: doc.counterOffer ? {
+        proposedSalary: doc.counterOffer.proposedSalary,
+        reason: doc.counterOffer.reason,
+        submittedAt: toDate(doc.counterOffer.submittedAt),
+      } : undefined,
     });
   }
 

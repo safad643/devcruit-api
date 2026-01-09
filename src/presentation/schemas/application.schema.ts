@@ -19,6 +19,7 @@ export const ListApplicationsForCompanyQuerySchema = Type.Object({
     Type.Literal('interview_completed'),
     Type.Literal('rejected'),
     Type.Literal('offer_extended'),
+    Type.Literal('counter_offered'),
     Type.Literal('offer_accepted'),
     Type.Literal('offer_declined'),
     Type.Literal('withdrawn')
@@ -48,6 +49,7 @@ export const ListApplicationsForDeveloperQuerySchema = Type.Object({
     Type.Literal('interview_completed'),
     Type.Literal('rejected'),
     Type.Literal('offer_extended'),
+    Type.Literal('counter_offered'),
     Type.Literal('offer_accepted'),
     Type.Literal('offer_declined'),
     Type.Literal('withdrawn')
@@ -71,6 +73,8 @@ export type ListApplicationsForDeveloperQueryInput = Static<typeof ListApplicati
 export const ApplicationIdParamsSchema = Type.Object({
   id: Type.String({ minLength: 1 })
 });
+
+export type ApplicationIdParams = Static<typeof ApplicationIdParamsSchema>;
 
 // Withdraw Application Schema
 export const WithdrawApplicationSchema = Type.Object({
@@ -196,4 +200,19 @@ export const AddInterviewRoundSchema = Type.Object({
 });
 
 export type AddInterviewRoundInput = Static<typeof AddInterviewRoundSchema>;
+
+// Submit Counter Offer Schema (Developer)
+export const SubmitCounterOfferSchema = Type.Object({
+  proposedSalary: Type.Number({ minimum: 0 }),
+  reason: Type.Optional(Type.String({ maxLength: 1000 }))
+});
+
+export type SubmitCounterOfferInput = Static<typeof SubmitCounterOfferSchema>;
+
+// Reject Counter Offer Schema (Company)
+export const RejectCounterOfferSchema = Type.Object({
+  note: Type.Optional(Type.String({ maxLength: 500 }))
+});
+
+export type RejectCounterOfferInput = Static<typeof RejectCounterOfferSchema>;
 

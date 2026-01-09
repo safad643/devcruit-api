@@ -1,4 +1,4 @@
-import { ApplicationStatus, ShortlistMethod, InterviewRound, InterviewRoundStatus, InterviewRoundResult, StatusNotes } from '../../domain/entities/Application';
+import { ApplicationStatus, ShortlistMethod, InterviewRound, InterviewRoundStatus, InterviewRoundResult, StatusNotes, CounterOffer } from '../../domain/entities/Application';
 
 // Enriched InterviewRound with resolved interviewer names and roles
 export interface EnrichedInterviewRound extends InterviewRound {
@@ -46,6 +46,7 @@ export interface ApplicationListItem {
   rejectedAt?: Date;
   rejectedAtStage?: string;
   interviewRounds: InterviewRound[];
+  counterOffer?: CounterOffer;
   // Enriched fields for display
   jobTitle?: string;
   developerName?: string;
@@ -131,6 +132,7 @@ export interface GetApplicationDetailsOutput {
   interviewRounds: EnrichedInterviewRound[];
   aiMatchScore?: number;
   aiMatchReason?: string;
+  counterOffer?: CounterOffer;
   // Enriched fields
   job?: {
     id: string;
@@ -273,6 +275,33 @@ export interface DeclineOfferInput {
 }
 
 export interface DeclineOfferOutput {
+  id: string;
+  status: ApplicationStatus;
+  message: string;
+}
+
+// Submit Counter Offer (Developer)
+export interface SubmitCounterOfferInput {
+  applicationId: string;
+  developerId: string;
+  proposedSalary: number;
+  reason?: string;
+}
+
+export interface SubmitCounterOfferOutput {
+  id: string;
+  status: ApplicationStatus;
+  message: string;
+}
+
+// Reject Counter Offer (Company)
+export interface RejectCounterOfferInput {
+  applicationId: string;
+  companyId: string;
+  note?: string;
+}
+
+export interface RejectCounterOfferOutput {
   id: string;
   status: ApplicationStatus;
   message: string;

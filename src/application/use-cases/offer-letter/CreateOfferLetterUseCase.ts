@@ -39,12 +39,12 @@ export class CreateOfferLetterUseCase implements ICreateOfferLetterUseCase {
             throw new ForbiddenError('You do not have access to this application');
         }
 
-        // 3. Validate application status - must be interview_completed or offer_extended (for revisions)
-        const allowedStatuses = ['interview_completed', 'offer_extended'];
+        // 3. Validate application status - must be interview_completed, offer_extended, or counter_offered (for revisions)
+        const allowedStatuses = ['interview_completed', 'offer_extended', 'counter_offered'];
         if (!allowedStatuses.includes(application.status)) {
             throw new ValidationError(
                 `Cannot create offer letter for application with status '${application.status}'. ` +
-                `Only applications with status 'interview_completed' or 'offer_extended' can receive an offer.`
+                `Only applications with status 'interview_completed', 'offer_extended', or 'counter_offered' can receive an offer.`
             );
         }
 

@@ -5,6 +5,8 @@ import {
     IExtendOfferUseCase,
     IAcceptOfferUseCase,
     IDeclineOfferUseCase,
+    ISubmitCounterOfferUseCase,
+    IRejectCounterOfferUseCase,
 } from '../../application/use-cases/application/interfaces';
 import {
     ICreateOfferLetterUseCase,
@@ -13,7 +15,10 @@ import {
 import {
     ExtendOfferInput,
     DeclineOfferInput,
-    CreateOfferLetterInput
+    CreateOfferLetterInput,
+    SubmitCounterOfferInput,
+    RejectCounterOfferInput,
+    ApplicationIdParams,
 } from '../schemas/application.schema';
 import { wrapSuccess } from '../../utils/response';
 import { HttpStatus } from '../../utils/statusCodes';
@@ -26,12 +31,14 @@ export class OfferController {
         @inject(TYPES.AcceptOfferUseCase) private _acceptOfferUseCase: IAcceptOfferUseCase,
         @inject(TYPES.DeclineOfferUseCase) private _declineOfferUseCase: IDeclineOfferUseCase,
         @inject(TYPES.CreateOfferLetterUseCase) private _createOfferLetterUseCase: ICreateOfferLetterUseCase,
-        @inject(TYPES.GetOfferLetterUseCase) private _getOfferLetterUseCase: IGetOfferLetterUseCase
+        @inject(TYPES.GetOfferLetterUseCase) private _getOfferLetterUseCase: IGetOfferLetterUseCase,
+        @inject(TYPES.SubmitCounterOfferUseCase) private _submitCounterOfferUseCase: ISubmitCounterOfferUseCase,
+        @inject(TYPES.RejectCounterOfferUseCase) private _rejectCounterOfferUseCase: IRejectCounterOfferUseCase
     ) { }
 
     // Company endpoint: Extend offer
     extendOffer = async (
-        request: FastifyRequest<{ Params: { id: string }; Body?: ExtendOfferInput }>,
+        request: FastifyRequest<{ Params: ApplicationIdParams; Body?: ExtendOfferInput }>,
         reply: FastifyReply
     ): Promise<void> => {
         const companyContext = this._getCompanyContext(request);
@@ -48,7 +55,7 @@ export class OfferController {
 
     // Developer endpoint: Accept offer
     acceptOffer = async (
-        request: FastifyRequest<{ Params: { id: string } }>,
+        request: FastifyRequest<{ Params: ApplicationIdParams }>,
         reply: FastifyReply
     ): Promise<void> => {
         const developerId = request.user?.id as string;
@@ -62,7 +69,7 @@ export class OfferController {
 
     // Developer endpoint: Decline offer
     declineOffer = async (
-        request: FastifyRequest<{ Params: { id: string }; Body?: DeclineOfferInput }>,
+        request: FastifyRequest<{ Params: ApplicationIdParams; Body?: DeclineOfferInput }>,
         reply: FastifyReply
     ): Promise<void> => {
         const developerId = request.user?.id as string;
@@ -78,7 +85,7 @@ export class OfferController {
 
     // Company endpoint: Create offer letter
     createOfferLetter = async (
-        request: FastifyRequest<{ Params: { id: string }; Body: CreateOfferLetterInput }>,
+        request: FastifyRequest<{ Params: ApplicationIdParams; Body: CreateOfferLetterInput }>,
         reply: FastifyReply
     ): Promise<void> => {
         const companyContext = this._getCompanyContext(request);
@@ -94,7 +101,7 @@ export class OfferController {
 
     // Company endpoint: Get offer letter
     getOfferLetterForCompany = async (
-        request: FastifyRequest<{ Params: { id: string } }>,
+        request: FastifyRequest<{ Params: ApplicationIdParams }>,
         reply: FastifyReply
     ): Promise<void> => {
         const companyContext = this._getCompanyContext(request);
@@ -106,12 +113,45 @@ export class OfferController {
 
     // Developer endpoint: Get offer letter
     getOfferLetterForDeveloper = async (
-        request: FastifyRequest<{ Params: { id: string } }>,
+        request: FastifyRequest<{ Params: ApplicationIdParams }>,
         reply: FastifyReply
     ): Promise<void> => {
         const developerId = request.user?.id as string;
         const applicationId = request.params.id;
         const result = await this._getOfferLetterUseCase.execute(applicationId, developerId, 'developer');
+        reply.status(HttpStatus.OK).send(wrapSuccess(result));
+    };
+
+    // Developer endpoint: Submit counter offer
+    submitCounterOffer = async (
+        request: FastifyRequest<{ Params: ApplicationIdParams; Body: SubmitCounterOfferInput }>,
+        reply: FastifyReply
+    ): Promise<void> => {
+        const developerId = request.user?.id as string;
+        const applicationId = request.params.id;
+        const result = await this._submitCounterOfferUseCase.execute({
+            applicationId,
+            developerId,
+            proposedSalary: request.body.proposedSalary,
+            reason: request.body.reason?.trim() || undefined,
+        });
+        reply.status(HttpStatus.OK).send(wrapSuccess(result));
+    };
+
+    // Company endpoint: Reject counter offer
+    rejectCounterOffer = async (
+        request: FastifyRequest<{ Params: ApplicationIdParams; Body?: RejectCounterOfferInput }>,
+        reply: FastifyReply
+    ): Promise<void> => {
+        const companyContext = this._getCompanyContext(request);
+        const companyId = companyContext.companyUserId;
+        const applicationId = request.params.id;
+        const note = request.body?.note?.trim() || undefined;
+        const result = await this._rejectCounterOfferUseCase.execute({
+            applicationId,
+            companyId,
+            note,
+        });
         reply.status(HttpStatus.OK).send(wrapSuccess(result));
     };
 

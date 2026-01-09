@@ -20,6 +20,10 @@ import {
     UpdateApplicationStatusOutput,
     WithdrawApplicationInput,
     WithdrawApplicationOutput,
+    SubmitCounterOfferInput,
+    SubmitCounterOfferOutput,
+    RejectCounterOfferInput,
+    RejectCounterOfferOutput,
 } from '../../dtos/application.dto';
 import { InterviewRoundResult } from '../../../domain/entities/Application';
 
@@ -211,3 +215,11 @@ export interface IAddInterviewRoundUseCase {
     execute(input: AddInterviewRoundInput & { companyId: string }): Promise<AddInterviewRoundOutput>;
 }
 
+// Counter Offer Use Cases
+export interface ISubmitCounterOfferUseCase {
+    execute(input: SubmitCounterOfferInput): Promise<SubmitCounterOfferOutput>;
+}
+
+export interface IRejectCounterOfferUseCase {
+    execute(input: RejectCounterOfferInput): Promise<RejectCounterOfferOutput>;
+}
