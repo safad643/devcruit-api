@@ -179,6 +179,13 @@ export const InviteCompanyTeamMemberSchema = Type.Object({
   jobTitle: Type.Optional(Type.String({ minLength: 1, maxLength: 200 }))
 });
 
+// List Company Team Query Schema
+export const ListCompanyTeamQuerySchema = Type.Object({
+  page: Type.Optional(Type.Integer({ minimum: 1 })),
+  limit: Type.Optional(Type.Integer({ minimum: 1, maximum: 100 })),
+  search: Type.Optional(Type.String({ minLength: 1 }))
+});
+
 // Export TypeScript types
 export type CreateDeveloperProfileInput = Static<typeof CreateDeveloperProfileSchema>;
 export type UpdateDeveloperProfileInput = Static<typeof UpdateDeveloperProfileSchema>;
@@ -186,4 +193,4 @@ export type CreateCompanyProfileInput = Static<typeof CreateCompanyProfileSchema
 export type UpdateCompanyProfileInput = Static<typeof UpdateCompanyProfileSchema>;
 export type ResubmitDocumentsInput = Static<typeof ResubmitDocumentsSchema>;
 export type InviteCompanyTeamMemberInput = Static<typeof InviteCompanyTeamMemberSchema>;
-
+export type ListCompanyTeamQueryInput = Static<typeof ListCompanyTeamQuerySchema>;

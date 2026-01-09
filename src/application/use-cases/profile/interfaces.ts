@@ -65,6 +65,21 @@ export interface IInviteCompanyTeamMemberUseCase {
     execute(input: InviteCompanyTeamMemberInput): Promise<CompanyTeamMemberDTO>;
 }
 
+export interface ListCompanyTeamMembersInput {
+    companyUserId: string;
+    page?: number;
+    limit?: number;
+    search?: string;
+}
+
+export interface PaginatedTeamMembersResponse {
+    data: CompanyTeamMemberDTO[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
 export interface IListCompanyTeamMembersUseCase {
-    execute(companyUserId: string): Promise<CompanyTeamMemberDTO[]>;
+    execute(input: ListCompanyTeamMembersInput): Promise<PaginatedTeamMembersResponse>;
 }

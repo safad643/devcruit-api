@@ -31,13 +31,26 @@ export interface TeamStatsResult {
   invited: number;
 }
 
+export interface ListMembersOptions {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+export interface PaginatedTeamMembersResult {
+  data: CompanyTeamMemberWithRole[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export interface ICompanyTeamRepository {
   inviteMember(input: InviteCompanyTeamMemberInput): Promise<CompanyTeamMember>;
-  listMembers(companyId: string): Promise<CompanyTeamMemberWithRole[]>;
+  listMembers(companyId: string, options?: ListMembersOptions): Promise<PaginatedTeamMembersResult>;
   findByEmail(companyId: string, email: string): Promise<CompanyTeamMember | null>;
   findByUserId(userId: string): Promise<CompanyTeamMember | null>;
   updateStatus(teamMemberId: string, status: CompanyTeamMemberStatus): Promise<void>;
   countActiveByCompany(companyId: string): Promise<number>;
   getTeamStats(companyId: string): Promise<TeamStatsResult>;
 }
-

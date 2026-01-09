@@ -1,7 +1,7 @@
 import { inject, injectable } from 'inversify';
 import { TYPES } from '../../../di/types';
 import { CompanyTeamMember, ICompanyTeamRepository, ICompanyProfileRepository, IUserRepository } from '../../../domain/repositories';
-import { CompanyTeamMemberDTO, IListCompanyTeamMembersUseCase } from './interfaces';
+import { CompanyTeamMemberDTO, IListCompanyTeamMembersUseCase, ListCompanyTeamMembersInput, PaginatedTeamMembersResponse } from './interfaces';
 
 @injectable()
 export class ListCompanyTeamMembersUseCase implements IListCompanyTeamMembersUseCase {
@@ -11,10 +11,11 @@ export class ListCompanyTeamMembersUseCase implements IListCompanyTeamMembersUse
     @inject(TYPES.UserRepository) private _userRepository: IUserRepository
   ) { }
 
-  async execute(companyUserId: string): Promise<CompanyTeamMemberDTO[]> {
-    // Get HR and Interviewers
-    const membersWithRole = await this._companyTeamRepository.listMembers(companyUserId);
-    const teamMembers = membersWithRole.map(({ member, role }) => this._toDTO(member, role));
+  async execute(input: ListCompanyTeamMembersInput): Promise<PaginatedTeamMembersResponse> {
+    const { companyUserId, page, limit, search } = input;
+
+    // Get team members from repo (always paginated now)
+    const repoResult = await this._companyTeamRepository.listMembers(companyUserId, { page, limit, search });
 
     // Get company owner info
     const [companyProfile, ownerUser] = await Promise.all([
@@ -22,9 +23,10 @@ export class ListCompanyTeamMembersUseCase implements IListCompanyTeamMembersUse
       this._userRepository.findById(companyUserId)
     ]);
 
-    // Add company owner to the list
+    // Create owner DTO
+    let ownerDTO: CompanyTeamMemberDTO | null = null;
     if (companyProfile && ownerUser) {
-      const ownerDTO: CompanyTeamMemberDTO = {
+      ownerDTO = {
         id: companyProfile.id,
         userId: companyUserId,
         email: ownerUser.email,
@@ -34,10 +36,22 @@ export class ListCompanyTeamMembersUseCase implements IListCompanyTeamMembersUse
         invitedAt: companyProfile.createdAt,
         activatedAt: companyProfile.createdAt,
       };
-      return [ownerDTO, ...teamMembers];
     }
 
-    return teamMembers;
+    const teamMembers = repoResult.data.map(({ member, role }) => this._toDTO(member, role));
+
+    // For first page, include owner at top
+    const actualPage = repoResult.page;
+    const data = (actualPage === 1 && ownerDTO) ? [ownerDTO, ...teamMembers] : teamMembers;
+    const total = ownerDTO ? repoResult.total + 1 : repoResult.total;
+
+    return {
+      data,
+      total,
+      page: actualPage,
+      limit: repoResult.limit,
+      totalPages: Math.ceil(total / repoResult.limit),
+    };
   }
 
   private _toDTO(member: CompanyTeamMember, role: 'hr' | 'interviewer'): CompanyTeamMemberDTO {

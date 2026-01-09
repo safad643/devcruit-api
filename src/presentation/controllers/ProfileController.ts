@@ -18,7 +18,8 @@ import {
   UpdateDeveloperProfileInput,
   UpdateCompanyProfileInput,
   ResubmitDocumentsInput,
-  InviteCompanyTeamMemberInput
+  InviteCompanyTeamMemberInput,
+  ListCompanyTeamQueryInput
 } from '../schemas/profile.schema';
 import { wrapSuccess } from '../../utils/response';
 import { HttpStatus } from '../../utils/statusCodes';
@@ -112,12 +113,19 @@ export class ProfileController {
   };
 
   listCompanyTeam = async (
-    request: FastifyRequest,
+    request: FastifyRequest<{ Querystring: ListCompanyTeamQueryInput }>,
     reply: FastifyReply
   ): Promise<void> => {
     const companyContext = this._getCompanyContext(request);
     const companyUserId = companyContext.companyUserId;
-    const result = await this._listCompanyTeamMembersUseCase.execute(companyUserId);
+
+    const { page, limit, search } = request.query;
+    const result = await this._listCompanyTeamMembersUseCase.execute({
+      companyUserId,
+      page,
+      limit,
+      search,
+    });
     reply.status(HttpStatus.OK).send(wrapSuccess(result));
   };
 

@@ -1,10 +1,12 @@
-import { Collection, ObjectId } from 'mongodb';
+import { Collection, ObjectId, Filter } from 'mongodb';
 import { injectable } from 'inversify';
 import {
   CompanyTeamMember,
   CompanyTeamMemberWithRole,
   ICompanyTeamRepository,
-  InviteCompanyTeamMemberInput
+  InviteCompanyTeamMemberInput,
+  ListMembersOptions,
+  PaginatedTeamMembersResult
 } from '../../../domain/repositories';
 import { getMongoDb } from './client';
 import { InternalError, BadRequestError } from '../../../domain/errors';
@@ -95,16 +97,43 @@ export class CompanyTeamRepository implements ICompanyTeamRepository {
     }
   }
 
-  async listMembers(companyId: string): Promise<CompanyTeamMemberWithRole[]> {
+  async listMembers(companyId: string, options?: ListMembersOptions): Promise<PaginatedTeamMembersResult> {
     try {
-      const docs = await this._collection
-        .find({ companyId })
-        .sort({ createdAt: -1 })
-        .toArray();
-      return docs.map((doc) => ({
-        member: this._mapToEntity(doc),
-        role: doc.role,
-      }));
+      const page = options?.page ?? 1;
+      const limit = options?.limit ?? 10;
+      const filter: Filter<CompanyTeamMemberDocument> = { companyId };
+
+      // Apply search filter
+      if (options?.search) {
+        const searchRegex = new RegExp(options.search, 'i');
+        filter.$or = [
+          { email: { $regex: searchRegex } },
+          { fullName: { $regex: searchRegex } }
+        ];
+      }
+
+      const skip = (page - 1) * limit;
+
+      const [docs, total] = await Promise.all([
+        this._collection
+          .find(filter)
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .toArray(),
+        this._collection.countDocuments(filter)
+      ]);
+
+      return {
+        data: docs.map((doc) => ({
+          member: this._mapToEntity(doc),
+          role: doc.role,
+        })),
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
     } catch (error) {
       throw new InternalError('Failed to list company team members', error as Error);
     }
