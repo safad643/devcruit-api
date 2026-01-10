@@ -245,8 +245,8 @@ export class ApplicationRepository
     excludeRoundName?: string
   ): Promise<boolean> {
     try {
-      const oneHourBefore = new Date(scheduledAt.getTime() - 60 * 60 * 1000);
-      const oneHourAfter = new Date(scheduledAt.getTime() + 60 * 60 * 1000);
+      const oneHourBefore = new Date(scheduledAt.getTime() - 60 * 60 );
+      const oneHourAfter = new Date(scheduledAt.getTime() + 60 * 60 );
 
       const pipeline: Document[] = [
         // Unwind to check each round individually
