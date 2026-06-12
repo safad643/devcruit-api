@@ -21,4 +21,4 @@ jobs:
             git pull origin master
             npm install --production=false
             npm run build
-            pm2 restart api
+            pm2 restart devcruit-api
